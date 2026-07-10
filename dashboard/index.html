@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DIVYVAL · Valuation por dividendos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== tema ===== */
+:root,[data-theme="light"]{
+  --bg:#eceef2;--surface:#fff;--surface-2:#f5f6f9;--border:#e6e8ee;--border-2:#eef0f4;
+  --text:#1a1e26;--text-soft:#545b66;--text-mute:#949aa5;
+  --accent:#3b5bdb;--accent-2:#3550c8;--accent-soft:#eef1fe;
+  --badge-bg:#3b5bdb;--badge-tx:#fff;--good:#1f9d63;--bad:#d64545;
+  --nav-active:#eef1fe;--overlay:rgba(20,28,50,.42);
+  --shadow:0 1px 2px rgba(20,30,55,.04),0 8px 24px rgba(20,30,55,.05);
+  --shadow-lg:0 12px 40px rgba(20,30,55,.18);
+}
+[data-theme="dark"]{
+  --bg:#0a0d12;--surface:#12161d;--surface-2:#171c25;--border:#242b37;--border-2:#1c222c;
+  --text:#e7eaf0;--text-soft:#a7aebb;--text-mute:#6d7684;
+  --accent:#7f9cff;--accent-2:#93aaff;--accent-soft:#1b2233;
+  --badge-bg:#3b5bdb;--badge-tx:#fff;--good:#37c983;--bad:#ff6b6b;
+  --nav-active:#1a2130;--overlay:rgba(0,0,0,.6);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.35);
+  --shadow-lg:0 16px 50px rgba(0,0,0,.55);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:15px;line-height:1.55;letter-spacing:-.005em;-webkit-font-smoothing:antialiased;transition:background .35s,color .35s;}
+.num{font-variant-numeric:tabular-nums;}
+.accent{color:var(--accent);font-weight:600;}
+.mono{font-family:'Roboto Mono',ui-monospace,monospace;font-size:.92em;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+
+/* ===== shell ===== */
+.app{display:grid;grid-template-columns:76px 1fr;min-height:100vh;}
+.sidebar{position:sticky;top:0;align-self:start;height:100vh;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:16px 8px;transition:background .35s,border-color .35s;}
+.brand{padding:2px 0 16px;}
+.brand .logo{display:flex;width:36px;height:36px;border-radius:10px;background:var(--accent);color:#fff;align-items:center;justify-content:center;font-size:19px;font-weight:800;letter-spacing:-.02em;}
+.nav{display:flex;flex-direction:column;gap:4px;width:100%;}
+.nav-label{display:none;}
+.nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:9px 2px;border-radius:10px;font-size:10px;font-weight:500;color:var(--text-soft);text-align:center;transition:background .15s,color .15s;}
+.nav a:hover{background:var(--surface-2);color:var(--text);}
+.nav a.active{background:var(--nav-active);color:var(--accent);font-weight:600;}
+.nav a svg{width:20px;height:20px;flex:none;}
+.side-foot{margin-top:auto;padding-top:14px;width:100%;display:flex;justify-content:center;}
+.theme-toggle{display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface-2);color:var(--text-soft);
+  border:1px solid var(--border);border-radius:10px;padding:9px;font:inherit;transition:background .2s,border-color .2s,color .2s;}
+.theme-toggle span{display:none;}
+.theme-toggle:hover{color:var(--text);border-color:var(--accent);}
+.theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.theme-toggle svg{width:16px;height:16px;}
+.theme-toggle .moon{display:none;}
+[data-theme="dark"] .theme-toggle .sun{display:none;}
+[data-theme="dark"] .theme-toggle .moon{display:block;}
+
+/* ===== conteúdo ===== */
+.main{padding:28px 20px 80px;max-width:1620px;margin:0 auto;width:100%;}
+#view-detail{max-width:1040px;}
+#view-modelo{max-width:760px;}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;}
+.page-head h1{font-size:22px;font-weight:700;letter-spacing:-.02em;}
+.page-head p{margin-top:5px;font-size:14px;color:var(--text-soft);max-width:60ch;}
+.sample-tag{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:var(--text-mute);
+  background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 10px;}
+.sample-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--text-mute);}
+
+.btn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:600;
+  border-radius:10px;padding:9px 15px;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;}
+.btn:hover{border-color:var(--accent);}
+.btn svg{width:15px;height:15px;}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2);}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-soft);padding:8px 11px;}
+.btn-ghost:hover{background:var(--surface-2);color:var(--text);border-color:transparent;}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px;}
+.btn-danger{color:var(--bad);}
+.btn-danger:hover{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent);}
+.btn.watch-on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 42%,var(--border));background:var(--accent-soft);}
+.btn.watch-on svg{fill:var(--accent);}
+/* barra de ações da página do ativo */
+.detail-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap;}
+.detail-actions{display:flex;gap:8px;}
+.create-only{display:block;}
+/* seletor de ações para monitorar */
+.pick-search{width:100%;font:inherit;font-size:14px;padding:11px 13px;border:1px solid var(--border);border-radius:10px;
+  background:var(--surface-2);color:var(--text);margin:6px 0 12px;}
+.pick-search:focus{outline:none;border-color:var(--accent);}
+.pick-list{max-height:46vh;overflow:auto;display:flex;flex-direction:column;gap:2px;}
+.pick-item{display:flex;align-items:baseline;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;border:1px solid transparent;}
+.pick-item:hover{background:var(--surface-2);border-color:var(--border);}
+.pick-item .pk-tk{font-weight:700;font-size:14px;min-width:66px;}
+.pick-item .pk-nm{color:var(--text-soft);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pick-item .pk-sec{margin-left:auto;font-size:11px;color:var(--text-mute);white-space:nowrap;}
+.pick-empty{padding:18px 12px;color:var(--text-mute);font-size:13px;text-align:center;}
+
+/* visão agregada (monitoradas) */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 18px;box-shadow:var(--shadow);transition:background .35s,border-color .35s;}
+.stat .k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute);}
+.stat .v{font-size:27px;font-weight:700;margin-top:5px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+.stat .v.good{color:var(--good);}
+.stat .v.bad{color:var(--bad);}
+.stat[hidden]{display:none;}
+@media (max-width:640px){.stats{grid-template-columns:1fr 1fr;}}
+
+/* chips setor */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.chip{font:inherit;font-size:12.5px;cursor:pointer;padding:6px 13px;border-radius:999px;background:var(--surface);color:var(--text-soft);border:1px solid var(--border);transition:all .15s;}
+.chip:hover{color:var(--text);border-color:var(--text-mute);}
+.chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* tags de classificação */
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.tag{font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border);white-space:nowrap;}
+.tag.situ{background:var(--accent-soft);color:var(--accent);border-color:transparent;}
+/* pílulas coloridas (Perfil, Governança) */
+.tagc{font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;display:inline-block;}
+.c-green{color:#1f9d63;background:rgba(31,157,99,.13);}
+.c-amber{color:#b07d17;background:rgba(201,138,14,.16);}
+.c-blue{color:#3b6fd4;background:rgba(59,111,219,.13);}
+.c-violet{color:#7a5af0;background:rgba(122,90,240,.14);}
+.c-terra{color:#c05430;background:rgba(200,85,47,.14);}
+.c-teal{color:#127c72;background:rgba(18,139,128,.14);}
+.c-neutral{color:var(--text-mute);background:var(--surface-2);}
+[data-theme=dark] .c-green{color:#37c983;background:rgba(55,201,131,.15);}
+[data-theme=dark] .c-amber{color:#e3ab43;background:rgba(224,165,58,.16);}
+[data-theme=dark] .c-blue{color:#6f9bff;background:rgba(111,155,255,.16);}
+[data-theme=dark] .c-violet{color:#ab8dff;background:rgba(169,139,255,.17);}
+[data-theme=dark] .c-terra{color:#e5825a;background:rgba(224,121,79,.16);}
+[data-theme=dark] .c-teal{color:#41c2b4;background:rgba(63,189,176,.16);}
+/* texto colorido com hierarquia (Controle) */
+.tcx{font-weight:600;font-size:13px;}
+.tc-violet{color:#7a5af0;} .tc-blue{color:#3b6fd4;} .tc-amber{color:#b07d17;} .tc-neutral{color:var(--text-soft);}
+[data-theme=dark] .tc-violet{color:#ab8dff;} [data-theme=dark] .tc-blue{color:#6f9bff;} [data-theme=dark] .tc-amber{color:#e3ab43;}
+/* badge do modelo (abre página do modelo) */
+.model-badge{font-family:'Roboto Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;color:var(--accent);cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);background:color-mix(in srgb,var(--accent) 8%,transparent);
+  padding:4px 10px;border-radius:8px;white-space:nowrap;display:inline-block;transition:background .15s;}
+.model-badge:hover{background:color-mix(in srgb,var(--accent) 16%,transparent);}
+
+/* card + tabela */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);transition:background .35s,border-color .35s;}
+.card-pad{padding:20px 24px;}
+.card-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute);margin-bottom:14px;}
+.table-scroll{overflow-x:auto;border-radius:16px;}
+.table{width:100%;min-width:1260px;border-collapse:collapse;font-size:14px;}
+.table th,.table td{text-align:right;}
+.table th.l,.table td.l{text-align:left;}
+.th-sort th{font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--text-mute);font-weight:600;padding:14px 10px 10px;cursor:pointer;white-space:nowrap;user-select:none;border-bottom:1px solid var(--border);}
+.th-sort th .arrow{opacity:0;margin-left:4px;font-size:10px;}
+.th-sort th.sorted{color:var(--text-soft);}
+.th-sort th.sorted .arrow{opacity:1;}
+/* filtro por coluna: botão-funil no cabeçalho + popover flutuante */
+.th-sort th{position:relative;}
+.th-label{cursor:pointer;}
+.th-filter-btn{background:none;border:none;cursor:pointer;color:var(--text-mute);padding:2px;margin-left:5px;border-radius:5px;opacity:.5;vertical-align:middle;}
+.th-sort th:hover .th-filter-btn{opacity:1;}
+.th-filter-btn:hover{color:var(--text);background:var(--surface-2);}
+.th-filter-btn.on{color:var(--accent);opacity:1;}
+.th-filter-btn svg{width:12px;height:12px;display:block;}
+.col-pop{position:fixed;z-index:60;background:var(--surface);border:1px solid var(--border);border-radius:11px;box-shadow:var(--shadow-lg);padding:7px;min-width:190px;max-height:300px;overflow:auto;}
+.col-pop[hidden]{display:none;}
+.pop-input{width:100%;font:inherit;font-size:13px;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+.pop-input:focus{outline:none;border-color:var(--accent);}
+.pop-opt{padding:7px 10px;border-radius:7px;font-size:13px;color:var(--text-soft);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.pop-opt:hover{background:var(--surface-2);color:var(--text);}
+.pop-opt.sel{color:var(--accent);font-weight:600;}
+.col-check{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text);}
+.col-check:hover{background:var(--surface-2);}
+.col-check.fixed{opacity:.5;cursor:default;}
+.cbox{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex:none;}
+.cbox.on{background:var(--accent);border-color:var(--accent);}
+.table tbody tr{cursor:pointer;--row-bg:var(--surface);background:var(--row-bg);transition:background .12s;}
+.table tbody tr:nth-child(even){--row-bg:color-mix(in srgb,var(--text) 3%,var(--surface));}
+.table tbody tr:hover{--row-bg:var(--surface-2);}
+.table tbody td{padding:12px 10px;border-top:1px solid var(--border-2);white-space:nowrap;}
+.sep{border-left:1px solid var(--border);}
+.table tbody td:first-child{padding-left:16px;}
+.table tbody td:last-child{padding-right:16px;}
+/* coluna Ticker congelada na rolagem horizontal (acompanha zebra/hover) */
+.table th:first-child{position:sticky;left:0;z-index:3;background:var(--surface);}
+.table td:first-child{position:sticky;left:0;z-index:2;background:var(--row-bg);}
+.t-ticker{font-weight:700;font-size:14px;letter-spacing:-.01em;}
+.tk-link{color:inherit;text-decoration:none;font:inherit;cursor:pointer;}
+.tk-link:hover{text-decoration:underline;text-underline-offset:2px;}
+/* agrupamento por empresa */
+.btn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.grp-parent .chev{display:inline-block;color:var(--text-mute);font-size:10px;margin-right:5px;transition:transform .15s;}
+.grp-parent.open .chev{transform:rotate(90deg);}
+.grp-badge{font-size:10px;font-weight:500;color:var(--text-mute);}
+.grp-child{--row-bg:var(--surface-2);}
+.grp-child td{font-size:13px;color:var(--text-soft);padding-top:9px;padding-bottom:9px;}
+.grp-child td:first-child{padding-left:32px;}
+.grp-child .child-tk{font-weight:600;color:var(--text);}
+.grp-child .child-ty{font-size:10px;color:var(--text-mute);margin-left:4px;}
+.t-name{font-size:13.5px;font-weight:500;color:var(--text);}
+.td-attr{font-size:12px;color:var(--text-mute);max-width:120px;overflow:hidden;text-overflow:ellipsis;}
+.emp{max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+.situ-cell{display:flex;flex-wrap:wrap;gap:4px;max-width:130px;}
+.mos{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;}
+.mos.pos{color:var(--good);}.mos.neg{color:var(--bad);}
+.mos-bar{display:inline-block;width:40px;height:5px;border-radius:3px;background:var(--border);margin-left:8px;vertical-align:middle;overflow:hidden;position:relative;}
+.mos-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;}
+
+/* breadcrumb + título ação */
+.crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mute);margin-bottom:16px;}
+.crumb a{color:var(--text-soft);display:inline-flex;align-items:center;gap:5px;}
+.crumb a:hover{color:var(--accent);}
+.crumb svg{width:15px;height:15px;}
+.stock-title{display:flex;align-items:baseline;gap:12px;}
+.stock-title h1{font-size:24px;font-weight:700;letter-spacing:-.02em;}
+.stock-title .sec{font-size:12px;color:var(--text-mute);background:var(--surface-2);border:1px solid var(--border);padding:3px 9px;border-radius:6px;}
+
+/* grid de cards no detalhe */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.stack{display:flex;flex-direction:column;gap:18px;}
+
+/* resultado + premissas */
+.result{padding:22px 24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.fair-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mute);}
+.fair-value{font-size:42px;font-weight:700;line-height:1.05;margin-top:6px;letter-spacing:-.02em;}
+.fair-sub{margin-top:8px;font-size:13px;color:var(--text-soft);}
+.badge-mos{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:5px 11px;border-radius:999px;font-size:13px;font-weight:600;}
+.badge-mos.good{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good);}
+.badge-mos.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad);}
+.assumptions{display:flex;flex-direction:column;gap:11px;justify-content:center;}
+
+/* HERO do ativo: identidade + veredito do valuation */
+.hero{display:grid;grid-template-columns:1fr minmax(300px,360px);gap:18px;align-items:start;margin-bottom:18px;}
+.hero-id{display:flex;flex-direction:column;}
+.hero-price{margin-top:14px;display:flex;align-items:baseline;gap:10px;}
+.hero-price .hp-lbl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute);}
+.hero-price .hp-val{font-size:22px;font-weight:700;letter-spacing:-.01em;}
+.verdict{padding:18px 22px;
+  background:linear-gradient(180deg,var(--accent-soft),var(--surface));
+  border:1px solid color-mix(in srgb,var(--accent) 32%,var(--border));}
+.verdict .fair-value{font-size:36px;margin-top:4px;}
+.verdict .badge-mos{margin-top:8px;}
+/* premissas + implicações lado a lado */
+.prem-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;}
+.box-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:4px;}
+.box-head h3{font-size:15px;font-weight:700;letter-spacing:-.01em;}
+.box-head .box-sub{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mute);}
+.box-lead{font-size:12.5px;color:var(--text-soft);margin:6px 0 16px;line-height:1.5;}
+.mode-toggle{display:inline-flex;gap:3px;padding:3px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;margin-bottom:16px;}
+.mode-toggle .gt-btn{font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:6px 13px;border-radius:6px;border:0;background:transparent;color:var(--text-soft);transition:background .15s,color .15s;}
+.mode-toggle .gt-btn:hover{color:var(--text);}
+.mode-toggle .gt-btn.active{background:var(--surface);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.06);}
+#premCard .assumptions{display:flex;flex-direction:column;gap:13px;}
+.prem-mini{display:flex;align-items:baseline;gap:10px;}
+.prem-mini .pm-fair{font-size:20px;font-weight:700;letter-spacing:-.01em;}
+.prem-mini .pm-mos{font-size:13px;font-weight:600;}
+.prem-mini .pm-mos.good{color:var(--good);}
+.prem-mini .pm-mos.bad{color:var(--bad);}
+/* caixa de implicações */
+.impl-box{display:flex;flex-direction:column;}
+.impl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;font-size:13.5px;}
+.impl-row+.impl-row{border-top:1px solid var(--border-2);}
+.impl-row .lbl{color:var(--text-soft);display:flex;flex-direction:column;gap:2px;}
+.impl-row .lbl small{font-size:10.5px;color:var(--text-mute);letter-spacing:.02em;}
+.impl-row .v{font-weight:700;font-size:15px;white-space:nowrap;}
+.impl-row .v.pos{color:var(--good);}.impl-row .v.neg{color:var(--bad);}
+.impl-sep{margin:14px 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);}
+.impl-fair{margin-top:12px;padding-top:13px;border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.impl-fair .lbl{font-weight:700;font-size:14px;}
+.impl-fair .v{font-weight:700;font-size:22px;color:var(--accent);letter-spacing:-.01em;}
+.preset-row{display:flex;gap:6px;margin-bottom:4px;flex-wrap:wrap;}
+.preset{font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-soft);transition:all .15s;}
+.preset:hover{color:var(--text);border-color:var(--text-mute);}
+.preset.active{background:var(--accent-soft);color:var(--accent);border-color:transparent;}
+.field{display:grid;grid-template-columns:1fr auto;align-items:center;gap:3px 10px;}
+.field label{font-size:12.5px;color:var(--text-soft);}
+.field .val{font-size:12.5px;font-weight:600;}
+.field input[type=range]{grid-column:1/-1;-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;background:var(--border);cursor:pointer;}
+.field input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25);}
+.field input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+.field input[type=number],.field select{width:82px;text-align:right;font:inherit;font-size:12.5px;font-weight:600;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:5px 8px;}
+.save-row{margin-top:4px;}
+/* checkbox "padrão" nos campos Ke / g */
+.chk{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--text-mute);cursor:pointer;margin-left:6px;text-transform:none;letter-spacing:0;}
+.chk input{width:13px;height:13px;accent-color:var(--accent);cursor:pointer;margin:0;}
+.field.locked input[type=range]{opacity:.45;cursor:not-allowed;}
+.field.locked .val{color:var(--text-mute);}
+.field:not(.locked) .chk{color:var(--accent);}
+/* página de configurações */
+#view-config{max-width:760px;}
+.cfg-field{padding:14px 0;border-top:1px solid var(--border-2);}
+.cfg-field:first-of-type{border-top:none;}
+.cfg-field>label{display:block;font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.cfg-hint{display:block;font-size:12px;font-weight:400;color:var(--text-mute);margin-top:2px;}
+.cfg-row{display:flex;align-items:center;gap:16px;}
+.cfg-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:99px;background:var(--border);cursor:pointer;}
+.cfg-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25);}
+.cfg-val{font-size:22px;font-weight:700;color:var(--accent);min-width:64px;text-align:right;}
+.cfg-note{font-size:12.5px;color:var(--text-soft);margin-top:16px;}
+
+/* gráfico */
+.chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;}
+.periods{display:flex;gap:4px;}
+.period{font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:5px 10px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--text-mute);transition:all .15s;}
+.period:hover{color:var(--text);background:var(--surface-2);}
+.period.active{background:var(--accent-soft);color:var(--accent);}
+.chart-wrap{position:relative;}
+.chart-wrap svg{display:block;width:100%;height:auto;overflow:visible;}
+.chart-legend{display:flex;gap:16px;font-size:12px;color:var(--text-soft);margin-top:10px;}
+.chart-legend i{display:inline-block;width:14px;height:0;border-top-width:2px;border-top-style:solid;vertical-align:middle;margin-right:6px;}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:8px;padding:7px 10px;font-size:12px;opacity:0;transform:translate(-50%,-120%);white-space:nowrap;transition:opacity .1s;}
+.tip b{font-size:13px;}
+
+/* composição do valor justo */
+.comp-rows{display:flex;flex-direction:column;gap:2px;}
+.comp-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;font-size:14px;}
+.comp-row .lbl{color:var(--text-soft);display:flex;align-items:center;gap:9px;}
+.comp-row .dot{width:9px;height:9px;border-radius:3px;flex:none;}
+.comp-row.total{border-top:1.5px solid var(--border);font-weight:600;padding-top:12px;}
+.comp-row.total .lbl{color:var(--text);}
+.comp-row.total .v{color:var(--accent);}
+.comp-bar{display:flex;height:9px;border-radius:5px;overflow:hidden;margin:12px 0 4px;background:var(--border);}
+.comp-bar i{height:100%;}
+.comp-note{font-size:12.5px;color:var(--text-soft);margin-top:12px;}
+.comp-note b{color:var(--text);font-weight:600;}
+
+/* passo a passo */
+.steps-head{padding:20px 24px 4px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.steps-head h2{font-size:17px;font-weight:700;letter-spacing:-.01em;}
+.steps-head p{margin-top:6px;font-size:13px;color:var(--text-soft);max-width:56ch;}
+.steps-head .now{font-size:12px;color:var(--text-mute);white-space:nowrap;padding-top:3px;}
+.pill-claude{display:inline-flex;align-items:center;gap:6px;margin:12px 24px 4px;padding:4px 10px;border-radius:7px;font-size:12px;font-weight:500;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);}
+.pill-claude::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);}
+.step{display:grid;grid-template-columns:34px 1fr;gap:16px;padding:18px 24px;}
+.step+.step{border-top:1px solid var(--border-2);}
+.step-badge{width:28px;height:28px;border-radius:50%;background:var(--badge-bg);color:var(--badge-tx);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
+.step-title{font-size:15px;font-weight:600;margin-bottom:5px;}
+.step-body{font-size:13.5px;color:var(--text-soft);}
+.step-body b{color:var(--text);font-weight:600;}
+.formula{margin-top:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--text-soft);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.formula .lead{color:var(--text-mute);}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;}
+.frac .top{padding:0 8px 3px;border-bottom:1.5px solid var(--text-mute);}
+.frac .bot{padding:3px 8px 0;}
+.proj{margin-top:14px;width:100%;border-collapse:collapse;font-size:13.5px;}
+.proj th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);font-weight:500;text-align:right;padding:0 0 9px;}
+.proj th:first-child{text-align:left;}
+.proj td{padding:8px 0;text-align:right;border-top:1px solid var(--border-2);}
+.proj td:first-child{text-align:left;color:var(--text-soft);}
+.proj tr.base td{color:var(--text-mute);}
+.proj td.pv{color:var(--accent);font-weight:600;}
+.proj tr.sum td{border-top:1.5px solid var(--border);font-weight:600;padding-top:11px;}
+.proj tr.sum td:first-child{color:var(--text);}
+
+/* histórico de premissas */
+.hist-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border-2);font-size:13px;}
+.hist-item:first-child{border-top:none;}
+.hist-meta{color:var(--text-soft);}
+.hist-meta .date{color:var(--text);font-weight:600;font-size:13px;}
+.hist-vals{font-size:12px;color:var(--text-mute);margin-top:2px;}
+.hist-fair{font-weight:600;font-variant-numeric:tabular-nums;}
+.empty{font-size:13px;color:var(--text-mute);padding:8px 0;}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:var(--overlay);display:none;align-items:flex-start;justify-content:center;padding:48px 20px;z-index:50;overflow:auto;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:560px;padding:26px 28px;}
+.modal h3{font-size:19px;font-weight:700;letter-spacing:-.01em;}
+.modal .sub{font-size:13px;color:var(--text-soft);margin-top:4px;margin-bottom:20px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid .full{grid-column:1/-1;}
+.fld{display:flex;flex-direction:column;gap:5px;}
+.fld label{font-size:12px;font-weight:500;color:var(--text-soft);}
+.fld input,.fld select{font:inherit;font-size:14px;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;width:100%;}
+.fld input:focus,.fld select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent);}
+.sec-label{grid-column:1/-1;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);margin-top:6px;}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+
+.view[hidden]{display:none;}
+@media (prefers-reduced-motion:no-preference){::view-transition-old(root),::view-transition-new(root){animation-duration:.22s;}}
+/* tablet: encolhe respiro lateral */
+@media (max-width:1080px){.main{padding:30px 28px 72px;}}
+
+/* topbar sticky (tablet/mobile): marca + toggle na 1ª linha, nav rolável na 2ª */
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:sticky;top:0;z-index:20;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;
+    padding:10px 16px;gap:8px;border-right:none;border-bottom:1px solid var(--border);}
+  .brand{padding:0;margin-right:auto;}
+  .side-foot{order:1;margin:0;padding:0;border-top:none;}
+  .nav a.active::before{display:none;}
+  .theme-toggle{width:auto;}
+  .nav{order:2;flex-basis:100%;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;gap:4px;padding-bottom:2px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .nav::-webkit-scrollbar{display:none;}
+  .nav-label{display:none;}
+  .nav a{padding:8px 13px;white-space:nowrap;}
+  .main{padding:22px 18px 64px;}
+  .result,.grid-2,.form-grid,.hero,.prem-grid{grid-template-columns:1fr;}
+  .hero-price{margin-top:14px;}
+}
+
+/* phone: empilha header, compacta cards */
+@media (max-width:560px){
+  .page-head{flex-direction:column;align-items:stretch;}
+  .page-head .btn{align-self:flex-start;}
+  .fair-value{font-size:36px;}
+  .stat .v{font-size:23px;}
+  .card-pad{padding:16px;}
+  .result{padding:18px 16px;gap:18px;}
+  .steps-head{padding:16px 16px 4px;}
+  .step{padding:16px 16px;gap:12px;}
+  .pill-claude{margin:12px 16px 4px;}
+  .modal{padding:20px 18px;border-radius:14px;}
+  .overlay{padding:20px 12px;}
+  .theme-toggle span{display:none;}
+  .theme-toggle{padding:9px;}
+}
+@media (max-width:400px){.stats{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><b class="logo" title="DIVYVAL">D</b></div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Análise</div>
+      <a href="#/monitoradas" data-route="monitoradas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .8-5 4.9 1.3 7-6.3-3.4L5.7 21l1.3-7-5-4.9 7-.8z"/></svg>Monitoradas</a>
+      <a href="#/screener" data-route="screener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>Screener</a>
+      <a href="#/config" data-route="config"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Config</a>
+    </nav>
+    <div class="side-foot">
+      <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        <span id="themeLabel">Tema escuro</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- SCREENER -->
+    <section class="view" id="view-screener">
+      <div class="page-head">
+        <div>
+          <h1 id="scrTitle">Screener</h1>
+          <p id="scrSub">Ações ordenadas por margem de segurança — quanto o preço justo (DDM) está acima do preço atual.</p>
+          <div class="sample-tag" id="sampleTag">Dados de exemplo — inicie o backend para cotações reais</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <button class="btn" id="groupBtn" title="Agrupar classes da mesma empresa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M7 12h10M10 17h4"/></svg>Agrupar</button>
+          <button class="btn" id="colsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></svg>Colunas</button>
+          <button class="btn btn-primary" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span id="addBtnLabel">Adicionar ação</span></button>
+        </div>
+      </div>
+      <div class="stats" id="statsBar" hidden></div>
+      <div class="card">
+        <div class="table-scroll">
+        <table class="table">
+          <thead><tr class="th-sort" id="thSort"></tr></thead>
+          <tbody id="scrBody"></tbody>
+        </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- DETALHE -->
+    <section class="view" id="view-detail" hidden>
+      <div class="detail-top">
+        <div class="crumb" id="crumb"></div>
+        <div class="detail-actions" id="detailActions">
+          <button class="btn sm" id="watchBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .8-5 4.9 1.3 7-6.3-3.4L5.7 21l1.3-7-5-4.9 7-.8z"/></svg><span id="watchLbl">Monitorar</span></button>
+          <button class="btn sm" id="editBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Editar</button>
+          <button class="btn sm btn-danger" id="removeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Remover</button>
+        </div>
+      </div>
+
+      <!-- HERO: identidade da empresa + veredito do valuation -->
+      <div class="hero">
+        <div class="hero-id">
+          <div class="stock-title"><h1 id="dTicker">—</h1><span class="sec" id="dSector"></span></div>
+          <p class="fair-sub" id="dName" style="margin:6px 0 0;"></p>
+          <div class="tags" id="dTags" style="margin:12px 0 0;"></div>
+          <div class="hero-price"><span class="hp-lbl">Preço atual · Yahoo</span><span class="hp-val num" id="heroPrice">—</span></div>
+        </div>
+        <div class="card verdict">
+          <div class="fair-label">Preço justo · DDM</div>
+          <div class="fair-value num" id="fairValue">—</div>
+          <div class="badge-mos" id="mosBadge"><span id="mosText"></span></div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <!-- gráfico -->
+        <div class="card card-pad" id="chartCard">
+          <div class="chart-head">
+            <div class="card-title" style="margin:0;">Preço · fechamento diário</div>
+            <div class="periods" id="periods"></div>
+          </div>
+          <div class="chart-wrap" id="chartWrap"></div>
+          <div class="chart-legend">
+            <span><i style="border-color:var(--accent)"></i>Preço</span>
+            <span><i style="border-color:var(--text-mute);border-top-style:dashed"></i>Preço justo (DDM)</span>
+          </div>
+        </div>
+
+        <!-- PREMISSAS (inputs) + IMPLICAÇÕES (o que produzem) -->
+        <div class="prem-grid">
+          <!-- caixa 1: premissas editáveis -->
+          <div class="card card-pad" id="premCard">
+            <div class="box-head"><h3>Premissas</h3><span class="box-sub">o que você assume</span></div>
+            <p class="box-lead">Iniciais vêm do dado real; terminais seguem o padrão global até você desmarcar o "padrão". Escolha se o crescimento sai do <b>ROE × (1 − payout)</b> ou se você <b>digita o g direto</b> — útil quando o ROE é inflado por dívida.</p>
+            <div class="mode-toggle" id="growthToggle" role="tablist" aria-label="Como definir o crescimento">
+              <button type="button" class="gt-btn active" data-mode="roe" role="tab">Via ROE</button>
+              <button type="button" class="gt-btn" data-mode="g" role="tab">Crescimento direto</button>
+            </div>
+            <div class="assumptions">
+              <div class="field wide"><label for="lpa">Lucro por ação (LPA)</label><input type="number" id="lpa" value="4.24" step="0.01"></div>
+              <div class="asm-group">iniciais · do dado real</div>
+              <div class="field roe-only"><label for="roeI">ROE inicial</label><span class="val num" id="roeIVal">15%</span><input type="range" id="roeI" min="0" max="45" value="15" step="0.5"></div>
+              <div class="field g-only" style="display:none"><label for="gI">Crescimento inicial (g)</label><span class="val num" id="gIVal">5%</span><input type="range" id="gI" min="-10" max="30" value="5" step="0.5"></div>
+              <div class="field"><label for="payoutI">Payout inicial</label><span class="val num" id="payoutIVal">50%</span><input type="range" id="payoutI" min="0" max="150" value="50" step="1"></div>
+              <div class="asm-group">terminais · convergência (padrão global)</div>
+              <div class="field roe-only"><label for="roeT">ROE terminal <label class="chk"><input type="checkbox" id="roetDefault" checked><span id="roetDefLbl">padrão</span></label></label><span class="val num" id="roeTVal">12%</span><input type="range" id="roeT" min="4" max="30" value="12" step="0.5"></div>
+              <div class="field g-only" style="display:none"><label for="gT">Crescimento terminal (g) <label class="chk"><input type="checkbox" id="gtDefault" checked><span id="gtDefLbl">padrão</span></label></label><span class="val num" id="gTVal">5%</span><input type="range" id="gT" min="-2" max="15" value="5" step="0.5"></div>
+              <div class="field"><label for="payoutT">Payout final <label class="chk"><input type="checkbox" id="payouttDefault" checked><span id="payouttDefLbl">padrão</span></label></label><span class="val num" id="payoutTVal">60%</span><input type="range" id="payoutT" min="0" max="100" value="60" step="1"></div>
+              <div class="field"><label for="fade">Anos de fade <label class="chk"><input type="checkbox" id="fadeDefault" checked><span id="fadeDefLbl">padrão</span></label></label><span class="val num" id="fadeVal">10</span><input type="range" id="fade" min="2" max="20" value="10" step="1"></div>
+              <div class="field"><label for="ke">Taxa de desconto (Ke) <label class="chk"><input type="checkbox" id="keDefault" checked><span id="keDefLbl">padrão</span></label></label><span class="val num" id="keVal">14%</span><input type="range" id="ke" min="6" max="25" value="14" step="0.5"></div>
+              <div class="save-row"><button class="btn sm" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
+            </div>
+          </div>
+
+          <!-- caixa 2: implicações (derivadas) -->
+          <div class="card card-pad impl-box">
+            <div class="box-head"><h3>Implicações</h3><span class="box-sub">o que elas produzem</span></div>
+            <p class="box-lead">Os números que saem das premissas ao lado. Tudo recalcula ao vivo quando você move um slider.</p>
+            <div class="impl-row"><span class="lbl">Crescimento inicial <small id="impl-g1-form">g = ROE<sub>i</sub> × (1 − payout<sub>i</sub>)</small></span><span class="v num" id="impl-g1">—</span></div>
+            <div class="impl-row"><span class="lbl">Crescimento terminal <small id="impl-gt-form">g = ROE<sub>t</sub> × (1 − payout<sub>t</sub>)</small></span><span class="v num" id="impl-gt">—</span></div>
+            <div class="impl-row"><span class="lbl">Dividendo de partida <small>DPA = LPA × payout<sub>i</sub></small></span><span class="v num" id="impl-dpa0">—</span></div>
+            <div class="impl-row"><span class="lbl">Dividendo no fim do fade <small id="impl-dpaN-lbl">ano 10 · último do fade</small></span><span class="v num" id="impl-dpaN">—</span></div>
+            <div class="impl-sep">de onde vem o valor justo</div>
+            <div class="impl-row"><span class="lbl"><span class="dot" style="background:var(--accent);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP dos dividendos · fade</span><span class="v num" id="compS1">—</span></div>
+            <div class="impl-row"><span class="lbl"><span class="dot" style="background:var(--text-mute);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP da perpetuidade · terminal</span><span class="v num" id="compS2">—</span></div>
+            <div class="comp-bar"><i id="compBarS1" style="background:var(--accent)"></i><i id="compBarS2" style="background:var(--text-mute)"></i></div>
+            <div class="impl-fair"><span class="lbl">= Preço justo</span><span class="v num" id="compFair">—</span></div>
+            <div class="impl-row"><span class="lbl">Margem de segurança <small id="impl-margin-lbl">vs. preço atual</small></span><span class="v num" id="impl-margin">—</span></div>
+            <p class="comp-note" id="compNote" style="margin-top:12px;"></p>
+          </div>
+        </div>
+
+        <!-- passo a passo -->
+        <div class="card">
+          <div class="steps-head">
+            <div><h2>A conta, passo a passo</h2><p>O crescimento não é digitado: sai do <b>ROE × (1 − payout)</b>. ROE e payout convergem do atual ao terminal ao longo dos anos de fade. Tudo recalcula com os sliders.</p></div>
+            <div class="now">com os seus números atuais</div>
+          </div>
+          <div class="pill-claude">Conteúdo do Claude</div>
+          <div class="step"><div class="step-badge">1</div><div>
+            <div class="step-title">O dividendo de partida</div>
+            <div class="step-body">Quanto a empresa paga hoje por ação: o <b>lucro por ação</b> vezes o <b>payout inicial</b>. É o ponto de partida — sobre ele incide o crescimento a partir do ano 1.</div>
+            <div class="formula num"><span class="lead">DPA base</span> = <span id="f-lpa">4,24</span> × <span id="f-payout">70%</span> = <span class="accent" id="f-dpa">R$ 2,97</span></div>
+          </div></div>
+          <div class="step"><div class="step-badge">2</div><div>
+            <div class="step-title">Projetar com crescimento derivado do ROE</div>
+            <div class="step-body">A cada ano o lucro cresce à taxa <span class="mono">g = ROE × (1 − payout)</span> — a parte do lucro reinvestida rende o ROE. O ROE e o payout <b>convergem</b> do inicial ao terminal ao longo do fade, então o crescimento vai desacelerando. Cada dividendo é trazido a hoje por <span class="mono">(1+Ke)^ano</span>.</div>
+            <table class="proj num"><thead><tr><th>Ano</th><th>ROE</th><th>payout</th><th>g</th><th>Dividendo</th><th>= VP</th></tr></thead>
+              <tbody id="projBody"></tbody>
+              <tfoot><tr class="sum"><td colspan="4">Soma dos dividendos do fade (valor presente)</td><td></td><td class="pv" id="pvSum">R$ 13,01</td></tr></tfoot></table>
+          </div></div>
+          <div class="step"><div class="step-badge">3</div><div>
+            <div class="step-title">O valor terminal (perpetuidade)</div>
+            <div class="step-body">Ao fim do fade a empresa está madura, com ROE e payout terminais. O crescimento perpétuo é <span class="mono">g = ROE<sub>t</sub> × (1 − payout<sub>t</sub>)</span> e a fórmula de Gordon condensa todos os dividendos seguintes num número só, depois trazido a hoje.</div>
+            <div class="formula num"><span class="lead">Valor terminal</span> = <span class="frac"><span class="top" id="f-d6">5,07</span><span class="bot">Ke <span id="f-ke">15%</span> − g <span id="f-gp">6%</span></span></span> = <span class="accent" id="f-terminal">R$ 56,30</span></div>
+            <div class="formula num"><span class="lead">Trazido a hoje</span> = <span id="f-terminal2">R$ 56,30</span> ÷ <span class="mono">(1+<span id="f-ke2">0,15</span>)^<span id="f-nfade">10</span></span> = <span class="accent" id="f-terminalpv">R$ 27,99</span></div>
+          </div></div>
+          <div class="step"><div class="step-badge">4</div><div>
+            <div class="step-title">Somar tudo = preço justo</div>
+            <div class="step-body">O valor da ação é a soma dos dividendos do fade com o valor terminal trazido a hoje.</div>
+            <div class="formula num" style="font-size:15px;"><span id="f-pvsum">R$ 13,01</span> + <span id="f-tpv">R$ 27,99</span> = <span class="accent" id="f-fair">R$ 41,00</span></div>
+          </div></div>
+        </div>
+
+        <!-- histórico de premissas -->
+        <div class="card card-pad" id="histCard">
+          <div class="card-title">Histórico de premissas</div>
+          <div id="histList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODELO (página do modelo — distinta da empresa) -->
+    <section class="view" id="view-modelo" hidden>
+      <div class="crumb"><a href="#/screener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Screener</a> <span>/</span> <span>Modelo</span></div>
+      <div class="stock-title"><h1 id="modeloTitle">DDM · 2 estágios</h1></div>
+      <p class="fair-sub" style="margin:6px 0 20px;">Página do modelo de valuation — distinta da página da empresa. Aqui vai morar a definição e a configuração de cada modelo; em breve outros (DCF, múltiplos) poderão ser plugados e aplicados às ações.</p>
+      <div class="card card-pad">
+        <div class="card-title">Sobre este modelo</div>
+        <p class="step-body">O <b>Dividend Discount Model</b> em 2 estágios projeta os dividendos por 5 anos (estágio 1) e condensa o restante numa perpetuidade de Gordon (estágio 2). É o modelo aplicado por padrão às ações do screener. A conta detalhada, passo a passo, aparece na página de cada empresa.</p>
+      </div>
+    </section>
+
+    <!-- CONFIGURAÇÕES GERAIS -->
+    <section class="view" id="view-config" hidden>
+      <div class="page-head"><div>
+        <h1>Configurações</h1>
+        <p>Premissas globais do DDM, aplicadas a <b>todos os ativos</b>. Cada ativo pode sobrescrever o Ke e o crescimento perpétuo na própria página, desmarcando o "padrão".</p>
+      </div></div>
+      <div class="card card-pad" style="max-width:560px;">
+        <div class="card-title">Premissas globais</div>
+        <div class="cfg-field">
+          <label>Taxa de desconto — Ke <span class="cfg-hint">retorno mínimo que você exige do ativo</span></label>
+          <div class="cfg-row"><input type="range" id="cfgKe" min="6" max="25" step="0.5"><span class="cfg-val num" id="cfgKeVal">14%</span></div>
+        </div>
+        <div class="cfg-field">
+          <label>ROE terminal <span class="cfg-hint">retorno sobre patrimônio ao qual a empresa converge no longo prazo</span></label>
+          <div class="cfg-row"><input type="range" id="cfgRoet" min="4" max="30" step="0.5"><span class="cfg-val num" id="cfgRoetVal">12%</span></div>
+        </div>
+        <div class="cfg-field">
+          <label>Payout final <span class="cfg-hint">fatia do lucro paga em dividendos na maturidade</span></label>
+          <div class="cfg-row"><input type="range" id="cfgPayoutt" min="0" max="100" step="1"><span class="cfg-val num" id="cfgPayouttVal">60%</span></div>
+        </div>
+        <div class="cfg-field">
+          <label>Anos de fade <span class="cfg-hint">período em que ROE e payout convergem do atual ao terminal</span></label>
+          <div class="cfg-row"><input type="range" id="cfgFade" min="2" max="20" step="1"><span class="cfg-val num" id="cfgFadeVal">10</span></div>
+        </div>
+        <p class="cfg-note">Salvo automaticamente. O crescimento (g) é derivado: <b>g = ROE × (1 − payout)</b>. Vale para todo ativo com o "padrão" marcado — valor justo e margem recalculam na hora.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- modal adicionar ação -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Nova ação</h3>
+    <div class="sub" id="modalSub">Cadastre o ticker, a classificação e as premissas iniciais do DDM.</div>
+    <div class="form-grid">
+      <div class="fld create-only"><label>Ticker</label><input id="m-ticker" placeholder="Ex.: TAEE11" maxlength="8"></div>
+      <div class="fld"><label>Empresa</label><input id="m-nome" placeholder="Ex.: Taesa"></div>
+      <div class="sec-label">Classificação · Setor › Subsetor › Segmento</div>
+      <div class="fld"><label>Setor</label><input id="m-setor" placeholder="Utilidade Pública"></div>
+      <div class="fld"><label>Subsetor</label><input id="m-subsetor" placeholder="Energia Elétrica"></div>
+      <div class="fld full"><label>Segmento</label><input id="m-segmento" placeholder="Energia Elétrica"></div>
+      <div class="fld"><label>Perfil</label><select id="m-perfil"><option>Dividendos</option><option>Valor</option><option>Crescimento</option><option>Cíclica</option><option>Defensiva</option></select></div>
+      <div class="fld"><label>Tamanho</label><select id="m-tamanho"><option>Large cap</option><option>Mid cap</option><option>Small cap</option></select></div>
+      <div class="fld"><label>Governança</label><select id="m-gov"><option>Novo Mercado</option><option>Nível 2</option><option>Nível 1</option><option>Tradicional</option></select></div>
+      <div class="fld"><label>Controle</label><select id="m-ctrl"><option>Privada nacional</option><option>Estatal</option><option>Estrangeiro</option><option>Corporation</option></select></div>
+      <div class="fld"><label>Modelo</label><select id="m-modelo"><option>DDM · 2 est.</option></select></div>
+      <div class="fld full"><label>Situação (tags separadas por vírgula)</label><input id="m-tags" placeholder="Boa pagadora, Alta DY"></div>
+      <div class="sec-label create-only">Premissas do DDM · o preço vem do Yahoo automaticamente</div>
+      <div class="fld create-only"><label>LPA (R$)</label><input id="m-lpa" type="number" step="0.01" value="3.00"></div>
+      <div class="fld create-only"><label>ROE inicial (%)</label><input id="m-roei" type="number" value="15"></div>
+      <div class="fld create-only"><label>Payout inicial (%)</label><input id="m-payouti" type="number" value="50"></div>
+      <div class="fld full create-only"><span class="cfg-hint">ROE/payout terminais, fade e Ke assumem o padrão global — ajuste depois na página da ação.</span></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="mCancel">Cancelar</button>
+      <button class="btn btn-primary" id="mSave">Adicionar e abrir</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="pickOverlay">
+  <div class="modal pick-modal" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
+    <h3 id="pickTitle">Adicionar às monitoradas</h3>
+    <div class="sub">Escolha uma ação que já está no screener para acompanhar na sua watchlist.</div>
+    <input id="pickSearch" class="pick-search" placeholder="Buscar por ticker ou empresa…" autocomplete="off">
+    <div class="pick-list" id="pickList"></div>
+    <div class="modal-foot"><button class="btn btn-ghost" id="pickCancel">Fechar</button></div>
+  </div>
+</div>
+
+<div class="col-pop" id="colPop" hidden></div>
+<div class="col-pop" id="colsMenu" hidden></div>
+<style id="colStyle"></style>
+
+<script>
+/* ===== formatação ===== */
+const brl=n=>"R$ "+n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const brlC=v=>v==null?"—":v>=1e9?("R$ "+(v/1e9).toLocaleString("pt-BR",{maximumFractionDigits:2})+" bi"):v>=1e6?("R$ "+(v/1e6).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mi"):("R$ "+(v/1e3).toLocaleString("pt-BR",{maximumFractionDigits:0})+" mil");
+const dec=(n,d=2)=>n.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const median=a=>{if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+const pctv=n=>(Number.isInteger(n)?n:dec(n,1))+"%";
+const $=id=>document.getElementById(id);
+const rnd2=n=>Math.round(n*1000)/1000;
+
+/* ===== dados de exemplo ===== */
+function P(setor,sub,seg){return {setor,sub,seg};}
+const M2="DDM · 2 est.";
+const RAW=[
+ {ticker:"PETR4",nome:"Petrobras",cl:P("Petróleo, Gás e Biocombustíveis","Petróleo e Gás","Exploração e Refino"),perfil:"Valor",tamanho:"Large cap",gov:"Nível 2",ctrl:"Estatal",modelo:M2,tags:["Alta DY"],price:30.50,lpa:4.24,payout:.70,g1:.10,ke:.15,gp:.06,monitored:true},
+ {ticker:"BBAS3",nome:"Banco do Brasil",cl:P("Financeiro","Intermediários Financeiros","Bancos"),perfil:"Valor",tamanho:"Large cap",gov:"Novo Mercado",ctrl:"Estatal",modelo:M2,tags:["Alta DY","Barata"],price:22.80,lpa:5.90,payout:.45,g1:.08,ke:.15,gp:.05,monitored:true},
+ {ticker:"TAEE11",nome:"Taesa",cl:P("Utilidade Pública","Energia Elétrica","Energia Elétrica"),perfil:"Dividendos",tamanho:"Large cap",gov:"Nível 2",ctrl:"Privada nacional",modelo:M2,tags:["Boa pagadora","Baixa volatilidade"],price:34.10,lpa:3.10,payout:.90,g1:.05,ke:.13,gp:.04,monitored:true},
+ {ticker:"VALE3",nome:"Vale",cl:P("Materiais Básicos","Mineração","Minerais Metálicos"),perfil:"Cíclica",tamanho:"Large cap",gov:"Novo Mercado",ctrl:"Corporation",modelo:M2,tags:["Cíclica"],price:54.20,lpa:6.80,payout:.55,g1:.03,ke:.16,gp:.03,monitored:false},
+ {ticker:"ITUB4",nome:"Itaú Unibanco",cl:P("Financeiro","Intermediários Financeiros","Bancos"),perfil:"Valor",tamanho:"Large cap",gov:"Nível 1",ctrl:"Privada nacional",modelo:M2,tags:["Qualidade"],price:33.40,lpa:3.70,payout:.60,g1:.10,ke:.15,gp:.05,monitored:true},
+ {ticker:"EGIE3",nome:"Engie Brasil",cl:P("Utilidade Pública","Energia Elétrica","Energia Elétrica"),perfil:"Dividendos",tamanho:"Large cap",gov:"Novo Mercado",ctrl:"Estrangeiro",modelo:M2,tags:["Boa pagadora"],price:38.90,lpa:3.35,payout:.85,g1:.06,ke:.13,gp:.04,monitored:false},
+ {ticker:"CMIG4",nome:"Cemig",cl:P("Utilidade Pública","Energia Elétrica","Energia Elétrica"),perfil:"Dividendos",tamanho:"Mid cap",gov:"Nível 1",ctrl:"Estatal",modelo:M2,tags:["Alta DY"],price:11.20,lpa:1.85,payout:.65,g1:.07,ke:.14,gp:.04,monitored:false},
+ {ticker:"ABEV3",nome:"Ambev",cl:P("Consumo não Cíclico","Bebidas","Cervejas e Refrigerantes"),perfil:"Dividendos",tamanho:"Large cap",gov:"Tradicional",ctrl:"Estrangeiro",modelo:M2,tags:["Blue chip"],price:12.60,lpa:0.98,payout:.75,g1:.06,ke:.14,gp:.04,monitored:false},
+ {ticker:"WEGE3",nome:"WEG",cl:P("Bens Industriais","Máquinas e Equipamentos","Motores e Compressores"),perfil:"Crescimento",tamanho:"Large cap",gov:"Novo Mercado",ctrl:"Privada nacional",modelo:M2,tags:["Qualidade","Cara"],price:38.50,lpa:1.35,payout:.55,g1:.14,ke:.15,gp:.06,monitored:false},
+ {ticker:"BBSE3",nome:"BB Seguridade",cl:P("Financeiro","Previdência e Seguros","Seguradoras"),perfil:"Dividendos",tamanho:"Large cap",gov:"Novo Mercado",ctrl:"Estatal",modelo:M2,tags:["Alta DY","Boa pagadora"],price:35.70,lpa:3.95,payout:.80,g1:.09,ke:.14,gp:.05,monitored:true},
+ {ticker:"KLBN11",nome:"Klabin",cl:P("Materiais Básicos","Madeira e Papel","Papel e Celulose"),perfil:"Cíclica",tamanho:"Large cap",gov:"Nível 2",ctrl:"Privada nacional",modelo:M2,tags:["Cíclica"],price:19.40,lpa:1.55,payout:.60,g1:.07,ke:.15,gp:.04,monitored:false},
+ {ticker:"CPLE6",nome:"Copel",cl:P("Utilidade Pública","Energia Elétrica","Energia Elétrica"),perfil:"Valor",tamanho:"Mid cap",gov:"Nível 2",ctrl:"Estatal",modelo:M2,tags:["Turnaround"],price:9.80,lpa:1.40,payout:.50,g1:.08,ke:.14,gp:.04,monitored:false},
+];
+const EXAMPLE={ticker:"Exemplo",nome:"Empresa fictícia para ilustrar o método",cl:P("","",""),perfil:"",tamanho:"",gov:"",ctrl:"",tags:[],price:30.50,lpa:4.24,payout:.70,g1:.10,ke:.15,gp:.06};
+
+/* premissas de mercado / Claude derivadas da base */
+function withPresets(s){return s;}   /* modelo agora usa ROE/fade; presets removidos */
+let STOCKS=RAW.map(withPresets);
+
+/* premissas do usuário: persistidas no backend (SQLite) */
+let currentHist=[];
+
+/* ===== modelo DDM com fade =====
+   Dois modos de crescimento:
+   • 'roe' → g de cada ano = ROE × (1 − payout), com ROE e payout convergindo do inicial ao terminal.
+   • 'g'   → o crescimento é digitado direto (g inicial → g terminal), independente do ROE.
+   Útil p/ empresas alavancadas (ex.: Comgás), onde ROE alto vem de dívida e não vira crescimento. */
+function computeDDM({lpa,mode,roeI,roeT,gI,gTerm,payoutI,payoutT,ke,fade}){
+  fade=Math.max(1,Math.round(fade||10));
+  const useG=mode==="g";
+  let eps=lpa,pvDiv=0;const rows=[];
+  for(let k=1;k<=fade;k++){
+    const t=fade<=1?1:(k-1)/(fade-1);              // 0 no ano 1 (inicial) … 1 no ano N (terminal)
+    const payout=payoutI+(payoutT-payoutI)*t;
+    const roe=useG?null:roeI+(roeT-roeI)*t;
+    const g=useG?(gI+(gTerm-gI)*t):roe*(1-payout);
+    eps=eps*(1+g);
+    const div=eps*payout, factor=Math.pow(1+ke,k), pv=div/factor;
+    pvDiv+=pv; rows.push({k,roe,payout,g,eps,div,factor,pv});
+  }
+  const gT=useG?gTerm:roeT*(1-payoutT), valid=ke>gT;
+  const epsT=eps*(1+gT), divT=epsT*payoutT;
+  const terminal=valid?divT/(ke-gT):NaN, terminalPV=valid?terminal/Math.pow(1+ke,fade):NaN;
+  return {rows,pvDiv,gT,terminal,terminalPV,fair:pvDiv+(valid?terminalPV:0),valid,eps0:lpa,epsN:eps,fade,mode};
+}
+const params=s=>({lpa:s.lpa,mode:s.growth_mode||"roe",roeI:s.roe_i,roeT:s.roe_t,gI:s.g_i,gTerm:s.g_t,
+  payoutI:s.payout_i,payoutT:s.payout_t,ke:s.ke,fade:s.fade});
+const marginOf=s=>{if(!s.price||!s.lpa||s.lpa<=0)return null;const r=computeDDM(params(s));return (r.valid&&isFinite(r.fair))?(r.fair-s.price)/s.price*100:null;};
+/* ordenação: Tamanho e Governança por hierarquia (não alfabética) */
+const RANK_TAM={"Large cap":3,"Mid cap":2,"Small cap":1};
+const RANK_GOV={"Novo Mercado":4,"Nível 2":3,"Nível 1":2,"Tradicional":1};
+const TEXT_KEYS=["ticker","nome","setor","subsetor","segmento","perfil","ctrl","situacao","modelo"];
+function sortVal(o,k){switch(k){
+  case"ticker":return o.s.ticker; case"nome":return o.s.nome; case"setor":return o.s.cl.setor||"";
+  case"subsetor":return o.s.cl.sub||""; case"segmento":return o.s.cl.seg||"";
+  case"perfil":return o.s.perfil||""; case"ctrl":return o.s.ctrl||""; case"modelo":return o.s.modelo||"";
+  case"situacao":return (o.s.tags||[]).join(",");
+  case"tamanho":return RANK_TAM[o.s.tamanho]||0; case"gov":return RANK_GOV[o.s.gov]||0;
+  case"liquidez":return o.s.liquidez==null?-Infinity:o.s.liquidez;
+  case"price":return o.s.price==null?-Infinity:o.s.price; case"fair":return o.fair; default:return o.margin==null?-Infinity:o.margin;
+}}
+
+/* tags html */
+function tagsHtml(s){
+  const t=[s.perfil,s.tamanho,s.gov,s.ctrl].filter(Boolean).map(x=>`<span class="tag">${x}</span>`);
+  const situ=(s.tags||[]).map(x=>`<span class="tag situ">${x}</span>`);
+  return t.concat(situ).join("");
+}
+
+/* ===== SCREENER ===== */
+let sort={key:"margin",dir:-1},scope="all";
+let grouped=localStorage.getItem("ddm-grouped")!=="0";   // agrupar classes da mesma empresa (padrão on)
+const groupKey=s=>s.cd_cvm||s.ticker.slice(0,4);
+const typeLabel=tk=>({"3":"ON","4":"PN","5":"PNA","6":"PNB","7":"PNC","8":"PND","11":"UNIT"}[(tk.match(/(\d+)$/)||[])[1]]||"");
+let globalCfg={ke:0.14,roet:0.12,payoutt:0.60,fade:10};   // premissas globais — vêm do backend
+const filterState={};
+/* colunas na MESMA ordem do cabeçalho */
+const COLUMNS=[
+  {k:"ticker",label:"Ticker",align:"l",t:"text"},
+  {k:"nome",label:"Empresa",align:"l",t:"text"},
+  {k:"setor",label:"Setor",align:"l",t:"cat",g:s=>s.cl.setor},
+  {k:"subsetor",label:"Subsetor",align:"l",t:"cat",g:s=>s.cl.sub},
+  {k:"segmento",label:"Segmento",align:"l",t:"cat",g:s=>s.cl.seg},
+  {k:"perfil",label:"Perfil",align:"l",t:"cat",g:s=>s.perfil},
+  {k:"tamanho",label:"Tamanho",align:"l",t:"cat",g:s=>s.tamanho},
+  {k:"gov",label:"Governança",align:"l",t:"cat",g:s=>s.gov},
+  {k:"ctrl",label:"Controle",align:"l",t:"cat",g:s=>s.ctrl},
+  {k:"situacao",label:"Situação",align:"l",t:"cat",g:s=>s.tags},
+  {k:"modelo",label:"Modelo",align:"l",t:"cat",g:s=>s.modelo},
+  {k:"liquidez",label:"Liquidez R$/dia",align:"",t:"num",sep:true},
+  {k:"price",label:"Preço",align:"",t:"num"},
+  {k:"fair",label:"Preço justo",align:"",t:"num"},
+  {k:"margin",label:"Margem",align:"",t:"num"},
+];
+const FCOL={};COLUMNS.forEach(c=>FCOL[c.k]=c);
+/* colunas ocultas (persistidas) */
+let hiddenCols=new Set();try{hiddenCols=new Set(JSON.parse(localStorage.getItem("ddm-hidden")||"[]"));}catch(e){}
+function applyCols(){$("colStyle").textContent=[...hiddenCols].map(k=>`.col-${k}{display:none}`).join("");}
+function saveCols(){try{localStorage.setItem("ddm-hidden",JSON.stringify([...hiddenCols]));}catch(e){}}
+function renderColsMenu(){
+  $("colsMenu").innerHTML=COLUMNS.map(c=>{const on=!hiddenCols.has(c.k),fixed=c.k==="ticker";
+    return `<div class="col-check ${fixed?'fixed':''}" data-ck="${c.k}"><span class="cbox ${on?'on':''}">${on?'✓':''}</span><span>${c.label}</span></div>`;}).join("");
+}
+/* cores para leitura rápida (quanto "melhor", cor mais nobre) */
+const PERFIL_C={"Dividendos":"c-green","Valor":"c-amber","Crescimento":"c-violet","Cíclica":"c-terra","Defensiva":"c-teal"};
+const GOV_C={"Novo Mercado":"c-green","Nível 2":"c-blue","Nível 1":"c-blue","Tradicional":"c-neutral"};
+const CTRL_C={"Corporation":"tc-violet","Estrangeiro":"tc-blue","Privada nacional":"tc-neutral","Estatal":"tc-amber"};
+const FUNNEL=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>`;
+/* ações que passam por TODOS os filtros ativos, exceto o da coluna que está sendo aberta */
+function baseList(exceptKey){
+  const had=exceptKey in filterState,saved=filterState[exceptKey];
+  if(had)delete filterState[exceptKey];
+  const list=STOCKS.filter(s=>scope==="monitoradas"?s.monitored:true)
+    .map(s=>({s,fair:computeDDM(params(s)).fair,margin:marginOf(s)})).filter(passFilters);
+  if(had)filterState[exceptKey]=saved;
+  return list;
+}
+/* opções distintas de uma coluna, considerando os demais filtros já aplicados */
+function distinct(getter,exceptKey){
+  const set=new Set();
+  baseList(exceptKey).forEach(it=>{const v=getter(it.s);(Array.isArray(v)?v:[v]).forEach(x=>{if(x)set.add(x);});});
+  let vals=[...set].sort((a,b)=>a.localeCompare(b,"pt"));
+  if(exceptKey&&filterState[exceptKey]&&!vals.includes(filterState[exceptKey]))vals=[filterState[exceptKey],...vals];
+  return vals;
+}
+function renderHeader(){
+  $("thSort").innerHTML=COLUMNS.map(c=>`<th class="${c.align} ${c.sep?'sep':''} col-${c.k}" data-key="${c.k}"><span class="th-label">${c.label} <span class="arrow">▾</span></span><button class="th-filter-btn" data-fk="${c.k}" title="Filtrar">${FUNNEL}</button></th>`).join("");
+  updateFilterButtons();
+}
+function updateFilterButtons(){document.querySelectorAll(".th-filter-btn").forEach(b=>b.classList.toggle("on",!!filterState[b.dataset.fk]));}
+function passFilters(r){const s=r.s,f=filterState;
+  if(f.ticker&&!s.ticker.toLowerCase().includes(f.ticker.toLowerCase()))return false;
+  if(f.nome&&!s.nome.toLowerCase().includes(f.nome.toLowerCase()))return false;
+  if(f.setor&&s.cl.setor!==f.setor)return false;
+  if(f.subsetor&&s.cl.sub!==f.subsetor)return false;
+  if(f.segmento&&s.cl.seg!==f.segmento)return false;
+  if(f.perfil&&s.perfil!==f.perfil)return false;
+  if(f.tamanho&&s.tamanho!==f.tamanho)return false;
+  if(f.gov&&s.gov!==f.gov)return false;
+  if(f.ctrl&&s.ctrl!==f.ctrl)return false;
+  if(f.situacao&&!(s.tags||[]).includes(f.situacao))return false;
+  if(f.modelo&&s.modelo!==f.modelo)return false;
+  if(f.liquidez&&(s.liquidez==null||s.liquidez<parseFloat(f.liquidez)*1e6))return false;   // filtro em R$ milhões
+  if(f.price&&s.price<parseFloat(f.price))return false;
+  if(f.fair&&r.fair<parseFloat(f.fair))return false;
+  if(f.margin&&r.margin<parseFloat(f.margin))return false;
+  return true;
+}
+/* popover de filtro (abre ao clicar no funil da coluna) */
+const pop=$("colPop");
+function openColPop(key,btn){
+  const c=FCOL[key];if(!c)return;let html;
+  if(c.t==="cat"){
+    html=`<div class="pop-opt ${!filterState[key]?"sel":""}" data-v="">Todos</div>`+
+      distinct(c.g,key).map(v=>`<div class="pop-opt ${filterState[key]===v?"sel":""}" data-v="${v}"><span>${v}</span>${filterState[key]===v?"<span>✓</span>":""}</div>`).join("");
+  }else{const num=c.t==="num";
+    const ph=key==="liquidez"?"≥ R$ milhões":(num?"mínimo (≥)":"contém…");
+    html=`<input class="pop-input" data-fk="${key}" type="${num?"number":"text"}" placeholder="${ph}" value="${filterState[key]||""}">`;}
+  pop.innerHTML=html;pop.dataset.key=key;pop.hidden=false;
+  const r=btn.getBoundingClientRect(),pw=pop.offsetWidth||200;
+  pop.style.left=Math.max(8,Math.min(r.left,window.innerWidth-pw-8))+"px";
+  pop.style.top=(r.bottom+6)+"px";
+  const inp=pop.querySelector(".pop-input");if(inp)inp.focus();
+}
+function closePop(){pop.hidden=true;}
+pop.addEventListener("click",e=>{const o=e.target.closest(".pop-opt");if(!o)return;const key=pop.dataset.key;
+  if(o.dataset.v)filterState[key]=o.dataset.v;else delete filterState[key];
+  renderScreener();updateFilterButtons();closePop();});
+pop.addEventListener("input",e=>{const inp=e.target.closest(".pop-input");if(!inp)return;const key=inp.dataset.fk;
+  if(inp.value)filterState[key]=inp.value;else delete filterState[key];renderScreener();updateFilterButtons();});
+pop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key==="Escape")closePop();});
+document.addEventListener("click",e=>{
+  if(!pop.hidden&&!e.target.closest("#colPop")&&!e.target.closest(".th-filter-btn"))closePop();
+  if(!$("colsMenu").hidden&&!e.target.closest("#colsMenu")&&!e.target.closest("#colsBtn"))$("colsMenu").hidden=true;});
+window.addEventListener("resize",()=>{closePop();$("colsMenu").hidden=true;});
+/* menu de colunas (mostrar/ocultar) */
+$("colsBtn").addEventListener("click",e=>{e.stopPropagation();const m=$("colsMenu");
+  if(!m.hidden){m.hidden=true;return;}
+  renderColsMenu();m.hidden=false;const r=$("colsBtn").getBoundingClientRect(),mw=m.offsetWidth||220;
+  m.style.left=Math.max(8,Math.min(r.left,window.innerWidth-mw-8))+"px";m.style.top=(r.bottom+6)+"px";});
+$("colsMenu").addEventListener("click",e=>{const row=e.target.closest(".col-check");if(!row)return;const k=row.dataset.ck;if(k==="ticker")return;
+  if(hiddenCols.has(k))hiddenCols.delete(k);else hiddenCols.add(k);applyCols();saveCols();renderColsMenu();});
+function renderStats(units,list){
+  const bar=$("statsBar");bar.hidden=false;   // sempre sobre a lista JÁ FILTRADA
+  const acoes=list.length;
+  const empresas=new Set(list.map(x=>groupKey(x.s))).size;
+  // mediana da margem (robusta: ignora prejuízos/microcaps que geram margens absurdas)
+  const med=median(units.filter(x=>x.margin!=null&&isFinite(x.margin)).map(x=>x.margin));
+  const under=units.filter(x=>x.margin!=null&&x.margin>0).length;
+  const over=units.filter(x=>x.margin!=null&&x.margin<0).length;
+  const medCls=med>=0?"good":"bad";
+  bar.innerHTML=`
+    <div class="stat"><div class="k">Empresas</div><div class="v">${empresas}</div></div>
+    <div class="stat"><div class="k">Ações${scope==="monitoradas"?" monitoradas":" (filtradas)"}</div><div class="v">${acoes}</div></div>
+    <div class="stat"><div class="k">Margem mediana</div><div class="v ${medCls}">${med>=0?"+":""}${dec(med,1)}%</div></div>
+    <div class="stat"><div class="k">Subvalorizadas</div><div class="v good">${under}</div></div>
+    <div class="stat"><div class="k">Sobrevalorizadas</div><div class="v bad">${over}</div></div>`;
+}
+function marginCell(margin,maxAbs){
+  const hasM=margin!=null,pos=hasM&&margin>=0,w=hasM?Math.min(100,Math.abs(margin)/maxAbs*100):0;
+  return `<td class="col-margin">${hasM?`<span class="mos ${pos?'pos':'neg'}">${pos?'+':''}${dec(margin,1)}%</span><span class="mos-bar"><i style="width:${w}%;background:${pos?'var(--good)':'var(--bad)'}"></i></span>`:'<span class="td-attr">—</span>'}</td>`;
+}
+function renderScreener(){
+  let list=STOCKS.filter(s=>scope==="monitoradas"?s.monitored:true)
+    .map(s=>({s,fair:computeDDM(params(s)).fair,margin:marginOf(s)})).filter(passFilters);
+  // agrupa por empresa: classe mais líquida representa; liquidez soma
+  let units;
+  if(grouped){
+    const g={}; list.forEach(it=>{const key=groupKey(it.s);(g[key]=g[key]||[]).push(it);});
+    units=Object.values(g).map(ms=>{
+      ms.sort((a,b)=>(b.s.liquidez||0)-(a.s.liquidez||0));
+      const rep=ms[0];
+      return {rep,members:ms,liq:ms.reduce((a,x)=>a+(x.s.liquidez||0),0)||null,s:rep.s,fair:rep.fair,margin:rep.margin};
+    });
+  }else{
+    units=list.map(it=>({rep:it,members:[it],liq:it.s.liquidez,s:it.s,fair:it.fair,margin:it.margin}));
+  }
+  const k=sort.key,dir=sort.dir;
+  units.sort((a,b)=>{
+    let av,bv;
+    if(k==="liquidez"){av=a.liq==null?-Infinity:a.liq;bv=b.liq==null?-Infinity:b.liq;}
+    else{av=sortVal(a.rep,k);bv=sortVal(b.rep,k);}
+    return typeof av==="string"?dir*av.localeCompare(bv,"pt"):dir*(av-bv);
+  });
+  renderStats(units,list);
+  const maxAbs=Math.max(1,...units.map(x=>x.margin!=null?Math.abs(x.margin):0));
+  const at=(v,c)=>`<td class="l td-attr col-${c}" title="${(v||'').replace(/"/g,'&quot;')}">${v||"—"}</td>`;
+  const pill=(m,v,c)=>`<td class="l col-${c}">${v?`<span class="tagc ${m[v]||'c-neutral'}">${v}</span>`:'—'}</td>`;
+  $("scrBody").innerHTML=units.map(u=>{
+    const s=u.s,n=u.members.length,key=groupKey(s),exp=n>1;
+    const situ=(s.tags||[]).map(x=>`<span class="tag situ">${x}</span>`).join("")||'<span class="td-attr">—</span>';
+    const parent=`<tr class="${exp?'grp-parent':''}" data-ticker="${s.ticker}" data-grp="${key}">
+      <td class="l t-ticker col-ticker">${exp?`<span class="chev">▸</span>${s.ticker} <span class="grp-badge">·${n}</span>`:`<a class="tk-link" href="#/acao/${s.ticker}">${s.ticker}</a>`}</td>
+      <td class="l emp col-nome" title="${s.nome}"><span class="t-name">${s.nome}</span></td>
+      ${at(s.cl.setor,'setor')}${at(s.cl.sub,'subsetor')}${at(s.cl.seg,'segmento')}
+      ${pill(PERFIL_C,s.perfil,'perfil')}
+      ${at(s.tamanho,'tamanho')}
+      ${pill(GOV_C,s.gov,'gov')}
+      <td class="l col-ctrl"><span class="tcx ${CTRL_C[s.ctrl]||'tc-neutral'}">${s.ctrl||'—'}</span></td>
+      <td class="l col-situacao"><div class="situ-cell">${situ}</div></td>
+      <td class="l col-modelo"><span class="model-badge">${s.modelo||'DDM · 2 est.'}</span></td>
+      <td class="num sep col-liquidez">${brlC(u.liq)}</td>
+      <td class="num col-price">${s.price?brl(s.price):'<span class="td-attr">—</span>'}</td>
+      <td class="num accent col-fair">${brl(u.fair)}</td>
+      ${marginCell(u.margin,maxAbs)}
+    </tr>`;
+    if(!exp)return parent;
+    const kids=u.members.map(m=>{const cs=m.s;
+      return `<tr class="grp-child" data-grp="${key}" data-ticker="${cs.ticker}" hidden>
+        <td class="l col-ticker"><a class="tk-link child-tk" href="#/acao/${cs.ticker}">${cs.ticker}</a> <span class="child-ty">${typeLabel(cs.ticker)}</span></td>
+        <td class="l col-nome"></td><td class="col-setor"></td><td class="col-subsetor"></td><td class="col-segmento"></td>
+        <td class="col-perfil"></td><td class="col-tamanho"></td><td class="col-gov"></td><td class="col-ctrl"></td>
+        <td class="col-situacao"></td><td class="col-modelo"></td>
+        <td class="num sep col-liquidez">${brlC(cs.liquidez)}</td>
+        <td class="num col-price">${cs.price?brl(cs.price):'<span class="td-attr">—</span>'}</td>
+        <td class="num accent col-fair">${brl(m.fair)}</td>
+        ${marginCell(m.margin,maxAbs)}
+      </tr>`;}).join("");
+    return parent+kids;
+  }).join("");
+  document.querySelectorAll(".th-sort th").forEach(th=>{th.classList.toggle("sorted",th.dataset.key===sort.key);const a=th.querySelector(".arrow");if(a)a.textContent=sort.dir<0?"▾":"▴";});
+}
+$("thSort").addEventListener("click",e=>{
+  const fb=e.target.closest(".th-filter-btn");
+  if(fb){e.stopPropagation();openColPop(fb.dataset.fk,fb);return;}
+  const th=e.target.closest("th");if(!th||!th.dataset.key)return;const k=th.dataset.key;
+  sort=sort.key===k?{key:k,dir:-sort.dir}:{key:k,dir:TEXT_KEYS.includes(k)?1:-1};renderScreener();});
+$("scrBody").addEventListener("click",e=>{
+  if(e.target.closest("a"))return;   // link real (ticker): navegador cuida — nova aba, cmd+clique, etc.
+  if(e.target.closest(".model-badge")){e.stopPropagation();location.hash="#/modelo/ddm2";return;}
+  const tr=e.target.closest("tr");if(!tr)return;
+  if(tr.classList.contains("grp-parent")){   // linha agrupada -> abre/fecha o dropdown
+    const open=tr.classList.toggle("open");
+    document.querySelectorAll('.grp-child[data-grp="'+tr.dataset.grp+'"]').forEach(r=>r.hidden=!open);
+    return;
+  }
+  location.hash="#/acao/"+tr.dataset.ticker;   // classe individual ou linha simples
+});
+function updateGroupBtn(){$("groupBtn").classList.toggle("on",grouped);}
+$("groupBtn").addEventListener("click",()=>{grouped=!grouped;try{localStorage.setItem("ddm-grouped",grouped?"1":"0");}catch(e){}updateGroupBtn();renderScreener();});
+
+/* ===== GRÁFICO (SVG, série sintética por ticker) ===== */
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const seriesCache={};
+function genSeries(ticker,endPrice,days=1300){
+  endPrice=endPrice||30;
+  if(seriesCache[ticker])return seriesCache[ticker];
+  const r=mulberry32(hashStr(ticker));let p=endPrice,arr=[];
+  for(let i=0;i<days;i++){const ret=(r()-0.5)*0.03+0.0003;p=p/(1+ret);arr.push(p);}
+  arr.reverse();
+  const today=new Date();const out=arr.map((c,i)=>({t:new Date(today.getTime()-(days-1-i)*86400000),c}));
+  out[out.length-1].c=endPrice;
+  return seriesCache[ticker]=out;
+}
+let chartState={ticker:null,fair:0,period:365,price:0};
+const realSeries={};   /* histórico real do Yahoo, por ticker */
+function loadPriceHistory(ticker){
+  if(realSeries[ticker]){renderChart();return;}
+  fetch(`/api/history/${ticker}?range=5y`).then(r=>r.ok?r.json():null).then(d=>{
+    if(d&&d.series&&d.series.length){realSeries[ticker]=d.series.map(a=>({t:new Date(a[0]),c:a[1]}));renderChart();}
+  }).catch(()=>{});
+}
+const PERIODS=[["1M",30],["3M",90],["6M",180],["1A",365],["5A",1300]];
+function renderPeriods(){$("periods").innerHTML=PERIODS.map(([l,d])=>`<button class="period${d===chartState.period?' active':''}" data-d="${d}">${l}</button>`).join("");}
+function renderChart(){
+  if(!chartState.ticker||$("chartCard").style.display==="none")return;
+  const wrap=$("chartWrap");
+  const W=Math.max(280,Math.round(wrap.clientWidth||900));
+  const H=Math.round(Math.max(190,Math.min(300,W*0.34)));
+  const full=realSeries[chartState.ticker]||genSeries(chartState.ticker,chartState.price);
+  const data=full.slice(-Math.min(chartState.period,full.length));
+  const fair=chartState.fair;
+  const ys=data.map(d=>d.c).concat(isFinite(fair)?[fair]:[]);
+  let min=Math.min(...ys),max=Math.max(...ys);const pad=(max-min)*0.08||1;min-=pad;max+=pad;
+  const L=8,T=10,B=22,R=W<520?46:56,fs=W<420?12:11;
+  const x=i=>L+i/(data.length-1)*(W-L-R);
+  const y=v=>T+(1-(v-min)/(max-min))*(H-T-B);
+  let d="";data.forEach((pt,i)=>{d+=(i?"L":"M")+x(i).toFixed(1)+" "+y(pt.c).toFixed(1)+" ";});
+  const area=d+`L${x(data.length-1).toFixed(1)} ${(H-B)} L${x(0).toFixed(1)} ${(H-B)} Z`;
+  const fy=y(fair);
+  let yt="";for(let g=0;g<=3;g++){const v=min+pad+(max-min-2*pad)*g/3;const yy=y(v);
+    yt+=`<line x1="${L}" x2="${(W-R).toFixed(1)}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}" stroke="var(--border-2)"/>`+
+        `<text x="${(W-R+6).toFixed(1)}" y="${(yy+3).toFixed(1)}" fill="var(--text-mute)" font-size="${fs}">${brl(v).replace("R$ ","")}</text>`;}
+  const n=data.length,nx=W<520?3:5,xi=[];for(let g=0;g<nx;g++)xi.push(Math.round(g/(nx-1)*(n-1)));
+  let xt="";xi.forEach(i=>{const lab=data[i].t.toLocaleDateString("pt-BR",{month:"short",year:"2-digit"});
+    const anchor=i===0?"start":i===n-1?"end":"middle";
+    xt+=`<text x="${x(i).toFixed(1)}" y="${H-6}" fill="var(--text-mute)" font-size="${fs}" text-anchor="${anchor}">${lab}</text>`;});
+  wrap.innerHTML=`
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" id="svgChart">
+      <defs><linearGradient id="gArea" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="var(--accent)" stop-opacity="0.18"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+      ${yt}${xt}
+      <path d="${area}" fill="url(#gArea)"/>
+      <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${isFinite(fair)?`<line x1="${L}" x2="${(W-R).toFixed(1)}" y1="${fy.toFixed(1)}" y2="${fy.toFixed(1)}" stroke="var(--text-mute)" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="${L+4}" y="${(fy-6).toFixed(1)}" fill="var(--text-mute)" font-size="${fs}">justo ${brl(fair)}</text>`:""}
+      <line id="cross" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--text-mute)" stroke-width="1" opacity="0"/>
+      <circle id="cdot" r="3.5" fill="var(--accent)" opacity="0"/>
+      <rect id="hit" x="${L}" y="0" width="${(W-L-R).toFixed(1)}" height="${H}" fill="transparent"/>
+    </svg><div class="tip" id="tip"></div>`;
+  const svg=$("svgChart"),hit=$("hit"),tip=$("tip"),cross=$("cross"),cdot=$("cdot");
+  const move=ev=>{
+    const rect=svg.getBoundingClientRect();const clientX=ev.touches?ev.touches[0].clientX:ev.clientX;
+    const px=(clientX-rect.left)/rect.width*W;let i=Math.round((px-L)/(W-L-R)*(data.length-1));
+    i=Math.max(0,Math.min(data.length-1,i));const cx=x(i),cy=y(data[i].c);
+    cross.setAttribute("x1",cx);cross.setAttribute("x2",cx);cross.setAttribute("opacity","0.5");
+    cdot.setAttribute("cx",cx);cdot.setAttribute("cy",cy);cdot.setAttribute("opacity","1");
+    tip.style.opacity="1";tip.style.left=(cx/W*100)+"%";tip.style.top=(cy/H*100)+"%";
+    tip.innerHTML=`<b>${brl(data[i].c)}</b><br>${data[i].t.toLocaleDateString("pt-BR")}`;
+  };
+  const hide=()=>{cross.setAttribute("opacity","0");cdot.setAttribute("opacity","0");tip.style.opacity="0";};
+  hit.addEventListener("mousemove",move);hit.addEventListener("mouseleave",hide);
+  hit.addEventListener("touchstart",move,{passive:true});hit.addEventListener("touchmove",move,{passive:true});
+}
+window.addEventListener("resize",()=>{if(!$("view-detail").hidden){clearTimeout(window.__cr);window.__cr=setTimeout(renderChart,150);}});
+$("periods").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b)return;chartState.period=+b.dataset.d;renderPeriods();renderChart();});
+
+/* ===== DETALHE ===== */
+let currentStock=null;
+let currentPrice=null;   /* preço real da ação (Yahoo) — não é premissa editável */
+let growthMode="roe";   // 'roe' (deriva g do ROE) ou 'g' (crescimento digitado direto)
+function seed(s){
+  growthMode=s.growth_mode||"roe";
+  $("lpa").value=s.lpa;
+  $("roeI").value=Math.round((s.roe_i!=null?s.roe_i:0.15)*1000)/10;
+  $("payoutI").value=Math.round((s.payout_i!=null?s.payout_i:0.5)*100);
+  const gi=s.g_i!=null?s.g_i:(s.roe_i!=null?s.roe_i*(1-(s.payout_i!=null?s.payout_i:0.5)):0.05);
+  $("gI").value=Math.round(gi*1000)/10;
+}
+const DEF=[["keDefault","ke","ke","keDefLbl"],["roetDefault","roeT","roet","roetDefLbl"],
+           ["payouttDefault","payoutT","payoutt","payouttDefLbl"],["fadeDefault","fade","fade","fadeDefLbl"]];
+const gtGlobal=()=>globalCfg.roet*(1-globalCfg.payoutt);   // g terminal padrão (derivado do global)
+function applyDefaults(){   // checkbox "padrão" -> trava o slider no valor global
+  DEF.forEach(([chk,slider,cfgk,lbl])=>{
+    const on=$(chk).checked;
+    $(slider).disabled=on; $(slider).closest(".field").classList.toggle("locked",on);
+    const isFade=cfgk==="fade";
+    if(on)$(slider).value=isFade?Math.round(globalCfg.fade):Math.round(globalCfg[cfgk]*1000)/10;
+    $(lbl).textContent="padrão ("+(isFade?Math.round(globalCfg.fade):pctv(globalCfg[cfgk]*100))+")";
+  });
+  // g terminal compartilha o flag do terminal (roetDefault): trava no g terminal global
+  const gon=$("gtDefault").checked, gg=gtGlobal();
+  $("gT").disabled=gon; $("gT").closest(".field").classList.toggle("locked",gon);
+  if(gon)$("gT").value=Math.round(gg*1000)/10;
+  $("gtDefLbl").textContent="padrão ("+pctv(gg*100)+")";
+}
+function applyMode(){   // mostra os sliders do modo ativo e sincroniza o flag do terminal
+  const g=growthMode==="g";
+  document.querySelectorAll("#premCard .roe-only").forEach(e=>e.style.display=g?"none":"");
+  document.querySelectorAll("#premCard .g-only").forEach(e=>e.style.display=g?"":"none");
+  document.querySelectorAll("#growthToggle .gt-btn").forEach(b=>b.classList.toggle("active",b.dataset.mode===growthMode));
+  applyDefaults();
+}
+["lpa","roeI","payoutI","roeT","payoutT","fade","ke","gI","gT"].forEach(id=>$(id).addEventListener("input",renderDDM));
+DEF.forEach(([chk])=>$(chk).addEventListener("change",()=>{applyDefaults();renderDDM();}));
+// os dois checkboxes de "padrão terminal" (ROE e g) espelham o mesmo flag
+$("roetDefault").addEventListener("change",()=>{$("gtDefault").checked=$("roetDefault").checked;});
+$("gtDefault").addEventListener("change",()=>{$("roetDefault").checked=$("gtDefault").checked;applyDefaults();renderDDM();});
+$("growthToggle").addEventListener("click",e=>{const b=e.target.closest(".gt-btn");if(!b)return;
+  growthMode=b.dataset.mode;applyMode();renderDDM();});
+function clearPresetActive(){}   // presets removidos
+function readAssum(){return {lpa:+$("lpa").value,mode:growthMode,
+  roeI:+$("roeI").value/100,payoutI:+$("payoutI").value/100,roeT:+$("roeT").value/100,payoutT:+$("payoutT").value/100,
+  gI:+$("gI").value/100,gTerm:+$("gT").value/100,fade:+$("fade").value,ke:+$("ke").value/100};}
+function renderDDM(){
+  const a=readAssum(),price=currentPrice||0,useG=a.mode==="g";
+  $("roeIVal").textContent=pctv(+$("roeI").value);$("payoutIVal").textContent=pctv(+$("payoutI").value);
+  $("roeTVal").textContent=pctv(+$("roeT").value);$("payoutTVal").textContent=pctv(+$("payoutT").value);
+  $("gIVal").textContent=pctv(+$("gI").value);$("gTVal").textContent=pctv(+$("gT").value);
+  $("fadeVal").textContent=Math.round(a.fade);$("keVal").textContent=pctv(+$("ke").value);
+  const r=computeDDM(a),ok=r.valid&&isFinite(r.fair);
+  $("fairValue").textContent=ok?brl(r.fair):"—";
+  const b=$("mosBadge");
+  if(price>0&&ok){const m=(r.fair-price)/price*100,cls=m>=0?"good":"bad",sig=(m>=0?"+":"")+dec(m,1)+"%";
+    b.className="badge-mos "+cls;$("mosText").textContent=sig+" de margem vs "+brl(price);}
+  else{b.className="badge-mos";$("mosText").textContent=price>0?"—":"sem preço";}
+  // ===== IMPLICAÇÕES (derivadas das premissas) =====
+  const d0=a.lpa*a.payoutI, g1=r.rows.length?r.rows[0].g:0;
+  const dpaN=r.rows.length?r.rows[r.rows.length-1].div:0;
+  $("impl-g1").textContent=(g1>=0?"+":"")+dec(g1*100,1)+"% a.a.";
+  $("impl-gt").textContent=ok?((r.gT>=0?"+":"")+dec(r.gT*100,1)+"% a.a."):"—";
+  $("impl-g1-form").innerHTML=useG?"crescimento digitado (direto)":"g = ROE<sub>i</sub> × (1 − payout<sub>i</sub>)";
+  $("impl-gt-form").innerHTML=useG?"crescimento terminal digitado":"g = ROE<sub>t</sub> × (1 − payout<sub>t</sub>)";
+  $("impl-dpa0").textContent=brl(d0);
+  $("impl-dpaN").textContent=brl(dpaN);
+  $("impl-dpaN-lbl").textContent="ano "+Math.round(a.fade)+" · último do fade";
+  const im=$("impl-margin");
+  if(price>0&&ok){const m=(r.fair-price)/price*100;im.className="v num "+(m>=0?"pos":"neg");
+    im.textContent=(m>=0?"+":"")+dec(m,1)+"%";$("impl-margin-lbl").textContent="vs. preço atual "+brl(price);}
+  else{im.className="v num";im.textContent="—";$("impl-margin-lbl").textContent="sem preço de mercado";}
+  $("f-lpa").textContent=dec(a.lpa);$("f-payout").textContent=pctv(a.payoutI*100);$("f-dpa").textContent=brl(d0);
+  $("projBody").innerHTML=r.rows.map(x=>`<tr><td>Ano ${x.k}</td><td>${x.roe==null?'—':pctv(x.roe*100)}</td><td>${pctv(x.payout*100)}</td><td>${(x.g>=0?'+':'')+dec(x.g*100,1)}%</td><td>${brl(x.div)}</td><td class="pv">${brl(x.pv)}</td></tr>`).join("");
+  $("pvSum").textContent=brl(r.pvDiv);
+  const divT=r.epsN*(1+r.gT)*a.payoutT;
+  $("f-d6").textContent=dec(divT);$("f-ke").textContent=pctv(a.ke*100);$("f-gp").textContent=pctv(r.gT*100);
+  $("f-terminal").textContent=ok?brl(r.terminal):"—";$("f-terminal2").textContent=ok?brl(r.terminal):"—";
+  $("f-ke2").textContent=dec(a.ke,2);$("f-nfade").textContent=Math.round(a.fade);$("f-terminalpv").textContent=ok?brl(r.terminalPV):"—";
+  $("f-pvsum").textContent=brl(r.pvDiv);$("f-tpv").textContent=ok?brl(r.terminalPV):"—";$("f-fair").textContent=ok?brl(r.fair):"—";
+  if(ok&&r.fair>0){const p1=r.pvDiv/r.fair*100,p2=r.terminalPV/r.fair*100;
+    $("compS1").textContent=brl(r.pvDiv);$("compS2").textContent=brl(r.terminalPV);$("compFair").textContent=brl(r.fair);
+    $("compBarS1").style.width=Math.max(0,p1)+"%";$("compBarS2").style.width=Math.max(0,p2)+"%";
+    $("compNote").innerHTML=`Dividendo base de <b>${brl(d0)}/ação</b>. Do valor justo, <b>${dec(p2,0)}%</b> vem do valor terminal e <b>${dec(p1,0)}%</b> dos ${Math.round(a.fade)} anos de fade. Crescimento terminal g = <b>${pctv(r.gT*100)}</b>.`;}
+  else{$("compFair").textContent="—";$("compNote").innerHTML="Ke ≤ g terminal: a perpetuidade não converge. Aumente o Ke, reduza o ROE terminal ou aumente o payout final.";}
+  chartState.fair=ok?r.fair:NaN;chartState.price=price;renderChart();
+}
+/* salvar premissas -> backend (SQLite) */
+$("saveBtn").addEventListener("click",async()=>{
+  if(!currentStock||currentStock.ticker==="Exemplo")return;
+  const now=new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
+  const a=readAssum();
+  const flags={ke_default:$("keDefault").checked?1:0,roet_default:$("roetDefault").checked?1:0,
+    payoutt_default:$("payouttDefault").checked?1:0,fade_default:$("fadeDefault").checked?1:0};
+  const entry={date:now,lpa:a.lpa,roe_i:a.roeI,payout_i:a.payoutI,
+    roe_t:a.roeT,payout_t:a.payoutT,fade:a.fade,ke:a.ke,
+    growth_mode:a.mode,g_i:a.gI,g_t:a.gTerm,...flags};
+  const btn=$("saveBtn"),lbl=btn.innerHTML;btn.disabled=true;btn.textContent="Salvando…";
+  try{
+    const r=await fetch(`/api/premissas/${currentStock.ticker}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});
+    if(!r.ok)throw 0;
+    // sincroniza a tabela do screener (terminais/Ke efetivos: global se "padrão", senão o do ativo)
+    const st=STOCKS.find(x=>x.ticker===currentStock.ticker);
+    if(st){st.lpa=a.lpa;st.roe_i=a.roeI;st.payout_i=a.payoutI;st.growth_mode=a.mode;st.g_i=a.gI;
+      st.roe_t=flags.roet_default?globalCfg.roet:a.roeT;
+      st.g_t=flags.roet_default?gtGlobal():a.gTerm;
+      st.payout_t=flags.payoutt_default?globalCfg.payoutt:a.payoutT;
+      st.fade=flags.fade_default?globalCfg.fade:a.fade;
+      st.ke=flags.ke_default?globalCfg.ke:a.ke;}
+    await loadPremissas(currentStock.ticker);   // recarrega histórico do banco
+  }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
+  btn.disabled=false;btn.innerHTML=lbl;
+});
+async function loadPremissas(ticker){
+  currentHist=[];
+  try{
+    const r=await fetch(`/api/premissas/${ticker}`);
+    if(r.ok){const d=await r.json();
+      currentHist=d.historico||[];
+      if(d.atual){seedPrem(d.atual);renderDDM();}   // aplica a última premissa salva
+    }
+  }catch(e){}
+  renderHistory();
+}
+function seedPrem(p){
+  growthMode=p.growth_mode||"roe";
+  if(p.lpa!=null)$("lpa").value=p.lpa;
+  if(p.roe_i!=null)$("roeI").value=Math.round(p.roe_i*1000)/10;
+  if(p.payout_i!=null)$("payoutI").value=Math.round(p.payout_i*100);
+  if(p.g_i!=null)$("gI").value=Math.round(p.g_i*1000)/10;
+  const set=(chk,slider,val,def,isFade)=>{const on=def==null?true:!!def;$(chk).checked=on;
+    if(!on&&val!=null)$(slider).value=isFade?Math.round(val):Math.round(val*1000)/10;};
+  set("keDefault","ke",p.ke,p.ke_default);
+  set("roetDefault","roeT",p.roe_t,p.roet_default);
+  set("payouttDefault","payoutT",p.payout_t,p.payoutt_default);
+  set("fadeDefault","fade",p.fade,p.fade_default,true);
+  // g terminal compartilha o flag do terminal (roet_default)
+  $("gtDefault").checked=$("roetDefault").checked;
+  if(!$("gtDefault").checked&&p.g_t!=null)$("gT").value=Math.round(p.g_t*1000)/10;
+  applyMode();
+}
+const dfl=f=>f==null?true:!!f;   // flag "padrão" ausente ⇒ usa global
+function effParams(h){const mode=h.growth_mode||"roe";return {lpa:h.lpa,mode,roeI:h.roe_i,payoutI:h.payout_i,gI:h.g_i,
+  roeT:dfl(h.roet_default)?globalCfg.roet:h.roe_t,
+  gTerm:dfl(h.roet_default)?globalCfg.roet*(1-globalCfg.payoutt):h.g_t,
+  payoutT:dfl(h.payoutt_default)?globalCfg.payoutt:h.payout_t,
+  fade:dfl(h.fade_default)?globalCfg.fade:h.fade,
+  ke:dfl(h.ke_default)?globalCfg.ke:h.ke};}
+function renderHistory(){
+  $("histList").innerHTML=currentHist.length?currentHist.map((h,i)=>{
+    const ep=effParams(h),r=computeDDM(ep),fair=r.fair;
+    const growth=ep.mode==="g"?`g ${pctv(ep.gI*100)}→${pctv(ep.gTerm*100)}`:`ROE ${pctv(ep.roeI*100)}→${pctv(ep.roeT*100)}`;
+    return `<div class="hist-item"><div class="hist-meta"><div class="date">${h.date||"—"}</div>
+      <div class="hist-vals">Ke ${pctv(ep.ke*100)} · ${growth} · payout ${pctv(ep.payoutI*100)}→${pctv(ep.payoutT*100)} · fade ${Math.round(ep.fade)}a</div></div>
+      <div style="display:flex;align-items:center;gap:14px;"><span class="hist-fair accent">${brl(fair)}</span>
+      <button class="btn sm" data-h="${i}">Aplicar</button></div></div>`;}).join(""):`<div class="empty">Nenhuma premissa salva ainda. Ajuste os sliders e clique em "Salvar premissas".</div>`;
+}
+$("histList").addEventListener("click",e=>{const b=e.target.closest("button[data-h]");if(!b)return;
+  const h=currentHist[+b.dataset.h];if(h){seedPrem(h);clearPresetActive();renderDDM();window.scrollTo({top:0,behavior:"smooth"});}});
+
+/* ===== MODAL ação: criar (POST) ou editar classificação (PATCH) ===== */
+const overlay=$("overlay");
+let modalMode="create", editTicker=null;
+function setModalMode(mode){
+  modalMode=mode;const create=mode==="create";
+  document.querySelectorAll("#overlay .create-only").forEach(e=>e.style.display=create?"":"none");
+  $("modalTitle").textContent=create?"Nova ação":"Editar ação";
+  $("modalSub").textContent=create?"Cadastre o ticker, a classificação e as premissas iniciais do DDM."
+    :"Ajuste a classificação e a identidade. As premissas (LPA, ROE, payout…) ficam na página da ação.";
+  $("mSave").textContent=create?"Adicionar e abrir":"Salvar alterações";
+}
+function fillModal(s){
+  $("m-nome").value=s.nome||"";
+  $("m-setor").value=(s.cl&&s.cl.setor)||""; $("m-subsetor").value=(s.cl&&s.cl.sub)||""; $("m-segmento").value=(s.cl&&s.cl.seg)||"";
+  $("m-perfil").value=s.perfil||"Dividendos"; $("m-tamanho").value=s.tamanho||"Large cap";
+  $("m-gov").value=s.gov||"Novo Mercado"; $("m-ctrl").value=s.ctrl||"Privada nacional";
+  $("m-modelo").value=s.modelo||"DDM · 2 est."; $("m-tags").value=(s.tags||[]).join(", ");
+}
+function openModal(){setModalMode("create");overlay.classList.add("open");$("m-ticker").focus();}
+function openEditModal(s){editTicker=s.ticker;setModalMode("edit");fillModal(s);overlay.classList.add("open");$("m-nome").focus();}
+function closeModal(){overlay.classList.remove("open");}
+$("addBtn").addEventListener("click",()=>{scope==="monitoradas"?openPick():openModal();});
+$("mCancel").addEventListener("click",closeModal);
+overlay.addEventListener("click",e=>{if(e.target===overlay)closeModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closePick();}});
+$("mSave").addEventListener("click",()=>modalMode==="edit"?saveEdit():saveCreate());
+async function saveEdit(){
+  const nome=$("m-nome").value.trim();if(!nome){alert("Informe a empresa.");return;}
+  const patch={nome,setor:$("m-setor").value.trim(),subsetor:$("m-subsetor").value.trim(),segmento:$("m-segmento").value.trim(),
+    perfil:$("m-perfil").value,tamanho:$("m-tamanho").value,gov:$("m-gov").value,ctrl:$("m-ctrl").value,modelo:$("m-modelo").value,
+    tags:$("m-tags").value.split(",").map(x=>x.trim()).filter(Boolean)};
+  const btn=$("mSave"),label=btn.textContent;btn.disabled=true;btn.textContent="Salvando…";
+  try{const r=await fetch(`/api/stocks/${editTicker}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(patch)});
+    if(!r.ok)throw 0;}
+  catch(e){alert("Não consegui salvar as alterações.");btn.disabled=false;btn.textContent=label;return;}
+  btn.disabled=false;btn.textContent=label;
+  const st=STOCKS.find(x=>x.ticker===editTicker);
+  if(st){st.nome=patch.nome;st.cl=P(patch.setor,patch.subsetor,patch.segmento);st.perfil=patch.perfil;st.tamanho=patch.tamanho;
+    st.gov=patch.gov;st.ctrl=patch.ctrl;st.modelo=patch.modelo;st.tags=patch.tags;}
+  closeModal();
+  if(currentStock&&currentStock.ticker===editTicker&&st)openStock(st,"stock");else renderScreener();
+}
+async function saveCreate(){
+  const tk=$("m-ticker").value.trim().toUpperCase();const nome=$("m-nome").value.trim();
+  if(!tk||!nome){alert("Informe ao menos ticker e empresa.");return;}
+  if(STOCKS.find(s=>s.ticker===tk)){alert("Ticker já cadastrado.");return;}
+  const btn=$("mSave"),label=btn.textContent;btn.disabled=true;btn.textContent="Buscando cotação…";
+  let price=null;
+  try{
+    const r=await fetch(`/api/history/${tk}?range=5y`);
+    if(r.ok){const d=await r.json();if(d.series&&d.series.length){
+      price=d.series[d.series.length-1][1];
+      realSeries[tk]=d.series.map(a=>({t:new Date(a[0]),c:a[1]}));}}
+  }catch(e){}
+  btn.disabled=false;btn.textContent=label;
+  if(price==null&&!confirm(`Não encontrei cotação para ${tk} no Yahoo — confira o ticker (B3, sem ".SA"). Adicionar mesmo assim, sem preço?`))return;
+  const payload={ticker:tk,nome,setor:$("m-setor").value.trim(),subsetor:$("m-subsetor").value.trim(),segmento:$("m-segmento").value.trim(),
+    perfil:$("m-perfil").value,tamanho:$("m-tamanho").value,gov:$("m-gov").value,ctrl:$("m-ctrl").value,modelo:$("m-modelo").value,
+    tags:$("m-tags").value.split(",").map(x=>x.trim()).filter(Boolean),
+    lpa:+$("m-lpa").value,roe_i:+$("m-roei").value/100,payout:+$("m-payouti").value/100,monitored:true};
+  try{
+    const r=await fetch("/api/stocks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    if(!r.ok){const e=await r.json().catch(()=>({}));alert("Não salvou: "+(e.erro||"erro no backend"));return;}
+  }catch(e){alert("Backend indisponível — não consegui salvar a ação.");return;}
+  STOCKS.push(withPresets(fromApi({...payload,price,payout_i:payload.payout,
+    roe_t:globalCfg.roet,payout_t:globalCfg.payoutt,fade:globalCfg.fade,ke:globalCfg.ke})));
+  closeModal();location.hash="#/acao/"+tk;
+}
+
+/* ===== SELETOR: adicionar ação existente às monitoradas ===== */
+const pickOverlay=$("pickOverlay");
+function openPick(){pickOverlay.classList.add("open");$("pickSearch").value="";renderPick("");$("pickSearch").focus();}
+function closePick(){pickOverlay.classList.remove("open");}
+function renderPick(q){
+  q=(q||"").trim().toUpperCase();
+  const cand=STOCKS.filter(s=>!s.monitored&&(!q||s.ticker.includes(q)||(s.nome||"").toUpperCase().includes(q)))
+    .sort((a,b)=>a.ticker.localeCompare(b.ticker)).slice(0,120);
+  $("pickList").innerHTML=cand.length?cand.map(s=>{
+    const sec=[s.cl.setor,s.cl.sub].filter(Boolean).join(" › ");
+    return `<div class="pick-item" data-tk="${s.ticker}"><span class="pk-tk">${s.ticker}</span><span class="pk-nm">${s.nome||""}</span><span class="pk-sec">${sec}</span></div>`;
+  }).join(""):`<div class="pick-empty">${q?"Nenhuma ação encontrada — ela já está nas monitoradas?":"Todas as ações já estão nas monitoradas."}</div>`;
+}
+$("pickSearch").addEventListener("input",e=>renderPick(e.target.value));
+$("pickCancel").addEventListener("click",closePick);
+pickOverlay.addEventListener("click",e=>{if(e.target===pickOverlay)closePick();});
+$("pickList").addEventListener("click",async e=>{const it=e.target.closest(".pick-item");if(!it)return;
+  const tk=it.dataset.tk;
+  try{const r=await fetch(`/api/watchlist/${tk}`,{method:"POST"});if(!r.ok)throw 0;}
+  catch(e){alert("Não consegui adicionar à watchlist.");return;}
+  const st=STOCKS.find(x=>x.ticker===tk);if(st)st.monitored=true;
+  renderPick($("pickSearch").value);renderScreener();
+});
+
+/* ===== AÇÕES da página do ativo: monitorar / editar / remover ===== */
+async function toggleWatch(){
+  if(!currentStock||currentStock.ticker==="Exemplo")return;
+  const tk=currentStock.ticker,on=!currentStock.monitored;
+  try{const r=await fetch(`/api/watchlist/${tk}`,{method:on?"POST":"DELETE"});if(!r.ok)throw 0;}
+  catch(e){alert("Não consegui atualizar as monitoradas.");return;}
+  currentStock.monitored=on;const st=STOCKS.find(x=>x.ticker===tk);if(st)st.monitored=on;
+  setWatchBtn(on);
+}
+function setWatchBtn(on){$("watchBtn").classList.toggle("watch-on",on);$("watchLbl").textContent=on?"Monitorada":"Monitorar";}
+$("watchBtn").addEventListener("click",toggleWatch);
+$("editBtn").addEventListener("click",()=>{if(currentStock&&currentStock.ticker!=="Exemplo")openEditModal(currentStock);});
+$("removeBtn").addEventListener("click",async()=>{
+  if(!currentStock||currentStock.ticker==="Exemplo")return;
+  const tk=currentStock.ticker;
+  if(!confirm(`Remover ${tk} por completo? Isso apaga a ação da base, das monitoradas e as premissas salvas — não volta ao reiniciar.`))return;
+  try{const r=await fetch(`/api/stocks/${tk}`,{method:"DELETE"});if(!r.ok)throw 0;}
+  catch(e){alert("Não consegui remover a ação.");return;}
+  const i=STOCKS.findIndex(x=>x.ticker===tk);if(i>=0)STOCKS.splice(i,1);
+  location.hash="#/screener";
+});
+
+/* ===== ROTEADOR ===== */
+function show(v){["screener","detail","modelo","config"].forEach(n=>$("view-"+n).hidden=n!==v);}
+function renderConfig(){
+  $("cfgKe").value=Math.round(globalCfg.ke*1000)/10; $("cfgKeVal").textContent=pctv(globalCfg.ke*100);
+  $("cfgRoet").value=Math.round(globalCfg.roet*1000)/10; $("cfgRoetVal").textContent=pctv(globalCfg.roet*100);
+  $("cfgPayoutt").value=Math.round(globalCfg.payoutt*100); $("cfgPayouttVal").textContent=pctv(globalCfg.payoutt*100);
+  $("cfgFade").value=globalCfg.fade; $("cfgFadeVal").textContent=Math.round(globalCfg.fade)+" anos";
+}
+function saveConfig(){
+  globalCfg={ke:+$("cfgKe").value/100,roet:+$("cfgRoet").value/100,payoutt:+$("cfgPayoutt").value/100,fade:+$("cfgFade").value};
+  fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(globalCfg)})
+    .then(()=>fetchStocks()).then(()=>{if(!$("view-screener").hidden)renderScreener();}).catch(()=>{});
+}
+$("cfgKe").addEventListener("input",()=>$("cfgKeVal").textContent=pctv(+$("cfgKe").value));
+$("cfgRoet").addEventListener("input",()=>$("cfgRoetVal").textContent=pctv(+$("cfgRoet").value));
+$("cfgPayoutt").addEventListener("input",()=>$("cfgPayouttVal").textContent=pctv(+$("cfgPayoutt").value));
+$("cfgFade").addEventListener("input",()=>$("cfgFadeVal").textContent=Math.round(+$("cfgFade").value)+" anos");
+["cfgKe","cfgRoet","cfgPayoutt","cfgFade"].forEach(id=>$(id).addEventListener("change",saveConfig));
+function setActiveNav(r){document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("active",a.dataset.route===r));}
+function openStock(s,mode){
+  currentStock=s;show("detail");renderPeriods();
+  if(mode==="metodologia"){setActiveNav("metodologia");
+    $("crumb").innerHTML=`<span>Metodologia</span> <span>/</span> <span>como o preço justo é calculado</span>`;
+    $("dTicker").textContent="Metodologia";$("dSector").style.display="none";$("dName").textContent="Um exemplo didático de ponta a ponta — ajuste os sliders para ver cada passo reagir.";
+    $("dTags").innerHTML="";$("chartCard").style.display="none";$("histCard").style.display="none";
+    $("detailActions").style.display="none";
+  }else{setActiveNav(null);
+    $("detailActions").style.display="";setWatchBtn(!!s.monitored);
+    $("crumb").innerHTML=`<a href="#/screener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Screener</a> <span>/</span> <span>${s.ticker}</span>`;
+    $("dTicker").textContent=s.ticker;const sec=[s.cl.setor,s.cl.sub,s.cl.seg].filter(Boolean).join(" › ");
+    $("dSector").style.display=sec?"":"none";$("dSector").textContent=sec;$("dName").textContent=s.nome;$("dTags").innerHTML=tagsHtml(s);
+    $("chartCard").style.display="";$("histCard").style.display="";chartState.ticker=s.ticker;loadPremissas(s.ticker);loadPriceHistory(s.ticker);
+  }
+  clearPresetActive();const mine=document.querySelector('#presetRow .preset[data-preset="minhas"]');if(mine&&mode!=="metodologia")mine.classList.add("active");
+  currentPrice=(s.price!=null)?s.price:null;$("heroPrice").textContent=s.price!=null?brl(s.price):"—";
+  DEF.forEach(([chk])=>$(chk).checked=true);$("gtDefault").checked=true;   // tudo no padrão global; loadPremissas ajusta se houver override
+  seed(s);applyMode();renderDDM();
+}
+function router(){
+  const h=location.hash||"#/monitoradas";const parts=h.replace(/^#\//,"").split("/");
+  const go=()=>{
+    if(parts[0]==="acao"&&parts[1]){openStock(STOCKS.find(x=>x.ticker===parts[1])||EXAMPLE,"stock");}
+    else if(parts[0]==="modelo"){setActiveNav(null);show("modelo");closePop();}
+    else if(parts[0]==="config"){setActiveNav("config");show("config");renderConfig();closePop();}
+    else{scope=parts[0]==="monitoradas"?"monitoradas":"all";setActiveNav(scope==="monitoradas"?"monitoradas":"screener");show("screener");
+      $("scrTitle").textContent=scope==="monitoradas"?"Monitoradas":"Screener";
+      $("scrSub").textContent=scope==="monitoradas"?"Sua watchlist — as ações que você acompanha, ordenadas por margem de segurança.":"Ações ordenadas por margem de segurança — quanto o preço justo (DDM) está acima do preço atual.";
+      $("addBtnLabel").textContent=scope==="monitoradas"?"Adicionar às monitoradas":"Adicionar ação";
+      renderScreener();updateFilterButtons();}
+    window.scrollTo(0,0);
+  };
+  if(document.startViewTransition)document.startViewTransition(go);else go();
+}
+window.addEventListener("hashchange",router);
+
+/* ===== tema ===== */
+const root=document.documentElement;
+function setTheme(t){root.setAttribute("data-theme",t);$("themeLabel").textContent=t==="dark"?"Tema claro":"Tema escuro";try{localStorage.setItem("ddm-theme",t);}catch(e){}
+  if(currentStock&&!$("view-detail").hidden)renderChart();}
+setTheme(localStorage.getItem("ddm-theme")||"light");
+$("themeBtn").addEventListener("click",()=>setTheme(root.getAttribute("data-theme")==="dark"?"light":"dark"));
+
+/* ===== dados reais (Yahoo via backend) com fallback pra amostra ===== */
+function fromApi(d){return {ticker:d.ticker,nome:d.nome,cd_cvm:d.cd_cvm,cl:P(d.setor,d.subsetor,d.segmento),
+  perfil:d.perfil,tamanho:d.tamanho,gov:d.gov,ctrl:d.ctrl,modelo:d.modelo,tags:d.tags||[],monitored:d.monitored,
+  price:d.price,liquidez:d.liquidez,lpa:d.lpa,roe_i:d.roe_i,payout_i:d.payout_i,roe_t:d.roe_t,payout_t:d.payout_t,fade:d.fade,ke:d.ke,
+  growth_mode:d.growth_mode,g_i:d.g_i,g_t:d.g_t};}
+async function fetchStocks(){
+  const r=await fetch("/api/stocks");
+  if(!r.ok)return null;
+  const data=await r.json();
+  if(!Array.isArray(data)||!data.length)return null;
+  STOCKS=data.map(d=>withPresets(fromApi(d)));
+  const faltam=STOCKS.filter(s=>!s.price).length;
+  const d=new Date().toLocaleDateString("pt-BR");
+  $("sampleTag").textContent = faltam>50
+    ? `${STOCKS.length} ações · carregando cotações do Yahoo…`
+    : `${STOCKS.length} ações · cotações Yahoo · LPA auditado (CVM) · ${d}`;
+  return faltam;
+}
+async function bootstrap(){
+  try{const rc=await fetch("/api/config");if(rc.ok)globalCfg=await rc.json();}catch(e){}
+  router();   // mostra algo imediatamente
+  let faltam=null;
+  try{ faltam=await fetchStocks(); router(); }catch(e){ console.warn("API indisponível — amostra.",e); return; }
+  let tries=0;   // backend busca preços em 2º plano; recompleta a tela a cada 5s
+  while(faltam>50 && tries<12){
+    await new Promise(r=>setTimeout(r,5000));
+    try{ faltam=await fetchStocks(); if(!$("view-screener").hidden) renderScreener(); }catch(e){ break; }
+    tries++;
+  }
+}
+renderHeader();
+applyCols();
+updateGroupBtn();
+bootstrap();
+</script>
+</body>
+</html>

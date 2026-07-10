@@ -1,0 +1,20 @@
+# Blueprint do Render — sobe o backend DIVYVAL (FastAPI) que também serve o frontend.
+# Ao conectar o repositório no Render, ele lê este arquivo e cria o serviço sozinho.
+# As envs com sync:false NÃO ficam no git — você as define no painel do Render.
+services:
+  - type: web
+    name: divyval
+    runtime: python
+    plan: free
+    rootDir: dashboard/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: TURSO_DATABASE_URL   # URL libsql:// do seu banco Turso
+        sync: false
+      - key: TURSO_AUTH_TOKEN     # token gerado pelo Turso
+        sync: false
+      - key: APP_PASSWORD         # senha compartilhada para acessar o dashboard
+        sync: false

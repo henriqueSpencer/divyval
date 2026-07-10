@@ -1,0 +1,20 @@
+# === Dados CVM brutos e derivados pesados — NUNCA versionar (GBs) ===
+Dados CVM -Acões -Anuais/
+Dados CVM FII Anuais/
+cvm_base/parquet/
+cvm_base/parquet_fii/
+*.duckdb
+*.duckdb.wal
+
+# === Ambientes virtuais ===
+.venv/
+cvm_base/.venv/
+
+# === Banco local do dashboard (em produção é o Turso) ===
+dashboard/backend/divyval.db
+dashboard/backend/divyval.db.bak
+
+# === Python / SO ===
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,7 @@
+# Dependências do backend DIVYVAL em produção (Render).
+# yfinance puxa pandas/numpy/requests/curl_cffi automaticamente.
+fastapi==0.139.0
+uvicorn[standard]==0.49.0
+yfinance==1.5.1
+# Persistência na nuvem (Turso / libSQL). Só é usado quando TURSO_DATABASE_URL existe.
+libsql>=0.1
