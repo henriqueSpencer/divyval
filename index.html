@@ -312,6 +312,10 @@ button{font-family:inherit;}
 .chart-legend i{display:inline-block;width:14px;height:0;border-top-width:2px;border-top-style:solid;vertical-align:middle;margin-right:6px;}
 .tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:8px;padding:7px 10px;font-size:12px;opacity:0;transform:translate(-50%,-120%);white-space:nowrap;transition:opacity .1s;}
 .tip b{font-size:13px;}
+.selbadge{transform:translate(-50%,0);text-align:center;border-color:color-mix(in srgb,var(--accent) 30%,var(--border));}
+.selbadge b{font-size:14px;}
+.selbadge.up b{color:var(--good);}
+.selbadge.down b{color:var(--bad);}
 
 /* composição do valor justo */
 .comp-rows{display:flex;flex-direction:column;gap:2px;}
@@ -1027,10 +1031,13 @@ function renderChart(){
       <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
       ${isFinite(fair)?`<line x1="${L}" x2="${(W-R).toFixed(1)}" y1="${fy.toFixed(1)}" y2="${fy.toFixed(1)}" stroke="var(--text-mute)" stroke-width="1.5" stroke-dasharray="5 4"/>
         <text x="${L+4}" y="${(fy-6).toFixed(1)}" fill="var(--text-mute)" font-size="${fs}">justo ${brl(fair)}</text>`:""}
+      <rect id="selband" x="0" y="${T}" width="0" height="${(H-T-B).toFixed(1)}" fill="var(--accent)" opacity="0" style="pointer-events:none"/>
+      <line id="selL" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>
+      <line id="selR" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>
       <line id="cross" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--text-mute)" stroke-width="1" opacity="0"/>
       <circle id="cdot" r="3.5" fill="var(--accent)" opacity="0"/>
-      <rect id="hit" x="${L}" y="0" width="${(W-L-R).toFixed(1)}" height="${H}" fill="transparent"/>
-    </svg><div class="tip" id="tip"></div>`;
+      <rect id="hit" x="${L}" y="0" width="${(W-L-R).toFixed(1)}" height="${H}" fill="transparent" style="cursor:crosshair"/>
+    </svg><div class="tip" id="tip"></div><div class="tip selbadge" id="selbadge"></div>`;
   const svg=$("svgChart"),hit=$("hit"),tip=$("tip"),cross=$("cross"),cdot=$("cdot");
   const move=ev=>{
     const rect=svg.getBoundingClientRect();const clientX=ev.touches?ev.touches[0].clientX:ev.clientX;
@@ -1044,6 +1051,27 @@ function renderChart(){
   const hide=()=>{cross.setAttribute("opacity","0");cdot.setAttribute("opacity","0");tip.style.opacity="0";};
   hit.addEventListener("mousemove",move);hit.addEventListener("mouseleave",hide);
   hit.addEventListener("touchstart",move,{passive:true});hit.addEventListener("touchmove",move,{passive:true});
+  /* seleção por clique-e-arrasto: mostra a % de variação entre os dois pontos */
+  const selband=$("selband"),selL=$("selL"),selR=$("selR"),selbadge=$("selbadge");
+  const idxAt=ev=>{const rect=svg.getBoundingClientRect();const cx=ev.touches&&ev.touches[0]?ev.touches[0].clientX:ev.clientX;
+    let i=Math.round(((cx-rect.left)/rect.width*W-L)/(W-L-R)*(data.length-1));return Math.max(0,Math.min(data.length-1,i));};
+  const clearSel=()=>{selband.setAttribute("opacity","0");selL.setAttribute("opacity","0");selR.setAttribute("opacity","0");selbadge.style.opacity="0";};
+  const drawSel=(a,b)=>{const lo=Math.min(a,b),hi=Math.max(a,b),xa=x(lo),xb=x(hi);
+    selband.setAttribute("x",xa.toFixed(1));selband.setAttribute("width",Math.max(0,xb-xa).toFixed(1));selband.setAttribute("opacity","0.14");
+    selL.setAttribute("x1",x(a).toFixed(1));selL.setAttribute("x2",x(a).toFixed(1));selL.setAttribute("opacity","0.7");
+    selR.setAttribute("x1",x(b).toFixed(1));selR.setAttribute("x2",x(b).toFixed(1));selR.setAttribute("opacity","0.7");
+    const c0=data[a].c,c1=data[b].c,pct=(c1-c0)/c0*100,up=c1>=c0,mid=(xa+xb)/2;
+    selbadge.className="tip selbadge "+(up?"up":"down");selbadge.style.opacity="1";
+    selbadge.style.left=(mid/W*100)+"%";selbadge.style.top=((T+2)/H*100)+"%";
+    selbadge.innerHTML=`<b>${pct>=0?"+":""}${pct.toFixed(2)}%</b><br><span style="font-size:11px;color:var(--text-mute)">`
+      +`${c1-c0>=0?"+":""}${brl(c1-c0)} · ${data[lo].t.toLocaleDateString("pt-BR")} → ${data[hi].t.toLocaleDateString("pt-BR")}</span>`;};
+  let drag=null;
+  const dStart=ev=>{if(ev.button!==undefined&&ev.button!==0)return;if(ev.preventDefault)ev.preventDefault();drag=idxAt(ev);clearSel();};
+  const dMove=ev=>{if(drag===null)return;drawSel(drag,idxAt(ev));};
+  const dEnd=ev=>{if(drag===null)return;const j=idxAt(ev);if(j===drag)clearSel();else drawSel(drag,j);drag=null;};
+  hit.addEventListener("mousedown",dStart);hit.addEventListener("mousemove",dMove);
+  hit.addEventListener("mouseup",dEnd);hit.addEventListener("mouseleave",dEnd);
+  hit.addEventListener("touchstart",dStart,{passive:true});hit.addEventListener("touchmove",dMove,{passive:true});hit.addEventListener("touchend",dEnd);
 }
 window.addEventListener("resize",()=>{if(!$("view-detail").hidden){clearTimeout(window.__cr);window.__cr=setTimeout(renderChart,150);}});
 $("periods").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b)return;chartState.period=+b.dataset.d;renderPeriods();renderChart();});
