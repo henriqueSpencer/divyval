@@ -64,7 +64,22 @@ Lembre: preço/cotação **não** vem daqui (é yfinance, no dashboard).
 Frontend em `dashboard/index.html` (SPA, HTML/CSS/JS à mão) + backend FastAPI em
 `dashboard/backend/app.py` que serve os dados reais via **Yahoo Finance** (yfinance) e o próprio
 frontend. Classificação curada em `dashboard/backend/stocks_meta.json`.
-- **Rodar:** `cd dashboard/backend && ../../cvm_base/.venv/bin/python app.py` → abrir http://127.0.0.1:8000/
+- **Persistência:** PostgreSQL no **Supabase** — **não há mais fallback SQLite**. O app **exige**
+  a env var `DATABASE_URL` (connection string do *pooler de transação*, porta **6543**); sem ela não
+  sobe. Usa `psycopg` 3; a camada `_Conn/_Cur/_Row` traduz placeholders `?`→`%s`. `init_db()` cria e
+  semeia as tabelas no boot (379 ações do `universe.json`, `ON CONFLICT DO UPDATE`).
+- **Rodar local:** exporte a `DATABASE_URL` antes —
+  `cd dashboard/backend && DATABASE_URL='<pooler-6543>' ../../cvm_base/.venv/bin/python app.py`
+  → http://127.0.0.1:8000/. O `cvm_base/.venv` já tem `psycopg`. A connection string (com senha) **não
+  fica no repo** (é público); peça ao usuário ou pegue via MCP do Supabase.
+- **Deploy:** no ar em **https://divyval.onrender.com** (Render free web service, **auto-deploy no push
+  pra `main`**; repo **público** `henriqueSpencer/divyval`). Env vars no Render: `DATABASE_URL`,
+  `APP_PASSWORD` (Basic Auth — só a senha é validada, o usuário é ignorado), `PYTHON_VERSION`.
+  Free "dorme" após ~15 min sem uso (cold start).
+- **Supabase via MCP:** o projeto Supabase `divyval` é consultável/administrável pelo MCP nesta máquina
+  (`list_tables`/`execute_sql`/`apply_migration`). Dados do usuário (premissas, watchlist, config globais)
+  vivem em `premissa_atual`/`premissa_hist`/`watchlist`/`config` — o `init_db` **não** os re-semeia,
+  só `stocks` (do `universe.json`) e a `config` com `DO NOTHING`.
 - Endpoints: `/api/stocks` (screener), `/api/history/{ticker}?range=5y` (fechamento diário p/ o gráfico).
   Cache em memória (cotações 15min, histórico 30min).
 - **Universo completo (~378 ações da B3):** `build_universe.py` gera `universe.json` cruzando
