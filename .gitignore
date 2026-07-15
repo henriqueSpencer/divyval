@@ -18,3 +18,6 @@ dashboard/backend/divyval.db.bak
 __pycache__/
 *.pyc
 .DS_Store
+
+# === Calculadoras de renda fixa: tem repo próprio (henriqueSpencer/calculadora-renda-fixa) ===
+Calculadora RF/
