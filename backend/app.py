@@ -21,10 +21,10 @@ import base64
 import json
 import os
 import secrets
-import sqlite3
 import threading
 import time
 
+import psycopg
 import yfinance as yf
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
@@ -32,16 +32,14 @@ from fastapi.staticfiles import StaticFiles
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DASHBOARD_DIR = os.path.dirname(HERE)
-DB_PATH = os.path.join(HERE, "divyval.db")
 META = json.load(open(os.path.join(HERE, "stocks_meta.json"), encoding="utf-8"))
 UNIVERSE = json.load(open(os.path.join(HERE, "universe.json"), encoding="utf-8"))
 META_BY_TICKER = {m["ticker"]: m for m in META}
 
-# Persistência: em produção usa Turso (libSQL, na nuvem, persiste entre deploys);
-# localmente cai no arquivo SQLite (divyval.db). A troca é só via env var — o app
-# não muda de comportamento.
-TURSO_URL = os.environ.get("TURSO_DATABASE_URL")
-TURSO_TOKEN = os.environ.get("TURSO_AUTH_TOKEN")
+# Persistência: PostgreSQL (Supabase na nuvem). A conexão vem inteira de DATABASE_URL
+# — use a connection string do POOLER do Supabase (porta 6543) tanto em produção
+# quanto no dev local. Sem a env var o app não sobe (não há mais fallback SQLite).
+DATABASE_URL = os.environ.get("DATABASE_URL")
 # Senha compartilhada (Basic Auth). Sem a env var, o app fica aberto (dev local).
 APP_PASSWORD = os.environ.get("APP_PASSWORD")
 
@@ -77,7 +75,7 @@ STOCK_COLS = ["ticker", "nome", "cd_cvm", "setor", "subsetor", "segmento", "perf
 
 class _Row:
     """Linha que aceita índice por posição (r[0]) e por nome (r['col']), além de
-    dict(r) — o mesmo contrato de sqlite3.Row, para funcionar nos dois drivers."""
+    dict(r) — dá às tuplas do psycopg o mesmo contrato de acesso que o app espera."""
     __slots__ = ("_c", "_v")
 
     def __init__(self, cols, vals):
@@ -115,17 +113,19 @@ class _Cur:
 
 
 class _Conn:
-    """Conexão fina que expõe o subconjunto usado pelo app, igual para sqlite3 e libSQL."""
+    """Conexão fina sobre psycopg (PostgreSQL). Mantém o mesmo contrato que o app já usa
+    (execute/fetchone/fetchall/commit) e traduz os placeholders `?` (estilo SQLite) para
+    `%s` (estilo psycopg), para não precisar reescrever as queries."""
 
     def __init__(self):
-        if TURSO_URL:
-            import libsql  # só instalado/necessário em produção
-            self.raw = libsql.connect(TURSO_URL, auth_token=TURSO_TOKEN)
-        else:
-            self.raw = sqlite3.connect(DB_PATH)
+        if not DATABASE_URL:
+            raise RuntimeError("DATABASE_URL não definida — configure a connection string do Postgres.")
+        # prepare_threshold=None desativa prepared statements, exigência do pooler
+        # (pgBouncer em modo transaction) do Supabase.
+        self.raw = psycopg.connect(DATABASE_URL, prepare_threshold=None)
 
     def execute(self, sql, params=()):
-        return _Cur(self.raw.execute(sql, params))
+        return _Cur(self.raw.execute(sql.replace("?", "%s"), params))
 
     def executescript(self, script):
         for stmt in filter(str.strip, script.split(";")):
@@ -165,42 +165,44 @@ def init_db():
           CREATE TABLE IF NOT EXISTS stocks(
             ticker TEXT PRIMARY KEY, nome TEXT, cd_cvm TEXT, setor TEXT, subsetor TEXT, segmento TEXT,
             perfil TEXT, tamanho TEXT, gov TEXT, ctrl TEXT, modelo TEXT, tags TEXT, monitored INTEGER,
-            lpa REAL, payout REAL, liquidez REAL, roe_i REAL, g1 REAL, ke REAL, gp REAL, user INTEGER DEFAULT 0);
+            lpa REAL, payout REAL, liquidez REAL, roe_i REAL, g1 REAL, ke REAL, gp REAL, "user" INTEGER DEFAULT 0);
           CREATE TABLE IF NOT EXISTS premissa_atual(
             ticker TEXT PRIMARY KEY, lpa REAL, payout REAL, g1 REAL, ke REAL, gp REAL, updated_at TEXT);
           CREATE TABLE IF NOT EXISTS premissa_hist(
-            id INTEGER PRIMARY KEY AUTOINCREMENT, ticker TEXT, date TEXT,
+            id BIGSERIAL PRIMARY KEY, ticker TEXT, date TEXT,
             lpa REAL, payout REAL, g1 REAL, ke REAL, gp REAL);
           CREATE TABLE IF NOT EXISTS watchlist(ticker TEXT PRIMARY KEY);
           CREATE TABLE IF NOT EXISTS removed(ticker TEXT PRIMARY KEY);
           CREATE TABLE IF NOT EXISTS config(k TEXT PRIMARY KEY, v REAL);
         """)
-        # migrações (colunas do novo modelo ROE-fade). ke_default etc. já existentes -> ignora erro
-        migr = ["ALTER TABLE stocks ADD COLUMN liquidez REAL",
-                "ALTER TABLE stocks ADD COLUMN roe_i REAL"]
+        # migrações (colunas do novo modelo ROE-fade). ADD COLUMN IF NOT EXISTS é idempotente.
+        migr = ["ALTER TABLE stocks ADD COLUMN IF NOT EXISTS liquidez REAL",
+                "ALTER TABLE stocks ADD COLUMN IF NOT EXISTS roe_i REAL"]
         for tb in ("premissa_atual", "premissa_hist"):
             for col in ("ke_default INTEGER DEFAULT 1", "gp_default INTEGER DEFAULT 1",
                         "roe_i REAL", "payout_i REAL", "roe_t REAL", "payout_t REAL", "fade REAL",
                         "roet_default INTEGER DEFAULT 1", "payoutt_default INTEGER DEFAULT 1",
                         "fade_default INTEGER DEFAULT 1",
                         "growth_mode TEXT DEFAULT 'roe'", "g_i REAL", "g_t REAL"):
-                migr.append(f"ALTER TABLE {tb} ADD COLUMN {col}")
+                migr.append(f"ALTER TABLE {tb} ADD COLUMN IF NOT EXISTS {col}")
         for sql in migr:
-            try:
-                c.execute(sql)
-            except sqlite3.OperationalError:
-                pass
+            c.execute(sql)
         for k, v in (("ke_global", 0.14), ("roet_global", 0.12), ("payoutt_global", 0.60), ("fade_global", 10)):
-            c.execute("INSERT OR IGNORE INTO config(k,v) VALUES(?,?)", (k, v))
+            c.execute("INSERT INTO config(k,v) VALUES(?,?) ON CONFLICT DO NOTHING", (k, v))
         removed = {r["ticker"] for r in c.execute("SELECT ticker FROM removed").fetchall()}
+        seed_cols = ["ticker", "nome", "cd_cvm", "setor", "subsetor", "segmento", "perfil", "tamanho",
+                     "gov", "ctrl", "modelo", "tags", "monitored", "lpa", "payout", "liquidez",
+                     "roe_i", "g1", "ke", "gp"]
+        seed_ph = ",".join("?" * len(seed_cols))
+        seed_upd = ",".join(f"{col}=excluded.{col}" for col in seed_cols[1:])
+        seed_sql = (f'INSERT INTO stocks({",".join(seed_cols)},"user") VALUES({seed_ph},0) '
+                    f'ON CONFLICT(ticker) DO UPDATE SET {seed_upd},"user"=excluded."user"')
         for u in UNIVERSE:  # base do universo (não sobrescreve ações adicionadas pelo usuário)
             if u["ticker"] in removed:   # ação apagada pelo usuário -> não re-semeia
                 continue
             monit = 1 if u.get("monitored") else 0
             c.execute(
-                "INSERT OR REPLACE INTO stocks(ticker,nome,cd_cvm,setor,subsetor,segmento,perfil,"
-                "tamanho,gov,ctrl,modelo,tags,monitored,lpa,payout,liquidez,roe_i,g1,ke,gp,user) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)",
+                seed_sql,
                 (u["ticker"], u["nome"], u.get("cd_cvm"), u["setor"], u["subsetor"], u["segmento"],
                  u.get("perfil") or "", u["tamanho"], u.get("gov") or "", u["ctrl"], u["modelo"],
                  json.dumps(u.get("tags") or [], ensure_ascii=False), monit,
@@ -362,7 +364,7 @@ def get_watchlist():
 @app.post("/api/watchlist/{ticker}")
 def add_watchlist(ticker: str):
     with db() as c:
-        c.execute("INSERT OR IGNORE INTO watchlist(ticker) VALUES(?)", [ticker.upper()])
+        c.execute("INSERT INTO watchlist(ticker) VALUES(?) ON CONFLICT DO NOTHING", [ticker.upper()])
         c.commit()
     return {"ok": True}
 
@@ -386,7 +388,7 @@ async def adicionar_acao(req: Request):
             return JSONResponse({"ok": False, "erro": "ticker já cadastrado"}, status_code=409)
         c.execute(
             "INSERT INTO stocks(ticker,nome,cd_cvm,setor,subsetor,segmento,perfil,tamanho,gov,ctrl,"
-            "modelo,tags,monitored,lpa,payout,roe_i,user) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)",
+            'modelo,tags,monitored,lpa,payout,roe_i,"user") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)',
             (tk, s.get("nome"), None, s.get("setor", ""), s.get("subsetor", ""), s.get("segmento", ""),
              s.get("perfil", ""), s.get("tamanho", ""), s.get("gov", ""), s.get("ctrl", ""),
              s.get("modelo", "DDM · 2 est."), json.dumps(s.get("tags", []), ensure_ascii=False),
@@ -425,7 +427,7 @@ def remover_acao(ticker: str):
     """Apaga a ação por completo (base + watchlist + premissas) e veta o re-semear do universo."""
     tk = ticker.upper()
     with db() as c:
-        c.execute("INSERT OR IGNORE INTO removed(ticker) VALUES(?)", [tk])
+        c.execute("INSERT INTO removed(ticker) VALUES(?) ON CONFLICT DO NOTHING", [tk])
         c.execute("DELETE FROM stocks WHERE ticker=?", [tk])
         c.execute("DELETE FROM watchlist WHERE ticker=?", [tk])
         c.execute("DELETE FROM premissa_atual WHERE ticker=?", [tk])
