@@ -67,7 +67,10 @@ frontend. Classificação curada em `dashboard/backend/stocks_meta.json`.
 - **Persistência:** PostgreSQL no **Supabase** — **não há mais fallback SQLite**. O app **exige**
   a env var `DATABASE_URL` (connection string do *pooler de transação*, porta **6543**); sem ela não
   sobe. Usa `psycopg` 3; a camada `_Conn/_Cur/_Row` traduz placeholders `?`→`%s`. `init_db()` cria e
-  semeia as tabelas no boot (379 ações do `universe.json`, `ON CONFLICT DO UPDATE`).
+  semeia as tabelas no boot (379 ações do `universe.json`). No re-seed (`ON CONFLICT`) ele **só refresca
+  os fundamentos** (LPA/ROE/payout/liquidez…) e **preserva o que o usuário edita na UI** — `modelo`,
+  classificação (setor/subsetor/segmento/perfil/tamanho/gov/ctrl) e `tags`. (Sem isso, todo boot resetava
+  o modelo de cada ação pra "DDM · 2 est." — bug corrigido.)
 - **Rodar local:** exporte a `DATABASE_URL` antes —
   `cd dashboard/backend && DATABASE_URL='<pooler-6543>' ../../cvm_base/.venv/bin/python app.py`
   → http://127.0.0.1:8000/. O `cvm_base/.venv` já tem `psycopg`. A connection string (com senha) **não
@@ -90,7 +93,14 @@ frontend. Classificação curada em `dashboard/backend/stocks_meta.json`.
     padrão global (Configurações) via checkbox "padrão", igual ao DDM. Premissas por ação em
     `premissa_atual`/`premissa_hist`; o R1 acrescentou as colunas **`fut_pe`** (P/L futuro) e **`mos`**
     (margem); payout→`payout_i`, retorno→`ke`, horizonte→`fade`. Screener e histórico recalculam por modelo.
+  - **O modelo é escolhido por pré-visualização:** o seletor no detalhe só troca a visualização
+    (`previewModel`); o modelo só grava na ação (`stocks.modelo`, via `commitModel`→PATCH) ao clicar em
+    **"Salvar premissas"**. Trocar o seletor não altera screener/Monitoradas até salvar.
 - O gráfico de preços tem **seleção por clique-e-arrasto** (mostra a variação % entre dois pontos).
+- **Cold start (Render free):** o `bootstrap` re-tenta `/api/stocks` (o spin-up pode devolver 502 → o
+  `fetchStocks` retorna `null`) até vir dado real; sem isso o app ficava preso na amostra embutida (12
+  ações, todas DDM). O backend serve o HTML com `Cache-Control: no-cache` (revalida via etag) pra o
+  navegador não rodar JS/estado antigos após um deploy.
 - Endpoints: `/api/stocks` (screener), `/api/history/{ticker}?range=5y` (fechamento diário p/ o gráfico).
   Cache em memória (cotações 15min, histórico 30min).
 - **Universo completo (~378 ações da B3):** `build_universe.py` gera `universe.json` cruzando
