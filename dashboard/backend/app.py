@@ -200,9 +200,13 @@ def init_db():
                      "gov", "ctrl", "modelo", "tags", "monitored", "lpa", "payout", "liquidez",
                      "roe_i", "g1", "ke", "gp"]
         seed_ph = ",".join("?" * len(seed_cols))
-        seed_upd = ",".join(f"{col}=excluded.{col}" for col in seed_cols[1:])
+        # Ao re-semear (ON CONFLICT), NÃO sobrescrever o que o usuário edita na UI — o `modelo`
+        # escolhido, a classificação e as tags. Só refresca os fundamentos vindos do universe.json;
+        # senão todo boot/deploy resetaria o modelo de cada ação de volta pra "DDM · 2 est.".
+        seed_keep = {"nome", "setor", "subsetor", "segmento", "perfil", "tamanho", "gov", "ctrl", "modelo", "tags"}
+        seed_upd = ",".join(f"{col}=excluded.{col}" for col in seed_cols[1:] if col not in seed_keep)
         seed_sql = (f'INSERT INTO stocks({",".join(seed_cols)},"user") VALUES({seed_ph},0) '
-                    f'ON CONFLICT(ticker) DO UPDATE SET {seed_upd},"user"=excluded."user"')
+                    f'ON CONFLICT(ticker) DO UPDATE SET {seed_upd}')
         for u in UNIVERSE:  # base do universo (não sobrescreve ações adicionadas pelo usuário)
             if u["ticker"] in removed:   # ação apagada pelo usuário -> não re-semeia
                 continue
