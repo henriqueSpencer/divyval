@@ -61,7 +61,12 @@ async def _auth(request: Request, call_next):
         if not ok:
             return Response("Autenticação necessária", status_code=401,
                             headers={"WWW-Authenticate": 'Basic realm="DIVYVAL"'})
-    return await call_next(request)
+    resp = await call_next(request)
+    # HTML não deve ser servido "stale": sem isso o navegador cacheia o index.html por heurística
+    # e roda JS/estado antigos após um deploy. no-cache mantém o 304 (revalida via etag), sem servir velho.
+    if "text/html" in resp.headers.get("content-type", ""):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 _price_cache = {"data": None, "ts": 0}
 _hist_cache = {}          # (ticker, range) -> {"data":..., "ts":...}
