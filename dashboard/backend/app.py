@@ -183,7 +183,8 @@ def init_db():
                         "roe_i REAL", "payout_i REAL", "roe_t REAL", "payout_t REAL", "fade REAL",
                         "roet_default INTEGER DEFAULT 1", "payoutt_default INTEGER DEFAULT 1",
                         "fade_default INTEGER DEFAULT 1",
-                        "growth_mode TEXT DEFAULT 'roe'", "g_i REAL", "g_t REAL"):
+                        "growth_mode TEXT DEFAULT 'roe'", "g_i REAL", "g_t REAL",
+                        "fut_pe REAL", "mos REAL"):
                 migr.append(f"ALTER TABLE {tb} ADD COLUMN IF NOT EXISTS {col}")
         for sql in migr:
             c.execute(sql)
@@ -282,6 +283,9 @@ def build_stocks():
         r["g_i"] = p.get("g_i")
         g_t_global = groet * (1 - gpayoutt)   # g terminal padrão = ROE_t global × (1 − payout_t global)
         r["g_t"] = p["g_t"] if (not p.get("roet_default", 1) and p.get("g_t") is not None) else g_t_global
+        # knobs do modelo Regra nº1 (Town): P/L futuro e margem de segurança
+        r["fut_pe"] = p.get("fut_pe")
+        r["mos"] = p.get("mos")
         for k in ("g1", "gp", "payout"):
             r.pop(k, None)
         r["price"] = prices.get(r["ticker"])
@@ -322,7 +326,7 @@ async def set_config(req: Request):
 
 
 PREM_COLS = ["lpa", "roe_i", "payout_i", "roe_t", "payout_t", "fade", "ke",
-             "growth_mode", "g_i", "g_t",
+             "growth_mode", "g_i", "g_t", "fut_pe", "mos",
              "ke_default", "roet_default", "payoutt_default", "fade_default"]
 
 
