@@ -499,7 +499,7 @@ button{font-family:inherit;}
       <div class="stack">
         <!-- seletor de modelo de valuation (por ação) -->
         <div class="card card-pad" id="modelSwitchCard">
-          <div class="box-head"><h3>Modelo de valuation</h3><span class="box-sub">escolha por ação</span></div>
+          <div class="box-head"><h3>Modelo de valuation</h3><span class="box-sub">pré-visualize · salve para aplicar à ação</span></div>
           <div class="mode-toggle" id="modelSwitch" role="tablist" aria-label="Modelo de valuation">
             <button type="button" class="gt-btn" data-model="DDM · 2 est.">DDM · dividendos</button>
             <button type="button" class="gt-btn" data-model="Owner Earnings DCF">Owner Earnings · Buffett</button>
@@ -1335,7 +1335,8 @@ function renderDDM(){
 }
 
 /* ===== dispatcher de modelo no detalhe (DDM / Owner Earnings / Regra nº1) ===== */
-let detailMeta=false;
+/* previewModel = modelo apenas VISUALIZADO no detalhe; só vira o padrão da ação ao Salvar. */
+let detailMeta=false, previewModel=null;
 const MODEL_LBL={
  [M2]:["Preço justo · DDM","Preço justo (DDM)","Dividendos descontados ao Ke, com fade de ROE/payout + perpetuidade de Gordon."],
  [M_OE]:["Preço justo · Owner Earnings","Preço justo (Owner Earnings)","O método do Buffett: traz o lucro do dono (≈LPA) a valor presente por N anos + perpetuidade."],
@@ -1352,8 +1353,15 @@ function setMarginRow(id,lblid,fair,price){const im=$(id),ok=isFinite(fair);
     im.textContent=(m>=0?"+":"")+dec(m,1)+"%";$(lblid).textContent="vs. preço atual "+brl(price);}
   else{im.className="v num";im.textContent="—";$(lblid).textContent="sem preço de mercado";}
 }
+function commitModel(){   // grava o modelo pré-visualizado como padrão da ação (chamado no Salvar)
+  if(!currentStock||currentStock.ticker==="Exemplo")return Promise.resolve();
+  const m=previewModel||M2;
+  if(m===(currentStock.modelo||M2))return Promise.resolve();
+  currentStock.modelo=m;const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st)st.modelo=m;
+  return fetch(`/api/stocks/${currentStock.ticker}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({modelo:m})}).catch(()=>{});
+}
 function renderModel(){
-  const m=(currentStock&&currentStock.modelo)||M2;
+  const m=previewModel||(currentStock&&currentStock.modelo)||M2;
   $("panel-ddm").hidden=m!==M2;$("panel-oe").hidden=m!==M_OE;$("panel-r1").hidden=m!==M_R1;
   if(!detailMeta){$("histCard").style.display="";renderHistory();}
   document.querySelectorAll("#modelSwitch .gt-btn").forEach(b=>b.classList.toggle("active",b.dataset.model===m));
@@ -1450,12 +1458,11 @@ function renderR1(){
 DEF_OE.forEach(([chk])=>$(chk).addEventListener("change",()=>{applyDefList(DEF_OE);renderOE();}));
 DEF_R1.forEach(([chk])=>$(chk).addEventListener("change",()=>{applyDefList(DEF_R1);renderR1();}));
 /* trocar o modelo da ação (persiste via PATCH modelo, que o backend já suporta) */
-$("modelSwitch").addEventListener("click",async e=>{
+$("modelSwitch").addEventListener("click",e=>{
   const b=e.target.closest(".gt-btn");if(!b||!currentStock)return;
-  const m=b.dataset.model;if(m===((currentStock.modelo)||M2))return;
-  currentStock.modelo=m;const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st)st.modelo=m;
+  const m=b.dataset.model;if(m===(previewModel||M2))return;
+  previewModel=m;   // só pré-visualiza; o modelo só grava na ação (e no screener) ao clicar em Salvar
   renderModel();
-  if(currentStock.ticker!=="Exemplo"){try{await fetch(`/api/stocks/${currentStock.ticker}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({modelo:m})});}catch(err){}}
 });
 /* salvar premissas dos modelos Buffett */
 $("oeSaveBtn").addEventListener("click",async()=>{
@@ -1467,6 +1474,7 @@ $("oeSaveBtn").addEventListener("click",async()=>{
   const btn=$("oeSaveBtn"),lbl=btn.innerHTML;btn.disabled=true;btn.textContent="Salvando…";
   try{const r=await fetch(`/api/premissas/${currentStock.ticker}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw 0;
     const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.g_t=gT;st.ke=d;st.fade=n;st.growth_mode="g";}
+    await commitModel();
     await loadPremissas(currentStock.ticker);
   }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
   btn.disabled=false;btn.innerHTML=lbl;
@@ -1481,6 +1489,7 @@ $("r1SaveBtn").addEventListener("click",async()=>{
   const btn=$("r1SaveBtn"),lbl=btn.innerHTML;btn.disabled=true;btn.textContent="Salvando…";
   try{const r=await fetch(`/api/premissas/${currentStock.ticker}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw 0;
     const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.growth_mode="g";st.payout_i=payout;st.fut_pe=futPE;st.mos=mos;st.ke=kd?globalCfg.ke:ke;st.fade=fd?globalCfg.fade:fade;}
+    await commitModel();
     await loadPremissas(currentStock.ticker);
   }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
   btn.disabled=false;btn.innerHTML=lbl;
@@ -1507,6 +1516,7 @@ $("saveBtn").addEventListener("click",async()=>{
       st.payout_t=flags.payoutt_default?globalCfg.payoutt:a.payoutT;
       st.fade=flags.fade_default?globalCfg.fade:a.fade;
       st.ke=flags.ke_default?globalCfg.ke:a.ke;}
+    await commitModel();   // grava o modelo pré-visualizado como padrão da ação
     await loadPremissas(currentStock.ticker);   // recarrega histórico do banco
   }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
   btn.disabled=false;btn.innerHTML=lbl;
@@ -1702,7 +1712,7 @@ $("cfgFade").addEventListener("input",()=>$("cfgFadeVal").textContent=Math.round
 ["cfgKe","cfgRoet","cfgPayoutt","cfgFade"].forEach(id=>$(id).addEventListener("change",saveConfig));
 function setActiveNav(r){document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("active",a.dataset.route===r));}
 function openStock(s,mode){
-  currentStock=s;show("detail");renderPeriods();
+  currentStock=s;previewModel=(s&&s.modelo)||M2;show("detail");renderPeriods();
   if(mode==="metodologia"){setActiveNav("metodologia");
     $("crumb").innerHTML=`<span>Metodologia</span> <span>/</span> <span>como o preço justo é calculado</span>`;
     $("dTicker").textContent="Metodologia";$("dSector").style.display="none";$("dName").textContent="Um exemplo didático de ponta a ponta — ajuste os sliders para ver cada passo reagir.";
