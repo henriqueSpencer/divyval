@@ -683,23 +683,33 @@ button{font-family:inherit;}
           </div>
         </div>
         <div class="card">
-          <div class="steps-head"><div><h2>A conta, passo a passo</h2><p>A versão simples do Buffett (Phil Town): o preço que trava o retorno exigido com margem.</p></div><div class="now">com os seus números atuais</div></div>
+          <div class="steps-head"><div><h2>A conta, passo a passo</h2><p>A ideia do Phil Town (estilo Buffett): seu retorno vem de <b>duas fontes</b> — os <b>dividendos</b> que você recebe segurando a ação e o <b>preço de venda</b> no fim. Somando as duas e trazendo a hoje, acha-se o preço justo; a margem de segurança dá o preço-teto de compra.</p></div><div class="now">com os seus números atuais</div></div>
           <div class="step"><div class="step-badge">1</div><div>
-            <div class="step-title">LPA daqui a N anos</div>
-            <div class="formula num"><span class="lead">LPA futuro</span> = <span id="r1-f-lpa">4,24</span> × (1+<span id="r1-f-g">10%</span>)^<span id="r1-f-years">10</span> = <span class="accent" id="r1-f-eps">—</span></div>
+            <div class="step-title">Projetar o LPA e os dividendos, ano a ano</div>
+            <div class="step-body">O lucro por ação cresce à taxa <span class="mono">g</span>. A cada ano a empresa distribui <span class="mono">LPA × payout</span> em dividendos, que vão <b>pro seu bolso</b> — e cada um é trazido a hoje por <span class="mono">(1 + retorno)<sup>ano</sup></span>.</div>
+            <table class="proj num"><thead><tr><th>Ano</th><th>LPA</th><th>Dividendo</th><th>÷ (1+ret)<sup>ano</sup></th><th>= VP</th></tr></thead>
+              <tbody id="r1-proj"></tbody>
+              <tfoot><tr class="sum"><td colspan="4">Soma dos dividendos recebidos (a valor presente)</td><td class="pv" id="r1-f-pvdiv">—</td></tr></tfoot></table>
           </div></div>
           <div class="step"><div class="step-badge">2</div><div>
-            <div class="step-title">Preço futuro pelo P/L de saída</div>
-            <div class="formula num"><span class="lead">Preço futuro</span> = <span id="r1-f-eps2">—</span> × <span id="r1-f-pe">15</span> = <span class="accent" id="r1-f-pf">—</span></div>
+            <div class="step-title">O preço de venda no fim do horizonte</div>
+            <div class="step-body">Ao fim dos <span id="r1-f-years">10</span> anos você vende a ação. O mercado paga um múltiplo sobre o lucro daquele ano — o <b>P/L futuro</b> que você estima.</div>
+            <div class="formula num"><span class="lead">Preço de venda</span> = LPA futuro <span id="r1-f-eps">—</span> × P/L <span id="r1-f-pe">15</span> = <span class="accent" id="r1-f-pf">—</span></div>
           </div></div>
           <div class="step"><div class="step-badge">3</div><div>
-            <div class="step-title">Somar os dividendos recebidos + trazer a venda a hoje</div>
-            <div class="step-body">O retorno vem de <b>duas fontes</b>: os dividendos recebidos ao longo dos anos e o preço de venda no fim — os dois trazidos a hoje pelo retorno exigido. Contar os dividendos evita ter que inflar o <span class="mono">g</span> para o preço fechar.</div>
-            <div class="formula num" style="font-size:15px;"><span class="lead">Preço justo</span> = <span id="r1-f-vpdiv">—</span> <span style="color:var(--text-mute)">div</span> + <span id="r1-f-vpprice">—</span> <span style="color:var(--text-mute)">venda</span> = <span class="accent" id="r1-f-sticker">—</span></div>
+            <div class="step-title">Trazer o preço de venda a hoje</div>
+            <div class="step-body">Esse dinheiro só chega daqui a <span id="r1-f-years2">10</span> anos, então vale menos hoje: desconta pelo <b>retorno exigido</b>.</div>
+            <div class="formula num"><span class="lead">VP da venda</span> = <span id="r1-f-pf2">—</span> ÷ (1 + <span id="r1-f-req">14%</span>)<sup><span id="r1-f-years3">10</span></sup> = <span class="accent" id="r1-f-vpprice">—</span></div>
           </div></div>
           <div class="step"><div class="step-badge">4</div><div>
-            <div class="step-title">Aplicar a margem de segurança</div>
-            <div class="formula num" style="font-size:15px;"><span id="r1-f-sticker2">—</span> × (1 − <span id="r1-f-mos">50%</span>) = <span class="accent" id="r1-f-buy">—</span> <span style="color:var(--text-mute);font-size:13px">preço-teto</span></div>
+            <div class="step-title">Somar as duas fontes = preço justo</div>
+            <div class="step-body">O valor da ação hoje é tudo que ela te devolve: os <b>dividendos</b> do passo 1 mais a <b>venda</b> do passo 3. É contar os dividendos que evita ter de inflar o <span class="mono">g</span> só pra o preço fechar.</div>
+            <div class="formula num" style="font-size:15px;"><span id="r1-f-pvdiv2">—</span> <span style="color:var(--text-mute)">dividendos</span> + <span id="r1-f-vpprice2">—</span> <span style="color:var(--text-mute)">venda</span> = <span class="accent" id="r1-f-sticker">—</span> <span style="color:var(--text-mute);font-size:13px">preço justo</span></div>
+          </div></div>
+          <div class="step"><div class="step-badge">5</div><div>
+            <div class="step-title">Aplicar a margem de segurança = preço-teto</div>
+            <div class="step-body">Só compre com desconto sobre o preço justo — a margem protege de erros nas suas estimativas de crescimento e múltiplo.</div>
+            <div class="formula num" style="font-size:15px;"><span id="r1-f-sticker2">—</span> × (1 − <span id="r1-f-mos">50%</span>) = <span class="accent" id="r1-f-buy">—</span> <span style="color:var(--text-mute);font-size:13px">preço-teto de compra</span></div>
           </div></div>
         </div>
         </div><!-- /panel-r1 -->
@@ -1423,10 +1433,13 @@ function renderR1(){
   if(ok&&price>0){const under=price<=r.buy,share=dec(r.pvDiv/r.sticker*100,0);
     $("r1-buy-note").innerHTML=`Dividendos são <b>${share}%</b> do preço justo. `+(under?`Preço atual <b>${brl(price)}</b> está <b>abaixo</b> do teto de compra ${brl(r.buy)} — dentro da margem de ${pctv(mos*100)}.`:`Preço atual <b>${brl(price)}</b> está <b>acima</b> do teto de compra ${brl(r.buy)} — espere um preço melhor.`);}
   else $("r1-buy-note").textContent="";
-  $("r1-f-lpa").textContent=dec(lpa);$("r1-f-g").textContent=pctv(g*100);$("r1-f-years").textContent=Math.round(years);
-  $("r1-f-eps").textContent=ok?dec(r.epsFut):"—";$("r1-f-eps2").textContent=ok?brl(r.epsFut):"—";
-  $("r1-f-pe").textContent=dec(futPE,1);$("r1-f-pf").textContent=ok?brl(r.priceFut):"—";
-  $("r1-f-vpdiv").textContent=ok?brl(r.pvDiv):"—";$("r1-f-vpprice").textContent=ok?brl(r.pvPrice):"—";
+  const yrs=Math.round(years);
+  $("r1-proj").innerHTML=(ok?r.rows:[]).map(x=>`<tr><td>Ano ${x.k}</td><td>${brl(x.eps)}</td><td>${brl(x.div)}</td><td>÷ ${dec(Math.pow(1+req,x.k),2)}</td><td class="pv">${brl(x.pv)}</td></tr>`).join("");
+  $("r1-f-pvdiv").textContent=ok?brl(r.pvDiv):"—";$("r1-f-pvdiv2").textContent=ok?brl(r.pvDiv):"—";
+  $("r1-f-years").textContent=yrs;$("r1-f-years2").textContent=yrs;$("r1-f-years3").textContent=yrs;
+  $("r1-f-eps").textContent=ok?dec(r.epsFut):"—";
+  $("r1-f-pe").textContent=dec(futPE,1);$("r1-f-pf").textContent=ok?brl(r.priceFut):"—";$("r1-f-pf2").textContent=ok?brl(r.priceFut):"—";
+  $("r1-f-req").textContent=pctv(req*100);$("r1-f-vpprice").textContent=ok?brl(r.pvPrice):"—";$("r1-f-vpprice2").textContent=ok?brl(r.pvPrice):"—";
   $("r1-f-sticker").textContent=ok?brl(r.sticker):"—";$("r1-f-sticker2").textContent=ok?brl(r.sticker):"—";
   $("r1-f-mos").textContent=pctv(mos*100);$("r1-f-buy").textContent=ok?brl(r.buy):"—";
   chartState.fair=ok?r.sticker:NaN;chartState.price=price;renderChart();
