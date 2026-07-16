@@ -80,6 +80,17 @@ frontend. Classificação curada em `dashboard/backend/stocks_meta.json`.
   (`list_tables`/`execute_sql`/`apply_migration`). Dados do usuário (premissas, watchlist, config globais)
   vivem em `premissa_atual`/`premissa_hist`/`watchlist`/`config` — o `init_db` **não** os re-semeia,
   só `stocks` (do `universe.json`) e a `config` com `DO NOTHING`.
+- **Modelos de valuation (escolhíveis por ação — campo `stocks.modelo`):** todo o cálculo é no
+  **frontend** (`index.html`), despachado por `fairResult(s)`. Três modelos:
+  - `DDM · 2 est.` (`computeDDM`) — dividendos descontados ao Ke, fade de ROE/payout + perpetuidade de Gordon (o padrão).
+  - `Owner Earnings DCF` (`computeOE`) — método do Buffett: lucro do dono (≈LPA) a VP por N anos + perpetuidade.
+  - `Regra nº1 · Town` (`computeR1`) — LPA×(P/L futuro) descontado ao retorno **+ dividendos recebidos** (payout);
+    saída = preço justo (sticker) e **preço-teto de compra** (sticker×(1−margem)).
+  - **Ke (= retorno exigido) e horizonte (= anos de fade) são compartilhados** entre os modelos: usam o
+    padrão global (Configurações) via checkbox "padrão", igual ao DDM. Premissas por ação em
+    `premissa_atual`/`premissa_hist`; o R1 acrescentou as colunas **`fut_pe`** (P/L futuro) e **`mos`**
+    (margem); payout→`payout_i`, retorno→`ke`, horizonte→`fade`. Screener e histórico recalculam por modelo.
+- O gráfico de preços tem **seleção por clique-e-arrasto** (mostra a variação % entre dois pontos).
 - Endpoints: `/api/stocks` (screener), `/api/history/{ticker}?range=5y` (fechamento diário p/ o gráfico).
   Cache em memória (cotações 15min, histórico 30min).
 - **Universo completo (~378 ações da B3):** `build_universe.py` gera `universe.json` cruzando
