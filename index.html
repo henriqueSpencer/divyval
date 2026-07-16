@@ -890,15 +890,14 @@ const oeD=s=>s.ke!=null?s.ke:globalCfg.ke;
 const oeN=s=>s.fade!=null?s.fade:globalCfg.fade;
 const defPE=g=>{const v=Math.round(2*g*100);return Math.max(8,Math.min(isFinite(v)?v:15,25));};
 const r1Payout=s=>s&&s.payout_i!=null?s.payout_i:(s&&s.payout!=null?s.payout:0.4);
-/* knobs exclusivos do R1 (P/L futuro, retorno, margem) — por enquanto no localStorage (viram colunas no deploy) */
-function r1Get(tk){try{return JSON.parse(localStorage.getItem("r1cfg-"+tk))||{};}catch(e){return {};}}
-function r1Set(tk,c){try{localStorage.setItem("r1cfg-"+tk,JSON.stringify(c));}catch(e){}}
+/* knobs do R1 (P/L futuro em fut_pe, margem em mos, payout em payout_i, retorno em ke) persistem
+   nas colunas de premissa do Supabase — não há mais localStorage. */
 
 /* dispatcher: valor justo conforme o modelo escolhido da ação */
 function fairResult(s){
   const m=s.modelo||M2;
   if(m===M_OE){const r=computeOE({lpa:s.lpa,g:oeG(s),gT:oeGT(s),disc:oeD(s),years:oeN(s)});return {model:m,fair:r.fair,valid:r.valid};}
-  if(m===M_R1){const c=r1Get(s.ticker),g=oeG(s);const r=computeR1({lpa:s.lpa,g,futPE:c.pe??defPE(g),req:c.req??globalCfg.ke,years:oeN(s),mos:c.mos??0.5,payout:c.payout??r1Payout(s)});return {model:m,fair:r.sticker,valid:r.valid,buy:r.buy};}
+  if(m===M_R1){const g=oeG(s);const r=computeR1({lpa:s.lpa,g,futPE:s.fut_pe!=null?s.fut_pe:defPE(g),req:s.ke!=null?s.ke:globalCfg.ke,years:oeN(s),mos:s.mos!=null?s.mos:0.5,payout:s.payout_i!=null?s.payout_i:r1Payout(s)});return {model:m,fair:r.sticker,valid:r.valid,buy:r.buy};}
   const r=computeDDM(params(s));return {model:m,fair:r.fair,valid:r.valid};
 }
 const marginOf=s=>{if(!s.price||!s.lpa||s.lpa<=0)return null;const r=fairResult(s);return (r.valid&&isFinite(r.fair))?(r.fair-s.price)/s.price*100:null;};
@@ -1365,10 +1364,10 @@ function applyDefList(list){
 function seedModels(s){
   $("oe-lpa").value=s.lpa!=null?s.lpa:0;
   $("oe-g").value=Math.round(oeG(s)*1000)/10;$("oe-gt").value=Math.round(oeGT(s)*1000)/10;
-  const c=r1Get(s.ticker),g=oeG(s);
+  const g=oeG(s);
   $("r1-lpa").value=s.lpa!=null?s.lpa:0;$("r1-g").value=Math.round(g*1000)/10;
-  $("r1-payout").value=Math.round((c.payout!=null?c.payout:r1Payout(s))*100);
-  $("r1-pe").value=c.pe!=null?c.pe:defPE(g);$("r1-mos").value=Math.round((c.mos!=null?c.mos:0.5)*100);
+  $("r1-payout").value=Math.round((s.payout_i!=null?s.payout_i:r1Payout(s))*100);
+  $("r1-pe").value=s.fut_pe!=null?s.fut_pe:defPE(g);$("r1-mos").value=Math.round((s.mos!=null?s.mos:0.5)*100);
   ["oe-dDefault","oe-nDefault","r1-reqDefault","r1-nDefault"].forEach(id=>$(id).checked=true);
   applyDefList(DEF_OE);applyDefList(DEF_R1);
 }
@@ -1376,6 +1375,9 @@ function seedModelsPrem(p){   // ajusta OE/R1 a partir da premissa salva (respei
   if(p.lpa!=null){$("oe-lpa").value=p.lpa;$("r1-lpa").value=p.lpa;}
   if(p.g_i!=null){$("oe-g").value=Math.round(p.g_i*1000)/10;$("r1-g").value=Math.round(p.g_i*1000)/10;}
   if(p.g_t!=null)$("oe-gt").value=Math.round(p.g_t*1000)/10;
+  if(p.payout_i!=null)$("r1-payout").value=Math.round(p.payout_i*100);
+  if(p.fut_pe!=null)$("r1-pe").value=p.fut_pe;
+  if(p.mos!=null)$("r1-mos").value=Math.round(p.mos*100);
   const sd=(chk,slider,val,def,isFade)=>{const on=def==null?true:!!def;$(chk).checked=on;if(!on&&val!=null)$(slider).value=isFade?Math.round(val):Math.round(val*1000)/10;};
   sd("oe-dDefault","oe-d",p.ke,p.ke_default);sd("oe-nDefault","oe-n",p.fade,p.fade_default,true);
   sd("r1-reqDefault","r1-req",p.ke,p.ke_default);sd("r1-nDefault","r1-n",p.fade,p.fade_default,true);
@@ -1458,14 +1460,15 @@ $("oeSaveBtn").addEventListener("click",async()=>{
 });
 $("r1SaveBtn").addEventListener("click",async()=>{
   if(!currentStock||currentStock.ticker==="Exemplo")return;
-  const lpa=+$("r1-lpa").value,g=+$("r1-g").value/100;
-  r1Set(currentStock.ticker,{pe:+$("r1-pe").value,req:+$("r1-req").value/100,mos:+$("r1-mos").value/100,payout:+$("r1-payout").value/100});
+  const lpa=+$("r1-lpa").value,g=+$("r1-g").value/100,payout=+$("r1-payout").value/100,futPE=+$("r1-pe").value,mos=+$("r1-mos").value/100,ke=+$("r1-req").value/100,fade=+$("r1-n").value;
+  const kd=$("r1-reqDefault").checked?1:0,fd=$("r1-nDefault").checked?1:0;
   const now=new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
-  const entry={date:now,lpa,growth_mode:"g",g_i:g,ke:+$("r1-req").value/100,fade:+$("r1-n").value,
-    ke_default:$("r1-reqDefault").checked?1:0,roet_default:1,payoutt_default:1,fade_default:$("r1-nDefault").checked?1:0};
+  const entry={date:now,lpa,growth_mode:"g",g_i:g,payout_i:payout,fut_pe:futPE,mos:mos,ke:ke,fade:fade,
+    ke_default:kd,roet_default:1,payoutt_default:1,fade_default:fd};
   const btn=$("r1SaveBtn"),lbl=btn.innerHTML;btn.disabled=true;btn.textContent="Salvando…";
   try{const r=await fetch(`/api/premissas/${currentStock.ticker}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw 0;
-    const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.growth_mode="g";}
+    const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.growth_mode="g";st.payout_i=payout;st.fut_pe=futPE;st.mos=mos;st.ke=kd?globalCfg.ke:ke;st.fade=fd?globalCfg.fade:fade;}
+    await loadPremissas(currentStock.ticker);
   }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
   btn.disabled=false;btn.innerHTML=lbl;
 });
@@ -1535,9 +1538,9 @@ function histResult(h){   // valor justo do snapshot conforme o modelo ativo da 
   if(m===M_OE){const g=ep.gI!=null?ep.gI:(ep.roeI!=null?ep.roeI*(1-(ep.payoutI!=null?ep.payoutI:0.5)):0.08),gt=h.g_t!=null?h.g_t:0.03;
     const r=computeOE({lpa:ep.lpa,g,gT:gt,disc:ep.ke,years:ep.fade});
     return {fair:r.fair,label:`Ke ${pctv(ep.ke*100)} · g ${pctv(g*100)}→${pctv(gt*100)} · ${Math.round(ep.fade)}a`};}
-  if(m===M_R1){const c=r1Get(currentStock.ticker),g=ep.gI!=null?ep.gI:0.10,po=c.payout??r1Payout(currentStock);
-    const r=computeR1({lpa:ep.lpa,g,futPE:c.pe??defPE(g),req:ep.ke,years:ep.fade,mos:c.mos??0.5,payout:po});
-    return {fair:r.sticker,label:`Ke ${pctv(ep.ke*100)} · g ${pctv(g*100)} · payout ${pctv(po*100)} · P/L ${dec(c.pe??defPE(g),0)} · MS ${pctv((c.mos??0.5)*100)}`};}
+  if(m===M_R1){const g=ep.gI!=null?ep.gI:0.10,po=h.payout_i!=null?h.payout_i:r1Payout(currentStock),pe=h.fut_pe!=null?h.fut_pe:defPE(g),ms=h.mos!=null?h.mos:0.5;
+    const r=computeR1({lpa:ep.lpa,g,futPE:pe,req:ep.ke,years:ep.fade,mos:ms,payout:po});
+    return {fair:r.sticker,label:`Ke ${pctv(ep.ke*100)} · g ${pctv(g*100)} · payout ${pctv(po*100)} · P/L ${dec(pe,0)} · MS ${pctv(ms*100)}`};}
   const r=computeDDM(ep),growth=ep.mode==="g"?`g ${pctv(ep.gI*100)}→${pctv(ep.gTerm*100)}`:`ROE ${pctv(ep.roeI*100)}→${pctv(ep.roeT*100)}`;
   return {fair:r.fair,label:`Ke ${pctv(ep.ke*100)} · ${growth} · payout ${pctv(ep.payoutI*100)}→${pctv(ep.payoutT*100)} · fade ${Math.round(ep.fade)}a`};
 }
@@ -1744,7 +1747,7 @@ $("themeBtn").addEventListener("click",()=>setTheme(root.getAttribute("data-them
 function fromApi(d){return {ticker:d.ticker,nome:d.nome,cd_cvm:d.cd_cvm,cl:P(d.setor,d.subsetor,d.segmento),
   perfil:d.perfil,tamanho:d.tamanho,gov:d.gov,ctrl:d.ctrl,modelo:d.modelo,tags:d.tags||[],monitored:d.monitored,
   price:d.price,liquidez:d.liquidez,lpa:d.lpa,roe_i:d.roe_i,payout_i:d.payout_i,roe_t:d.roe_t,payout_t:d.payout_t,fade:d.fade,ke:d.ke,
-  growth_mode:d.growth_mode,g_i:d.g_i,g_t:d.g_t};}
+  growth_mode:d.growth_mode,g_i:d.g_i,g_t:d.g_t,fut_pe:d.fut_pe,mos:d.mos};}
 async function fetchStocks(){
   const r=await fetch("/api/stocks");
   if(!r.ok)return null;
