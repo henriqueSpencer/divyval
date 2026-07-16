@@ -490,13 +490,23 @@ button{font-family:inherit;}
           <div class="hero-price"><span class="hp-lbl">Preço atual · Yahoo</span><span class="hp-val num" id="heroPrice">—</span></div>
         </div>
         <div class="card verdict">
-          <div class="fair-label">Preço justo · DDM</div>
+          <div class="fair-label" id="verdictLabel">Preço justo · DDM</div>
           <div class="fair-value num" id="fairValue">—</div>
           <div class="badge-mos" id="mosBadge"><span id="mosText"></span></div>
         </div>
       </div>
 
       <div class="stack">
+        <!-- seletor de modelo de valuation (por ação) -->
+        <div class="card card-pad" id="modelSwitchCard">
+          <div class="box-head"><h3>Modelo de valuation</h3><span class="box-sub">escolha por ação</span></div>
+          <div class="mode-toggle" id="modelSwitch" role="tablist" aria-label="Modelo de valuation">
+            <button type="button" class="gt-btn" data-model="DDM · 2 est.">DDM · dividendos</button>
+            <button type="button" class="gt-btn" data-model="Owner Earnings DCF">Owner Earnings · Buffett</button>
+            <button type="button" class="gt-btn" data-model="Regra nº1 · Town">Regra nº1 · Town</button>
+          </div>
+          <p class="box-lead" id="modelSwitchDesc" style="margin:10px 0 0;"></p>
+        </div>
         <!-- gráfico -->
         <div class="card card-pad" id="chartCard">
           <div class="chart-head">
@@ -506,10 +516,11 @@ button{font-family:inherit;}
           <div class="chart-wrap" id="chartWrap"></div>
           <div class="chart-legend">
             <span><i style="border-color:var(--accent)"></i>Preço</span>
-            <span><i style="border-color:var(--text-mute);border-top-style:dashed"></i>Preço justo (DDM)</span>
+            <span><i style="border-color:var(--text-mute);border-top-style:dashed"></i><span id="chartFairLbl">Preço justo (DDM)</span></span>
           </div>
         </div>
 
+        <div id="panel-ddm">
         <!-- PREMISSAS (inputs) + IMPLICAÇÕES (o que produzem) -->
         <div class="prem-grid">
           <!-- caixa 1: premissas editáveis -->
@@ -585,6 +596,113 @@ button{font-family:inherit;}
             <div class="formula num" style="font-size:15px;"><span id="f-pvsum">R$ 13,01</span> + <span id="f-tpv">R$ 27,99</span> = <span class="accent" id="f-fair">R$ 41,00</span></div>
           </div></div>
         </div>
+        </div><!-- /panel-ddm -->
+
+        <!-- ===== PAINEL: Owner Earnings DCF (Buffett) ===== -->
+        <div id="panel-oe" hidden>
+        <div class="prem-grid">
+          <div class="card card-pad">
+            <div class="box-head"><h3>Premissas</h3><span class="box-sub">Owner Earnings · Buffett</span></div>
+            <p class="box-lead">O "lucro do dono" (≈LPA) é projetado por N anos e trazido a valor presente pela taxa de desconto; uma perpetuidade de Gordon condensa o resto. Desconto ancorado no juro longo + prêmio; crescimento terminal conservador.</p>
+            <div class="assumptions">
+              <div class="field wide"><label for="oe-lpa">Lucro do dono por ação (≈LPA)</label><input type="number" id="oe-lpa" value="4.24" step="0.01"></div>
+              <div class="asm-group">projeção explícita</div>
+              <div class="field"><label for="oe-g">Crescimento anos 1–N (g)</label><span class="val num" id="oe-gVal">8%</span><input type="range" id="oe-g" min="-5" max="30" value="8" step="0.5"></div>
+              <div class="field"><label for="oe-n">Horizonte (anos) <label class="chk"><input type="checkbox" id="oe-nDefault" checked><span id="oe-nDefLbl">padrão</span></label></label><span class="val num" id="oe-nVal">10</span><input type="range" id="oe-n" min="3" max="20" value="10" step="1"></div>
+              <div class="asm-group">perpetuidade e desconto</div>
+              <div class="field"><label for="oe-gt">Crescimento terminal (g∞)</label><span class="val num" id="oe-gtVal">3%</span><input type="range" id="oe-gt" min="0" max="8" value="3" step="0.5"></div>
+              <div class="field"><label for="oe-d">Taxa de desconto (Ke) <label class="chk"><input type="checkbox" id="oe-dDefault" checked><span id="oe-dDefLbl">padrão</span></label></label><span class="val num" id="oe-dVal">14%</span><input type="range" id="oe-d" min="6" max="25" value="14" step="0.5"></div>
+              <div class="save-row"><button class="btn sm" id="oeSaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
+            </div>
+          </div>
+          <div class="card card-pad impl-box">
+            <div class="box-head"><h3>Implicações</h3><span class="box-sub">o que elas produzem</span></div>
+            <p class="box-lead">Recalcula ao vivo quando você move um slider.</p>
+            <div class="impl-row"><span class="lbl">Owner earnings no ano N <small id="oe-nlbl">último ano explícito</small></span><span class="v num" id="oe-impl-oeN">—</span></div>
+            <div class="impl-sep">de onde vem o valor justo</div>
+            <div class="impl-row"><span class="lbl"><span class="dot" style="background:var(--accent);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP dos N anos explícitos</span><span class="v num" id="oe-impl-expl">—</span></div>
+            <div class="impl-row"><span class="lbl"><span class="dot" style="background:var(--text-mute);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP da perpetuidade</span><span class="v num" id="oe-impl-tv">—</span></div>
+            <div class="comp-bar"><i id="oe-barS1" style="background:var(--accent)"></i><i id="oe-barS2" style="background:var(--text-mute)"></i></div>
+            <div class="impl-fair"><span class="lbl">= Preço justo</span><span class="v num" id="oe-impl-fair">—</span></div>
+            <div class="impl-row"><span class="lbl">Margem de segurança <small id="oe-impl-margin-lbl">vs. preço atual</small></span><span class="v num" id="oe-impl-margin">—</span></div>
+            <p class="comp-note" id="oe-note" style="margin-top:12px;"></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="steps-head"><div><h2>A conta, passo a passo</h2><p>O método de Buffett: valuar <b>todo o lucro do dono</b>, não só os dividendos.</p></div><div class="now">com os seus números atuais</div></div>
+          <div class="step"><div class="step-badge">1</div><div>
+            <div class="step-title">Projetar o lucro do dono</div>
+            <div class="step-body">Parte do <b>owner earnings por ação</b> de hoje (≈LPA) e cresce à taxa <span class="mono">g</span> por <span id="oe-f-years">10</span> anos. Cada ano é trazido a hoje por <span class="mono">(1+d)^ano</span>.</div>
+            <table class="proj num"><thead><tr><th>Ano</th><th>Owner earnings</th><th>= VP</th></tr></thead><tbody id="oe-proj"></tbody>
+              <tfoot><tr class="sum"><td colspan="2">Soma dos N anos (valor presente)</td><td class="pv" id="oe-f-expl">—</td></tr></tfoot></table>
+          </div></div>
+          <div class="step"><div class="step-badge">2</div><div>
+            <div class="step-title">O valor terminal (perpetuidade)</div>
+            <div class="step-body">Depois do ano N o lucro cresce a <span class="mono">g∞</span> para sempre; Gordon condensa isso num número e traz a hoje.</div>
+            <div class="formula num"><span class="lead">Valor terminal</span> = <span class="frac"><span class="top" id="oe-f-tvnum">—</span><span class="bot">d <span id="oe-f-d">14%</span> − g <span id="oe-f-gt">3%</span></span></span> = <span class="accent" id="oe-f-tv">—</span></div>
+            <div class="formula num"><span class="lead">Trazido a hoje</span> = <span class="accent" id="oe-f-tvpv">—</span></div>
+          </div></div>
+          <div class="step"><div class="step-badge">3</div><div>
+            <div class="step-title">Somar tudo = preço justo</div>
+            <div class="formula num" style="font-size:15px;"><span id="oe-f-expl2">—</span> + <span id="oe-f-tvpv2">—</span> = <span class="accent" id="oe-f-fair">—</span></div>
+          </div></div>
+        </div>
+        </div><!-- /panel-oe -->
+
+        <!-- ===== PAINEL: Regra nº1 · Phil Town ===== -->
+        <div id="panel-r1" hidden>
+        <div class="prem-grid">
+          <div class="card card-pad">
+            <div class="box-head"><h3>Premissas</h3><span class="box-sub">Regra nº1 · Town</span></div>
+            <p class="box-lead">Projeta o LPA por N anos, aplica um P/L futuro de saída, desconta ao retorno exigido (o "sticker") e tira a margem de segurança para achar o <b>preço-teto de compra</b>.</p>
+            <div class="assumptions">
+              <div class="field wide"><label for="r1-lpa">Lucro por ação (LPA)</label><input type="number" id="r1-lpa" value="4.24" step="0.01"></div>
+              <div class="field"><label for="r1-g">Crescimento do LPA (g)</label><span class="val num" id="r1-gVal">10%</span><input type="range" id="r1-g" min="-5" max="30" value="10" step="0.5"></div>
+              <div class="field"><label for="r1-payout">Payout (dividendos)</label><span class="val num" id="r1-payoutVal">40%</span><input type="range" id="r1-payout" min="0" max="100" value="40" step="5"></div>
+              <div class="field wide"><label for="r1-pe">P/L futuro (saída)</label><input type="number" id="r1-pe" value="15" step="0.5"></div>
+              <div class="field"><label for="r1-req">Retorno exigido (Ke) <label class="chk"><input type="checkbox" id="r1-reqDefault" checked><span id="r1-reqDefLbl">padrão</span></label></label><span class="val num" id="r1-reqVal">14%</span><input type="range" id="r1-req" min="8" max="25" value="14" step="0.5"></div>
+              <div class="field"><label for="r1-mos">Margem de segurança</label><span class="val num" id="r1-mosVal">50%</span><input type="range" id="r1-mos" min="0" max="70" value="50" step="5"></div>
+              <div class="field"><label for="r1-n">Horizonte (anos) <label class="chk"><input type="checkbox" id="r1-nDefault" checked><span id="r1-nDefLbl">padrão</span></label></label><span class="val num" id="r1-nVal">10</span><input type="range" id="r1-n" min="3" max="20" value="10" step="1"></div>
+              <div class="save-row"><button class="btn sm" id="r1SaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
+            </div>
+          </div>
+          <div class="card card-pad impl-box">
+            <div class="box-head"><h3>Implicações</h3><span class="box-sub">o que elas produzem</span></div>
+            <p class="box-lead">Recalcula ao vivo quando você move um slider.</p>
+            <div class="impl-row"><span class="lbl">Dividendo de partida <small>DPA = LPA × payout</small></span><span class="v num" id="r1-impl-dpa">—</span></div>
+            <div class="impl-row"><span class="lbl">LPA futuro <small id="r1-eps-lbl">daqui a 10 anos</small></span><span class="v num" id="r1-impl-eps">—</span></div>
+            <div class="impl-row"><span class="lbl">Preço de venda <small>LPA<sub>fut</sub> × P/L</small></span><span class="v num" id="r1-impl-pf">—</span></div>
+            <div class="impl-sep">de onde vem o preço justo</div>
+            <div class="impl-row"><span class="lbl"><span class="dot" style="background:var(--accent);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP dos dividendos recebidos</span><span class="v num" id="r1-impl-vpdiv">—</span></div>
+            <div class="impl-row"><span class="lbl"><span class="dot" style="background:var(--text-mute);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP do preço de venda</span><span class="v num" id="r1-impl-vpprice">—</span></div>
+            <div class="comp-bar"><i id="r1-barS1" style="background:var(--accent)"></i><i id="r1-barS2" style="background:var(--text-mute)"></i></div>
+            <div class="impl-fair"><span class="lbl">= Preço justo (sticker)</span><span class="v num" id="r1-impl-sticker">—</span></div>
+            <div class="impl-row"><span class="lbl">Preço-teto de compra <small>sticker × (1 − margem)</small></span><span class="v num accent" id="r1-impl-buy">—</span></div>
+            <div class="impl-row"><span class="lbl">Margem de segurança <small id="r1-impl-margin-lbl">vs. preço atual</small></span><span class="v num" id="r1-impl-margin">—</span></div>
+            <p class="comp-note" id="r1-buy-note" style="margin-top:12px;"></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="steps-head"><div><h2>A conta, passo a passo</h2><p>A versão simples do Buffett (Phil Town): o preço que trava o retorno exigido com margem.</p></div><div class="now">com os seus números atuais</div></div>
+          <div class="step"><div class="step-badge">1</div><div>
+            <div class="step-title">LPA daqui a N anos</div>
+            <div class="formula num"><span class="lead">LPA futuro</span> = <span id="r1-f-lpa">4,24</span> × (1+<span id="r1-f-g">10%</span>)^<span id="r1-f-years">10</span> = <span class="accent" id="r1-f-eps">—</span></div>
+          </div></div>
+          <div class="step"><div class="step-badge">2</div><div>
+            <div class="step-title">Preço futuro pelo P/L de saída</div>
+            <div class="formula num"><span class="lead">Preço futuro</span> = <span id="r1-f-eps2">—</span> × <span id="r1-f-pe">15</span> = <span class="accent" id="r1-f-pf">—</span></div>
+          </div></div>
+          <div class="step"><div class="step-badge">3</div><div>
+            <div class="step-title">Somar os dividendos recebidos + trazer a venda a hoje</div>
+            <div class="step-body">O retorno vem de <b>duas fontes</b>: os dividendos recebidos ao longo dos anos e o preço de venda no fim — os dois trazidos a hoje pelo retorno exigido. Contar os dividendos evita ter que inflar o <span class="mono">g</span> para o preço fechar.</div>
+            <div class="formula num" style="font-size:15px;"><span class="lead">Preço justo</span> = <span id="r1-f-vpdiv">—</span> <span style="color:var(--text-mute)">div</span> + <span id="r1-f-vpprice">—</span> <span style="color:var(--text-mute)">venda</span> = <span class="accent" id="r1-f-sticker">—</span></div>
+          </div></div>
+          <div class="step"><div class="step-badge">4</div><div>
+            <div class="step-title">Aplicar a margem de segurança</div>
+            <div class="formula num" style="font-size:15px;"><span id="r1-f-sticker2">—</span> × (1 − <span id="r1-f-mos">50%</span>) = <span class="accent" id="r1-f-buy">—</span> <span style="color:var(--text-mute);font-size:13px">preço-teto</span></div>
+          </div></div>
+        </div>
+        </div><!-- /panel-r1 -->
 
         <!-- histórico de premissas -->
         <div class="card card-pad" id="histCard">
@@ -601,7 +719,7 @@ button{font-family:inherit;}
       <p class="fair-sub" style="margin:6px 0 20px;">Página do modelo de valuation — distinta da página da empresa. Aqui vai morar a definição e a configuração de cada modelo; em breve outros (DCF, múltiplos) poderão ser plugados e aplicados às ações.</p>
       <div class="card card-pad">
         <div class="card-title">Sobre este modelo</div>
-        <p class="step-body">O <b>Dividend Discount Model</b> em 2 estágios projeta os dividendos por 5 anos (estágio 1) e condensa o restante numa perpetuidade de Gordon (estágio 2). É o modelo aplicado por padrão às ações do screener. A conta detalhada, passo a passo, aparece na página de cada empresa.</p>
+        <p class="step-body" id="modeloAbout">O <b>Dividend Discount Model</b> em 2 estágios projeta os dividendos por 5 anos (estágio 1) e condensa o restante numa perpetuidade de Gordon (estágio 2). É o modelo aplicado por padrão às ações do screener. A conta detalhada, passo a passo, aparece na página de cada empresa.</p>
       </div>
     </section>
 
@@ -651,7 +769,7 @@ button{font-family:inherit;}
       <div class="fld"><label>Tamanho</label><select id="m-tamanho"><option>Large cap</option><option>Mid cap</option><option>Small cap</option></select></div>
       <div class="fld"><label>Governança</label><select id="m-gov"><option>Novo Mercado</option><option>Nível 2</option><option>Nível 1</option><option>Tradicional</option></select></div>
       <div class="fld"><label>Controle</label><select id="m-ctrl"><option>Privada nacional</option><option>Estatal</option><option>Estrangeiro</option><option>Corporation</option></select></div>
-      <div class="fld"><label>Modelo</label><select id="m-modelo"><option>DDM · 2 est.</option></select></div>
+      <div class="fld"><label>Modelo</label><select id="m-modelo"><option>DDM · 2 est.</option><option>Owner Earnings DCF</option><option>Regra nº1 · Town</option></select></div>
       <div class="fld full"><label>Situação (tags separadas por vírgula)</label><input id="m-tags" placeholder="Boa pagadora, Alta DY"></div>
       <div class="sec-label create-only">Premissas do DDM · o preço vem do Yahoo automaticamente</div>
       <div class="fld create-only"><label>LPA (R$)</label><input id="m-lpa" type="number" step="0.01" value="3.00"></div>
@@ -692,7 +810,8 @@ const rnd2=n=>Math.round(n*1000)/1000;
 
 /* ===== dados de exemplo ===== */
 function P(setor,sub,seg){return {setor,sub,seg};}
-const M2="DDM · 2 est.";
+const M2="DDM · 2 est.", M_OE="Owner Earnings DCF", M_R1="Regra nº1 · Town";
+const MODELS=[M2,M_OE,M_R1];
 const RAW=[
  {ticker:"PETR4",nome:"Petrobras",cl:P("Petróleo, Gás e Biocombustíveis","Petróleo e Gás","Exploração e Refino"),perfil:"Valor",tamanho:"Large cap",gov:"Nível 2",ctrl:"Estatal",modelo:M2,tags:["Alta DY"],price:30.50,lpa:4.24,payout:.70,g1:.10,ke:.15,gp:.06,monitored:true},
  {ticker:"BBAS3",nome:"Banco do Brasil",cl:P("Financeiro","Intermediários Financeiros","Bancos"),perfil:"Valor",tamanho:"Large cap",gov:"Novo Mercado",ctrl:"Estatal",modelo:M2,tags:["Alta DY","Barata"],price:22.80,lpa:5.90,payout:.45,g1:.08,ke:.15,gp:.05,monitored:true},
@@ -741,7 +860,48 @@ function computeDDM({lpa,mode,roeI,roeT,gI,gTerm,payoutI,payoutT,ke,fade}){
 }
 const params=s=>({lpa:s.lpa,mode:s.growth_mode||"roe",roeI:s.roe_i,roeT:s.roe_t,gI:s.g_i,gTerm:s.g_t,
   payoutI:s.payout_i,payoutT:s.payout_t,ke:s.ke,fade:s.fade});
-const marginOf=s=>{if(!s.price||!s.lpa||s.lpa<=0)return null;const r=computeDDM(params(s));return (r.valid&&isFinite(r.fair))?(r.fair-s.price)/s.price*100:null;};
+
+/* ===== modelo B (Buffett): Owner Earnings DCF =====
+   Traz o "lucro do dono" (≈LPA) a valor presente por N anos + perpetuidade de Gordon,
+   descontado à taxa d (ancorada no juro longo + prêmio). Método que o Buffett descreve. */
+function computeOE({lpa,g,gT,disc,years}){
+  years=Math.max(1,Math.round(years||10));
+  let oe=lpa,pvExpl=0;const rows=[];
+  for(let k=1;k<=years;k++){oe=oe*(1+g);const f=Math.pow(1+disc,k),p=oe/f;pvExpl+=p;rows.push({k,oe,pv:p});}
+  const valid=disc>gT, oeN1=oe*(1+gT);
+  const tv=valid?oeN1/(disc-gT):NaN, tvpv=valid?tv/Math.pow(1+disc,years):NaN;
+  return {rows,pvExpl,tv,tvpv,valid,oeN:oe,years,fair:pvExpl+(valid?tvpv:0)};
+}
+/* ===== modelo C (Buffett/varejo): Regra nº1 · Phil Town =====
+   LPA projetado N anos × P/L futuro = preço futuro; descontado ao retorno exigido = "sticker";
+   sticker × (1 − margem) = preço-teto de compra. */
+function computeR1({lpa,g,futPE,req,years,mos,payout}){
+  years=Math.max(1,Math.round(years||10));payout=payout||0;
+  let eps=lpa,pvDiv=0;const rows=[];
+  for(let k=1;k<=years;k++){eps=eps*(1+g);const div=eps*payout,pv=div/Math.pow(1+req,k);pvDiv+=pv;rows.push({k,eps,div,pv});}
+  const epsFut=eps, priceFut=epsFut*futPE, pvPrice=priceFut/Math.pow(1+req,years);
+  const sticker=pvDiv+pvPrice, buy=sticker*(1-mos);
+  return {rows,epsFut,priceFut,pvDiv,pvPrice,sticker,buy,dpa0:lpa*payout,valid:isFinite(sticker)&&lpa>0&&futPE>0&&req>0,years};
+}
+/* parâmetros efetivos dos modelos Buffett a partir do objeto de ação (fallbacks sensatos) */
+const oeG=s=>s.g_i!=null?s.g_i:(s.roe_i!=null?s.roe_i*(1-(s.payout_i!=null?s.payout_i:0.5)):0.08);
+const oeGT=s=>s.g_t!=null?s.g_t:0.03;
+const oeD=s=>s.ke!=null?s.ke:globalCfg.ke;
+const oeN=s=>s.fade!=null?s.fade:globalCfg.fade;
+const defPE=g=>{const v=Math.round(2*g*100);return Math.max(8,Math.min(isFinite(v)?v:15,25));};
+const r1Payout=s=>s&&s.payout_i!=null?s.payout_i:(s&&s.payout!=null?s.payout:0.4);
+/* knobs exclusivos do R1 (P/L futuro, retorno, margem) — por enquanto no localStorage (viram colunas no deploy) */
+function r1Get(tk){try{return JSON.parse(localStorage.getItem("r1cfg-"+tk))||{};}catch(e){return {};}}
+function r1Set(tk,c){try{localStorage.setItem("r1cfg-"+tk,JSON.stringify(c));}catch(e){}}
+
+/* dispatcher: valor justo conforme o modelo escolhido da ação */
+function fairResult(s){
+  const m=s.modelo||M2;
+  if(m===M_OE){const r=computeOE({lpa:s.lpa,g:oeG(s),gT:oeGT(s),disc:oeD(s),years:oeN(s)});return {model:m,fair:r.fair,valid:r.valid};}
+  if(m===M_R1){const c=r1Get(s.ticker),g=oeG(s);const r=computeR1({lpa:s.lpa,g,futPE:c.pe??defPE(g),req:c.req??globalCfg.ke,years:oeN(s),mos:c.mos??0.5,payout:c.payout??r1Payout(s)});return {model:m,fair:r.sticker,valid:r.valid,buy:r.buy};}
+  const r=computeDDM(params(s));return {model:m,fair:r.fair,valid:r.valid};
+}
+const marginOf=s=>{if(!s.price||!s.lpa||s.lpa<=0)return null;const r=fairResult(s);return (r.valid&&isFinite(r.fair))?(r.fair-s.price)/s.price*100:null;};
 /* ordenação: Tamanho e Governança por hierarquia (não alfabética) */
 const RANK_TAM={"Large cap":3,"Mid cap":2,"Small cap":1};
 const RANK_GOV={"Novo Mercado":4,"Nível 2":3,"Nível 1":2,"Tradicional":1};
@@ -807,7 +967,7 @@ function baseList(exceptKey){
   const had=exceptKey in filterState,saved=filterState[exceptKey];
   if(had)delete filterState[exceptKey];
   const list=STOCKS.filter(s=>scope==="monitoradas"?s.monitored:true)
-    .map(s=>({s,fair:computeDDM(params(s)).fair,margin:marginOf(s)})).filter(passFilters);
+    .map(s=>({s,fair:fairResult(s).fair,margin:marginOf(s)})).filter(passFilters);
   if(had)filterState[exceptKey]=saved;
   return list;
 }
@@ -898,7 +1058,7 @@ function marginCell(margin,maxAbs){
 }
 function renderScreener(){
   let list=STOCKS.filter(s=>scope==="monitoradas"?s.monitored:true)
-    .map(s=>({s,fair:computeDDM(params(s)).fair,margin:marginOf(s)})).filter(passFilters);
+    .map(s=>({s,fair:fairResult(s).fair,margin:marginOf(s)})).filter(passFilters);
   // agrupa por empresa: classe mais líquida representa; liquidez soma
   let units;
   if(grouped){
@@ -963,7 +1123,7 @@ $("thSort").addEventListener("click",e=>{
   sort=sort.key===k?{key:k,dir:-sort.dir}:{key:k,dir:TEXT_KEYS.includes(k)?1:-1};renderScreener();});
 $("scrBody").addEventListener("click",e=>{
   if(e.target.closest("a"))return;   // link real (ticker): navegador cuida — nova aba, cmd+clique, etc.
-  if(e.target.closest(".model-badge")){e.stopPropagation();location.hash="#/modelo/ddm2";return;}
+  if(e.target.closest(".model-badge")){e.stopPropagation();window.__modelPage=e.target.closest(".model-badge").textContent.trim();location.hash="#/modelo";return;}
   const tr=e.target.closest("tr");if(!tr)return;
   if(tr.classList.contains("grp-parent")){   // linha agrupada -> abre/fecha o dropdown
     const open=tr.classList.toggle("open");
@@ -1164,6 +1324,151 @@ function renderDDM(){
   else{$("compFair").textContent="—";$("compNote").innerHTML="Ke ≤ g terminal: a perpetuidade não converge. Aumente o Ke, reduza o ROE terminal ou aumente o payout final.";}
   chartState.fair=ok?r.fair:NaN;chartState.price=price;renderChart();
 }
+
+/* ===== dispatcher de modelo no detalhe (DDM / Owner Earnings / Regra nº1) ===== */
+let detailMeta=false;
+const MODEL_LBL={
+ [M2]:["Preço justo · DDM","Preço justo (DDM)","Dividendos descontados ao Ke, com fade de ROE/payout + perpetuidade de Gordon."],
+ [M_OE]:["Preço justo · Owner Earnings","Preço justo (Owner Earnings)","O método do Buffett: traz o lucro do dono (≈LPA) a valor presente por N anos + perpetuidade."],
+ [M_R1]:["Preço justo · Regra nº1","Preço justo (Regra nº1)","Phil Town: LPA projetado × P/L futuro, descontado ao retorno exigido; o teto de compra aplica a margem."]
+};
+function setVerdict(fair,price){
+  const ok=isFinite(fair);$("fairValue").textContent=ok?brl(fair):"—";const b=$("mosBadge");
+  if(price>0&&ok){const m=(fair-price)/price*100,cls=m>=0?"good":"bad",sig=(m>=0?"+":"")+dec(m,1)+"%";
+    b.className="badge-mos "+cls;$("mosText").textContent=sig+" de margem vs "+brl(price);}
+  else{b.className="badge-mos";$("mosText").textContent=price>0?"—":"sem preço";}
+}
+function setMarginRow(id,lblid,fair,price){const im=$(id),ok=isFinite(fair);
+  if(price>0&&ok){const m=(fair-price)/price*100;im.className="v num "+(m>=0?"pos":"neg");
+    im.textContent=(m>=0?"+":"")+dec(m,1)+"%";$(lblid).textContent="vs. preço atual "+brl(price);}
+  else{im.className="v num";im.textContent="—";$(lblid).textContent="sem preço de mercado";}
+}
+function renderModel(){
+  const m=(currentStock&&currentStock.modelo)||M2;
+  $("panel-ddm").hidden=m!==M2;$("panel-oe").hidden=m!==M_OE;$("panel-r1").hidden=m!==M_R1;
+  if(!detailMeta){$("histCard").style.display="";renderHistory();}
+  document.querySelectorAll("#modelSwitch .gt-btn").forEach(b=>b.classList.toggle("active",b.dataset.model===m));
+  const L=MODEL_LBL[m]||MODEL_LBL[M2];
+  $("verdictLabel").textContent=L[0];$("chartFairLbl").textContent=L[1];$("modelSwitchDesc").textContent=L[2];
+  if(m===M_OE)renderOE();else if(m===M_R1)renderR1();else renderDDM();
+}
+/* Ke (=retorno exigido) e horizonte (=anos de fade) são compartilhados: usam o padrão
+   global via checkbox "padrão", igual ao DDM. */
+const DEF_OE=[["oe-dDefault","oe-d","ke","oe-dDefLbl",false],["oe-nDefault","oe-n","fade","oe-nDefLbl",true]];
+const DEF_R1=[["r1-reqDefault","r1-req","ke","r1-reqDefLbl",false],["r1-nDefault","r1-n","fade","r1-nDefLbl",true]];
+function applyDefList(list){
+  list.forEach(([chk,slider,cfgk,lbl,isFade])=>{const on=$(chk).checked;
+    $(slider).disabled=on;$(slider).closest(".field").classList.toggle("locked",on);
+    if(on)$(slider).value=isFade?Math.round(globalCfg.fade):Math.round(globalCfg[cfgk]*1000)/10;
+    $(lbl).textContent="padrão ("+(isFade?Math.round(globalCfg.fade):pctv(globalCfg[cfgk]*100))+")";});
+}
+function seedModels(s){
+  $("oe-lpa").value=s.lpa!=null?s.lpa:0;
+  $("oe-g").value=Math.round(oeG(s)*1000)/10;$("oe-gt").value=Math.round(oeGT(s)*1000)/10;
+  const c=r1Get(s.ticker),g=oeG(s);
+  $("r1-lpa").value=s.lpa!=null?s.lpa:0;$("r1-g").value=Math.round(g*1000)/10;
+  $("r1-payout").value=Math.round((c.payout!=null?c.payout:r1Payout(s))*100);
+  $("r1-pe").value=c.pe!=null?c.pe:defPE(g);$("r1-mos").value=Math.round((c.mos!=null?c.mos:0.5)*100);
+  ["oe-dDefault","oe-nDefault","r1-reqDefault","r1-nDefault"].forEach(id=>$(id).checked=true);
+  applyDefList(DEF_OE);applyDefList(DEF_R1);
+}
+function seedModelsPrem(p){   // ajusta OE/R1 a partir da premissa salva (respeita flags "padrão")
+  if(p.lpa!=null){$("oe-lpa").value=p.lpa;$("r1-lpa").value=p.lpa;}
+  if(p.g_i!=null){$("oe-g").value=Math.round(p.g_i*1000)/10;$("r1-g").value=Math.round(p.g_i*1000)/10;}
+  if(p.g_t!=null)$("oe-gt").value=Math.round(p.g_t*1000)/10;
+  const sd=(chk,slider,val,def,isFade)=>{const on=def==null?true:!!def;$(chk).checked=on;if(!on&&val!=null)$(slider).value=isFade?Math.round(val):Math.round(val*1000)/10;};
+  sd("oe-dDefault","oe-d",p.ke,p.ke_default);sd("oe-nDefault","oe-n",p.fade,p.fade_default,true);
+  sd("r1-reqDefault","r1-req",p.ke,p.ke_default);sd("r1-nDefault","r1-n",p.fade,p.fade_default,true);
+  applyDefList(DEF_OE);applyDefList(DEF_R1);
+}
+function renderOE(){
+  const lpa=+$("oe-lpa").value,g=+$("oe-g").value/100,gT=+$("oe-gt").value/100,disc=+$("oe-d").value/100,years=+$("oe-n").value,price=currentPrice||0;
+  $("oe-gVal").textContent=pctv(+$("oe-g").value);$("oe-gtVal").textContent=pctv(+$("oe-gt").value);
+  $("oe-dVal").textContent=pctv(+$("oe-d").value);$("oe-nVal").textContent=Math.round(years);
+  const r=computeOE({lpa,g,gT,disc,years}),ok=r.valid&&isFinite(r.fair);
+  setVerdict(ok?r.fair:NaN,price);
+  $("oe-nlbl").textContent="ano "+Math.round(years);
+  $("oe-impl-oeN").textContent=brl(r.oeN);$("oe-impl-expl").textContent=brl(r.pvExpl);
+  $("oe-impl-tv").textContent=ok?brl(r.tvpv):"—";$("oe-impl-fair").textContent=ok?brl(r.fair):"—";
+  setMarginRow("oe-impl-margin","oe-impl-margin-lbl",ok?r.fair:NaN,price);
+  if(ok&&r.fair>0){const p1=r.pvExpl/r.fair*100,p2=r.tvpv/r.fair*100;
+    $("oe-barS1").style.width=Math.max(0,p1)+"%";$("oe-barS2").style.width=Math.max(0,p2)+"%";
+    $("oe-note").innerHTML=`Do valor justo, <b>${dec(p2,0)}%</b> vem da perpetuidade e <b>${dec(p1,0)}%</b> dos ${Math.round(years)} anos explícitos. Owner earnings do ano 1 = <b>${brl(lpa*(1+g))}</b>.`;}
+  else{$("oe-barS1").style.width="0%";$("oe-barS2").style.width="0%";$("oe-note").innerHTML="Taxa de desconto ≤ crescimento terminal: a perpetuidade não converge. Aumente a taxa ou reduza o g terminal.";}
+  $("oe-f-years").textContent=Math.round(years);
+  $("oe-proj").innerHTML=r.rows.map(x=>`<tr><td>Ano ${x.k}</td><td>${brl(x.oe)}</td><td class="pv">${brl(x.pv)}</td></tr>`).join("");
+  $("oe-f-expl").textContent=brl(r.pvExpl);$("oe-f-expl2").textContent=brl(r.pvExpl);
+  $("oe-f-tvnum").textContent=ok?brl(r.oeN*(1+gT)):"—";
+  $("oe-f-d").textContent=pctv(disc*100);$("oe-f-gt").textContent=pctv(gT*100);
+  $("oe-f-tv").textContent=ok?brl(r.tv):"—";$("oe-f-tvpv").textContent=ok?brl(r.tvpv):"—";$("oe-f-tvpv2").textContent=ok?brl(r.tvpv):"—";
+  $("oe-f-fair").textContent=ok?brl(r.fair):"—";
+  chartState.fair=ok?r.fair:NaN;chartState.price=price;renderChart();
+}
+function renderR1(){
+  const lpa=+$("r1-lpa").value,g=+$("r1-g").value/100,payout=+$("r1-payout").value/100,futPE=+$("r1-pe").value,req=+$("r1-req").value/100,mos=+$("r1-mos").value/100,years=+$("r1-n").value,price=currentPrice||0;
+  $("r1-gVal").textContent=pctv(+$("r1-g").value);$("r1-payoutVal").textContent=pctv(+$("r1-payout").value);
+  $("r1-reqVal").textContent=pctv(+$("r1-req").value);$("r1-mosVal").textContent=pctv(+$("r1-mos").value);$("r1-nVal").textContent=Math.round(years);
+  const r=computeR1({lpa,g,futPE,req,years,mos,payout}),ok=r.valid;
+  setVerdict(ok?r.sticker:NaN,price);
+  $("r1-eps-lbl").textContent="daqui a "+Math.round(years)+" anos";
+  $("r1-impl-dpa").textContent=brl(r.dpa0)+(price>0&&r.dpa0>0?` · DY ${dec(r.dpa0/price*100,1)}%`:"");
+  $("r1-impl-eps").textContent=ok?brl(r.epsFut):"—";$("r1-impl-pf").textContent=ok?brl(r.priceFut):"—";
+  $("r1-impl-vpdiv").textContent=ok?brl(r.pvDiv):"—";$("r1-impl-vpprice").textContent=ok?brl(r.pvPrice):"—";
+  $("r1-impl-sticker").textContent=ok?brl(r.sticker):"—";$("r1-impl-buy").textContent=ok?brl(r.buy):"—";
+  setMarginRow("r1-impl-margin","r1-impl-margin-lbl",ok?r.sticker:NaN,price);
+  if(ok&&r.sticker>0){const p1=r.pvDiv/r.sticker*100,p2=r.pvPrice/r.sticker*100;$("r1-barS1").style.width=Math.max(0,p1)+"%";$("r1-barS2").style.width=Math.max(0,p2)+"%";}
+  else{$("r1-barS1").style.width="0%";$("r1-barS2").style.width="0%";}
+  if(ok&&price>0){const under=price<=r.buy,share=dec(r.pvDiv/r.sticker*100,0);
+    $("r1-buy-note").innerHTML=`Dividendos são <b>${share}%</b> do preço justo. `+(under?`Preço atual <b>${brl(price)}</b> está <b>abaixo</b> do teto de compra ${brl(r.buy)} — dentro da margem de ${pctv(mos*100)}.`:`Preço atual <b>${brl(price)}</b> está <b>acima</b> do teto de compra ${brl(r.buy)} — espere um preço melhor.`);}
+  else $("r1-buy-note").textContent="";
+  $("r1-f-lpa").textContent=dec(lpa);$("r1-f-g").textContent=pctv(g*100);$("r1-f-years").textContent=Math.round(years);
+  $("r1-f-eps").textContent=ok?dec(r.epsFut):"—";$("r1-f-eps2").textContent=ok?brl(r.epsFut):"—";
+  $("r1-f-pe").textContent=dec(futPE,1);$("r1-f-pf").textContent=ok?brl(r.priceFut):"—";
+  $("r1-f-vpdiv").textContent=ok?brl(r.pvDiv):"—";$("r1-f-vpprice").textContent=ok?brl(r.pvPrice):"—";
+  $("r1-f-sticker").textContent=ok?brl(r.sticker):"—";$("r1-f-sticker2").textContent=ok?brl(r.sticker):"—";
+  $("r1-f-mos").textContent=pctv(mos*100);$("r1-f-buy").textContent=ok?brl(r.buy):"—";
+  chartState.fair=ok?r.sticker:NaN;chartState.price=price;renderChart();
+}
+/* inputs dos painéis Buffett */
+["oe-lpa","oe-g","oe-gt","oe-d","oe-n"].forEach(id=>$(id).addEventListener("input",renderOE));
+["r1-lpa","r1-g","r1-payout","r1-pe","r1-req","r1-mos","r1-n"].forEach(id=>$(id).addEventListener("input",renderR1));
+DEF_OE.forEach(([chk])=>$(chk).addEventListener("change",()=>{applyDefList(DEF_OE);renderOE();}));
+DEF_R1.forEach(([chk])=>$(chk).addEventListener("change",()=>{applyDefList(DEF_R1);renderR1();}));
+/* trocar o modelo da ação (persiste via PATCH modelo, que o backend já suporta) */
+$("modelSwitch").addEventListener("click",async e=>{
+  const b=e.target.closest(".gt-btn");if(!b||!currentStock)return;
+  const m=b.dataset.model;if(m===((currentStock.modelo)||M2))return;
+  currentStock.modelo=m;const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st)st.modelo=m;
+  renderModel();
+  if(currentStock.ticker!=="Exemplo"){try{await fetch(`/api/stocks/${currentStock.ticker}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({modelo:m})});}catch(err){}}
+});
+/* salvar premissas dos modelos Buffett */
+$("oeSaveBtn").addEventListener("click",async()=>{
+  if(!currentStock||currentStock.ticker==="Exemplo")return;
+  const lpa=+$("oe-lpa").value,g=+$("oe-g").value/100,gT=+$("oe-gt").value/100,d=+$("oe-d").value/100,n=+$("oe-n").value;
+  const now=new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
+  const entry={date:now,lpa,growth_mode:"g",g_i:g,g_t:gT,ke:d,fade:n,
+    ke_default:$("oe-dDefault").checked?1:0,roet_default:0,payoutt_default:0,fade_default:$("oe-nDefault").checked?1:0};
+  const btn=$("oeSaveBtn"),lbl=btn.innerHTML;btn.disabled=true;btn.textContent="Salvando…";
+  try{const r=await fetch(`/api/premissas/${currentStock.ticker}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw 0;
+    const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.g_t=gT;st.ke=d;st.fade=n;st.growth_mode="g";}
+    await loadPremissas(currentStock.ticker);
+  }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
+  btn.disabled=false;btn.innerHTML=lbl;
+});
+$("r1SaveBtn").addEventListener("click",async()=>{
+  if(!currentStock||currentStock.ticker==="Exemplo")return;
+  const lpa=+$("r1-lpa").value,g=+$("r1-g").value/100;
+  r1Set(currentStock.ticker,{pe:+$("r1-pe").value,req:+$("r1-req").value/100,mos:+$("r1-mos").value/100,payout:+$("r1-payout").value/100});
+  const now=new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
+  const entry={date:now,lpa,growth_mode:"g",g_i:g,ke:+$("r1-req").value/100,fade:+$("r1-n").value,
+    ke_default:$("r1-reqDefault").checked?1:0,roet_default:1,payoutt_default:1,fade_default:$("r1-nDefault").checked?1:0};
+  const btn=$("r1SaveBtn"),lbl=btn.innerHTML;btn.disabled=true;btn.textContent="Salvando…";
+  try{const r=await fetch(`/api/premissas/${currentStock.ticker}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw 0;
+    const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.growth_mode="g";}
+  }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
+  btn.disabled=false;btn.innerHTML=lbl;
+});
 /* salvar premissas -> backend (SQLite) */
 $("saveBtn").addEventListener("click",async()=>{
   if(!currentStock||currentStock.ticker==="Exemplo")return;
@@ -1196,7 +1501,7 @@ async function loadPremissas(ticker){
     const r=await fetch(`/api/premissas/${ticker}`);
     if(r.ok){const d=await r.json();
       currentHist=d.historico||[];
-      if(d.atual){seedPrem(d.atual);renderDDM();}   // aplica a última premissa salva
+      if(d.atual){seedPrem(d.atual);seedModelsPrem(d.atual);}renderModel();   // aplica a última premissa salva e re-renderiza o modelo ativo
     }
   }catch(e){}
   renderHistory();
@@ -1225,17 +1530,26 @@ function effParams(h){const mode=h.growth_mode||"roe";return {lpa:h.lpa,mode,roe
   payoutT:dfl(h.payoutt_default)?globalCfg.payoutt:h.payout_t,
   fade:dfl(h.fade_default)?globalCfg.fade:h.fade,
   ke:dfl(h.ke_default)?globalCfg.ke:h.ke};}
+function histResult(h){   // valor justo do snapshot conforme o modelo ativo da ação
+  const m=(currentStock&&currentStock.modelo)||M2, ep=effParams(h);
+  if(m===M_OE){const g=ep.gI!=null?ep.gI:(ep.roeI!=null?ep.roeI*(1-(ep.payoutI!=null?ep.payoutI:0.5)):0.08),gt=h.g_t!=null?h.g_t:0.03;
+    const r=computeOE({lpa:ep.lpa,g,gT:gt,disc:ep.ke,years:ep.fade});
+    return {fair:r.fair,label:`Ke ${pctv(ep.ke*100)} · g ${pctv(g*100)}→${pctv(gt*100)} · ${Math.round(ep.fade)}a`};}
+  if(m===M_R1){const c=r1Get(currentStock.ticker),g=ep.gI!=null?ep.gI:0.10,po=c.payout??r1Payout(currentStock);
+    const r=computeR1({lpa:ep.lpa,g,futPE:c.pe??defPE(g),req:ep.ke,years:ep.fade,mos:c.mos??0.5,payout:po});
+    return {fair:r.sticker,label:`Ke ${pctv(ep.ke*100)} · g ${pctv(g*100)} · payout ${pctv(po*100)} · P/L ${dec(c.pe??defPE(g),0)} · MS ${pctv((c.mos??0.5)*100)}`};}
+  const r=computeDDM(ep),growth=ep.mode==="g"?`g ${pctv(ep.gI*100)}→${pctv(ep.gTerm*100)}`:`ROE ${pctv(ep.roeI*100)}→${pctv(ep.roeT*100)}`;
+  return {fair:r.fair,label:`Ke ${pctv(ep.ke*100)} · ${growth} · payout ${pctv(ep.payoutI*100)}→${pctv(ep.payoutT*100)} · fade ${Math.round(ep.fade)}a`};
+}
 function renderHistory(){
-  $("histList").innerHTML=currentHist.length?currentHist.map((h,i)=>{
-    const ep=effParams(h),r=computeDDM(ep),fair=r.fair;
-    const growth=ep.mode==="g"?`g ${pctv(ep.gI*100)}→${pctv(ep.gTerm*100)}`:`ROE ${pctv(ep.roeI*100)}→${pctv(ep.roeT*100)}`;
+  $("histList").innerHTML=currentHist.length?currentHist.map((h,i)=>{const hr=histResult(h);
     return `<div class="hist-item"><div class="hist-meta"><div class="date">${h.date||"—"}</div>
-      <div class="hist-vals">Ke ${pctv(ep.ke*100)} · ${growth} · payout ${pctv(ep.payoutI*100)}→${pctv(ep.payoutT*100)} · fade ${Math.round(ep.fade)}a</div></div>
-      <div style="display:flex;align-items:center;gap:14px;"><span class="hist-fair accent">${brl(fair)}</span>
+      <div class="hist-vals">${hr.label}</div></div>
+      <div style="display:flex;align-items:center;gap:14px;"><span class="hist-fair accent">${brl(hr.fair)}</span>
       <button class="btn sm" data-h="${i}">Aplicar</button></div></div>`;}).join(""):`<div class="empty">Nenhuma premissa salva ainda. Ajuste os sliders e clique em "Salvar premissas".</div>`;
 }
 $("histList").addEventListener("click",e=>{const b=e.target.closest("button[data-h]");if(!b)return;
-  const h=currentHist[+b.dataset.h];if(h){seedPrem(h);clearPresetActive();renderDDM();window.scrollTo({top:0,behavior:"smooth"});}});
+  const h=currentHist[+b.dataset.h];if(h){seedPrem(h);seedModelsPrem(h);clearPresetActive();renderModel();window.scrollTo({top:0,behavior:"smooth"});}});
 
 /* ===== MODAL ação: criar (POST) ou editar classificação (PATCH) ===== */
 const overlay=$("overlay");
@@ -1377,24 +1691,36 @@ function openStock(s,mode){
     $("crumb").innerHTML=`<span>Metodologia</span> <span>/</span> <span>como o preço justo é calculado</span>`;
     $("dTicker").textContent="Metodologia";$("dSector").style.display="none";$("dName").textContent="Um exemplo didático de ponta a ponta — ajuste os sliders para ver cada passo reagir.";
     $("dTags").innerHTML="";$("chartCard").style.display="none";$("histCard").style.display="none";
+    $("modelSwitchCard").style.display="none";detailMeta=true;
     $("detailActions").style.display="none";
   }else{setActiveNav(null);
     $("detailActions").style.display="";setWatchBtn(!!s.monitored);
     $("crumb").innerHTML=`<a href="#/screener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Screener</a> <span>/</span> <span>${s.ticker}</span>`;
     $("dTicker").textContent=s.ticker;const sec=[s.cl.setor,s.cl.sub,s.cl.seg].filter(Boolean).join(" › ");
     $("dSector").style.display=sec?"":"none";$("dSector").textContent=sec;$("dName").textContent=s.nome;$("dTags").innerHTML=tagsHtml(s);
+    $("modelSwitchCard").style.display="";detailMeta=false;
     $("chartCard").style.display="";$("histCard").style.display="";chartState.ticker=s.ticker;loadPremissas(s.ticker);loadPriceHistory(s.ticker);
   }
   clearPresetActive();const mine=document.querySelector('#presetRow .preset[data-preset="minhas"]');if(mine&&mode!=="metodologia")mine.classList.add("active");
   currentPrice=(s.price!=null)?s.price:null;$("heroPrice").textContent=s.price!=null?brl(s.price):"—";
   DEF.forEach(([chk])=>$(chk).checked=true);$("gtDefault").checked=true;   // tudo no padrão global; loadPremissas ajusta se houver override
-  seed(s);applyMode();renderDDM();
+  seed(s);seedModels(s);applyMode();renderModel();
+}
+function showModelPage(model){
+  const info={
+    [M2]:["DDM · 2 estágios","O <b>Dividend Discount Model</b> em 2 estágios projeta os dividendos ao longo do fade (estágio 1) e condensa o resto numa perpetuidade de Gordon (estágio 2), tudo descontado ao Ke. É o modelo padrão do screener. A conta passo a passo aparece na página de cada empresa."],
+    [M_OE]:["Owner Earnings DCF · Buffett","O método que <b>Warren Buffett</b> descreve (relatório de 1986): valua o <b>lucro do dono</b> (owner earnings ≈ LPA) — não só os dividendos —, trazendo-o a valor presente por N anos e somando uma perpetuidade de Gordon. A taxa de desconto é ancorada no <b>juro longo do governo + prêmio</b>; o crescimento terminal é conservador (PIB de longo prazo). Gera um preço justo comparável ao do DDM."],
+    [M_R1]:["Regra nº1 · Phil Town","A versão simples de varejo do estilo Buffett/Graham (Phil Town / Preston Pysh): projeta o <b>LPA</b> por N anos, aplica um <b>P/L futuro</b> de saída, desconta ao <b>retorno exigido</b> (padrão 15%) para achar o preço justo (sticker) e aplica uma <b>margem de segurança</b> (padrão 50%) para o preço-teto de compra."]
+  };
+  const i=info[model]||info[M2];
+  $("modeloTitle").textContent=i[0];$("modeloAbout").innerHTML=i[1];
+  setActiveNav(null);show("modelo");closePop();
 }
 function router(){
   const h=location.hash||"#/monitoradas";const parts=h.replace(/^#\//,"").split("/");
   const go=()=>{
     if(parts[0]==="acao"&&parts[1]){openStock(STOCKS.find(x=>x.ticker===parts[1])||EXAMPLE,"stock");}
-    else if(parts[0]==="modelo"){setActiveNav(null);show("modelo");closePop();}
+    else if(parts[0]==="modelo"){showModelPage(window.__modelPage||M2);}
     else if(parts[0]==="config"){setActiveNav("config");show("config");renderConfig();closePop();}
     else{scope=parts[0]==="monitoradas"?"monitoradas":"all";setActiveNav(scope==="monitoradas"?"monitoradas":"screener");show("screener");
       $("scrTitle").textContent=scope==="monitoradas"?"Monitoradas":"Screener";
