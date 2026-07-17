@@ -504,6 +504,7 @@ button{font-family:inherit;}
             <button type="button" class="gt-btn" data-model="DDM · 2 est.">DDM · dividendos</button>
             <button type="button" class="gt-btn" data-model="Owner Earnings DCF">Owner Earnings · Buffett</button>
             <button type="button" class="gt-btn" data-model="Regra nº1 · Town">Regra nº1 · Town</button>
+            <button type="button" class="gt-btn" data-model="Sem valuation">Sem valuation</button>
           </div>
           <p class="box-lead" id="modelSwitchDesc" style="margin:10px 0 0;"></p>
         </div>
@@ -714,6 +715,16 @@ button{font-family:inherit;}
         </div>
         </div><!-- /panel-r1 -->
 
+        <!-- ===== PAINEL: Sem valuation ===== -->
+        <div id="panel-na" hidden>
+        <div class="card card-pad">
+          <div class="box-head"><h3>Sem valuation</h3><span class="box-sub">preço justo não calculado</span></div>
+          <p class="box-lead" style="font-size:13.5px;">Para empresas com <b>prejuízos recorrentes</b> (ou situação em que qualquer premissa seria um chute), não faz sentido projetar um preço justo. Marcando este modelo, a ação fica <b>sem preço justo e sem margem</b> no screener — você a acompanha pelo <b>preço</b> e pelo <b>gráfico</b>, sem forçar uma conta que não se sustenta.</p>
+          <p class="box-lead" style="font-size:13.5px;margin-top:0;">É só uma marcação: dá pra voltar a qualquer modelo depois, e as premissas que você já tenha salvo continuam guardadas.</p>
+          <div class="save-row"><button class="btn sm" id="naSaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Marcar como sem valuation</button></div>
+        </div>
+        </div><!-- /panel-na -->
+
         <!-- histórico de premissas -->
         <div class="card card-pad" id="histCard">
           <div class="card-title">Histórico de premissas</div>
@@ -779,7 +790,7 @@ button{font-family:inherit;}
       <div class="fld"><label>Tamanho</label><select id="m-tamanho"><option>Large cap</option><option>Mid cap</option><option>Small cap</option></select></div>
       <div class="fld"><label>Governança</label><select id="m-gov"><option>Novo Mercado</option><option>Nível 2</option><option>Nível 1</option><option>Tradicional</option></select></div>
       <div class="fld"><label>Controle</label><select id="m-ctrl"><option>Privada nacional</option><option>Estatal</option><option>Estrangeiro</option><option>Corporation</option></select></div>
-      <div class="fld"><label>Modelo</label><select id="m-modelo"><option>DDM · 2 est.</option><option>Owner Earnings DCF</option><option>Regra nº1 · Town</option></select></div>
+      <div class="fld"><label>Modelo</label><select id="m-modelo"><option>DDM · 2 est.</option><option>Owner Earnings DCF</option><option>Regra nº1 · Town</option><option>Sem valuation</option></select></div>
       <div class="fld full"><label>Situação (tags separadas por vírgula)</label><input id="m-tags" placeholder="Boa pagadora, Alta DY"></div>
       <div class="sec-label create-only">Premissas do DDM · o preço vem do Yahoo automaticamente</div>
       <div class="fld create-only"><label>LPA (R$)</label><input id="m-lpa" type="number" step="0.01" value="3.00"></div>
@@ -820,8 +831,8 @@ const rnd2=n=>Math.round(n*1000)/1000;
 
 /* ===== dados de exemplo ===== */
 function P(setor,sub,seg){return {setor,sub,seg};}
-const M2="DDM · 2 est.", M_OE="Owner Earnings DCF", M_R1="Regra nº1 · Town";
-const MODELS=[M2,M_OE,M_R1];
+const M2="DDM · 2 est.", M_OE="Owner Earnings DCF", M_R1="Regra nº1 · Town", M_NA="Sem valuation";
+const MODELS=[M2,M_OE,M_R1,M_NA];
 const RAW=[
  {ticker:"PETR4",nome:"Petrobras",cl:P("Petróleo, Gás e Biocombustíveis","Petróleo e Gás","Exploração e Refino"),perfil:"Valor",tamanho:"Large cap",gov:"Nível 2",ctrl:"Estatal",modelo:M2,tags:["Alta DY"],price:30.50,lpa:4.24,payout:.70,g1:.10,ke:.15,gp:.06,monitored:true},
  {ticker:"BBAS3",nome:"Banco do Brasil",cl:P("Financeiro","Intermediários Financeiros","Bancos"),perfil:"Valor",tamanho:"Large cap",gov:"Novo Mercado",ctrl:"Estatal",modelo:M2,tags:["Alta DY","Barata"],price:22.80,lpa:5.90,payout:.45,g1:.08,ke:.15,gp:.05,monitored:true},
@@ -906,6 +917,7 @@ const r1Payout=s=>s&&s.payout_i!=null?s.payout_i:(s&&s.payout!=null?s.payout:0.4
 /* dispatcher: valor justo conforme o modelo escolhido da ação */
 function fairResult(s){
   const m=s.modelo||M2;
+  if(m===M_NA)return {model:m,fair:null,valid:false};   // "Sem valuation": não calcula preço justo
   if(m===M_OE){const r=computeOE({lpa:s.lpa,g:oeG(s),gT:oeGT(s),disc:oeD(s),years:oeN(s)});return {model:m,fair:r.fair,valid:r.valid};}
   if(m===M_R1){const g=oeG(s);const r=computeR1({lpa:s.lpa,g,futPE:s.fut_pe!=null?s.fut_pe:defPE(g),req:s.ke!=null?s.ke:globalCfg.ke,years:oeN(s),mos:s.mos!=null?s.mos:0.5,payout:s.payout_i!=null?s.payout_i:r1Payout(s)});return {model:m,fair:r.sticker,valid:r.valid,buy:r.buy};}
   const r=computeDDM(params(s));return {model:m,fair:r.fair,valid:r.valid};
@@ -1106,7 +1118,7 @@ function renderScreener(){
       <td class="l col-modelo"><span class="model-badge">${s.modelo||'DDM · 2 est.'}</span></td>
       <td class="num sep col-liquidez">${brlC(u.liq)}</td>
       <td class="num col-price">${s.price?brl(s.price):'<span class="td-attr">—</span>'}</td>
-      <td class="num accent col-fair">${brl(u.fair)}</td>
+      <td class="num accent col-fair">${(u.fair!=null&&isFinite(u.fair))?brl(u.fair):'<span class="td-attr">—</span>'}</td>
       ${marginCell(u.margin,maxAbs)}
     </tr>`;
     if(!exp)return parent;
@@ -1340,7 +1352,8 @@ let detailMeta=false, previewModel=null;
 const MODEL_LBL={
  [M2]:["Preço justo · DDM","Preço justo (DDM)","Dividendos descontados ao Ke, com fade de ROE/payout + perpetuidade de Gordon."],
  [M_OE]:["Preço justo · Owner Earnings","Preço justo (Owner Earnings)","O método do Buffett: traz o lucro do dono (≈LPA) a valor presente por N anos + perpetuidade."],
- [M_R1]:["Preço justo · Regra nº1","Preço justo (Regra nº1)","Phil Town: LPA projetado × P/L futuro, descontado ao retorno exigido; o teto de compra aplica a margem."]
+ [M_R1]:["Preço justo · Regra nº1","Preço justo (Regra nº1)","Phil Town: LPA projetado × P/L futuro, descontado ao retorno exigido; o teto de compra aplica a margem."],
+ [M_NA]:["Sem valuation","(sem preço justo)","Ação marcada como sem valuation — sem preço justo nem margem. Útil p/ prejuízos crônicos onde qualquer premissa seria chute."]
 };
 function setVerdict(fair,price){
   const ok=isFinite(fair);$("fairValue").textContent=ok?brl(fair):"—";const b=$("mosBadge");
@@ -1362,12 +1375,12 @@ function commitModel(){   // grava o modelo pré-visualizado como padrão da aç
 }
 function renderModel(){
   const m=previewModel||(currentStock&&currentStock.modelo)||M2;
-  $("panel-ddm").hidden=m!==M2;$("panel-oe").hidden=m!==M_OE;$("panel-r1").hidden=m!==M_R1;
-  if(!detailMeta){$("histCard").style.display="";renderHistory();}
+  $("panel-ddm").hidden=m!==M2;$("panel-oe").hidden=m!==M_OE;$("panel-r1").hidden=m!==M_R1;$("panel-na").hidden=m!==M_NA;
+  if(!detailMeta){const sh=(m!==M_NA);$("histCard").style.display=sh?"":"none";if(sh)renderHistory();}
   document.querySelectorAll("#modelSwitch .gt-btn").forEach(b=>b.classList.toggle("active",b.dataset.model===m));
   const L=MODEL_LBL[m]||MODEL_LBL[M2];
   $("verdictLabel").textContent=L[0];$("chartFairLbl").textContent=L[1];$("modelSwitchDesc").textContent=L[2];
-  if(m===M_OE)renderOE();else if(m===M_R1)renderR1();else renderDDM();
+  if(m===M_OE)renderOE();else if(m===M_R1)renderR1();else if(m===M_NA)renderNA();else renderDDM();
 }
 /* Ke (=retorno exigido) e horizonte (=anos de fade) são compartilhados: usam o padrão
    global via checkbox "padrão", igual ao DDM. */
@@ -1452,6 +1465,17 @@ function renderR1(){
   $("r1-f-mos").textContent=pctv(mos*100);$("r1-f-buy").textContent=ok?brl(r.buy):"—";
   chartState.fair=ok?r.sticker:NaN;chartState.price=price;renderChart();
 }
+function renderNA(){   // "Sem valuation": sem preço justo; mantém preço e gráfico
+  $("fairValue").textContent="—";
+  $("mosBadge").className="badge-mos";$("mosText").textContent="sem preço justo";
+  chartState.fair=NaN;chartState.price=currentPrice||0;renderChart();
+}
+$("naSaveBtn").addEventListener("click",async()=>{
+  if(!currentStock||currentStock.ticker==="Exemplo")return;
+  const btn=$("naSaveBtn"),lbl=btn.innerHTML;btn.disabled=true;btn.textContent="Salvando…";
+  await commitModel();
+  btn.disabled=false;btn.innerHTML=lbl;
+});
 /* inputs dos painéis Buffett */
 ["oe-lpa","oe-g","oe-gt","oe-d","oe-n"].forEach(id=>$(id).addEventListener("input",renderOE));
 ["r1-lpa","r1-g","r1-payout","r1-pe","r1-req","r1-mos","r1-n"].forEach(id=>$(id).addEventListener("input",renderR1));
