@@ -32,6 +32,46 @@ export async function getPrices(context) {
   return map;
 }
 
+// Fallback p/ tickers ilíquidos ausentes da brapi (ex.: USIM6, CGAS3): busca o preço no Yahoo
+// (chart per-ticker, o mesmo endpoint do histórico), em paralelo, com cache de 15 min. Os que o
+// Yahoo também não tiver ficam sem preço (—). Nunca inventa valor.
+export async function getMissingPrices(tickers, context) {
+  if (!tickers || !tickers.length) return {};
+  const keyStr = tickers.slice().sort().join(",");
+  let cache = null;
+  const cacheKey = new Request("https://divyval.internal/yprices/" + encodeURIComponent(keyStr));
+  try {
+    cache = caches.default;
+    const hit = await cache.match(cacheKey);
+    if (hit) return hit.json();
+  } catch (_) {}
+  const out = {};
+  // lotes pequenos p/ não estourar o rate limit do Yahoo a partir do edge
+  for (let i = 0; i < tickers.length; i += 6) {
+    await Promise.all(
+      tickers.slice(i, i + 6).map(async (t) => {
+        try {
+          const r = await fetch(
+            `https://query1.finance.yahoo.com/v8/finance/chart/${t.toUpperCase()}.SA?range=5d&interval=1d`,
+            { headers: { "User-Agent": UA } }
+          );
+          if (!r.ok) return;
+          const j = await r.json();
+          const p = j?.chart?.result?.[0]?.meta?.regularMarketPrice;
+          if (p != null) out[t] = Math.round(p * 100) / 100;
+        } catch (_) {}
+      })
+    );
+  }
+  if (cache) {
+    const res = new Response(JSON.stringify(out), {
+      headers: { "content-type": "application/json", "Cache-Control": "max-age=900" },
+    });
+    context.waitUntil(cache.put(cacheKey, res));
+  }
+  return out;
+}
+
 // Série diária de fechamento p/ o gráfico. Cache de 30 min por (ticker,range).
 export async function getHistory(ticker, range, context) {
   const sym = ticker.toUpperCase() + ".SA";
