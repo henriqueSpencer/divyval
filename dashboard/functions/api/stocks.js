@@ -1,11 +1,22 @@
 import { json } from "../_lib/http.js";
 import { buildStocks, sel, insert, del } from "../_lib/db.js";
-import { getPrices } from "../_lib/quotes.js";
+import { getPrices, getMissingPrices } from "../_lib/quotes.js";
 
 // GET /api/stocks — lista do screener (fundamentos + premissas + preço ao vivo).
 export async function onRequestGet(context) {
   const prices = await getPrices(context).catch(() => ({}));
-  return json(await buildStocks(context.env, prices));
+  const list = await buildStocks(context.env, prices);
+  // Fallback Yahoo p/ ilíquidas ausentes da brapi (USIM6, CGAS3…): preenche o que o Yahoo tiver.
+  const faltam = list.filter((s) => s.price == null).map((s) => s.ticker);
+  if (faltam.length) {
+    const yp = await getMissingPrices(faltam, context).catch(() => ({}));
+    for (const s of list)
+      if (s.price == null && yp[s.ticker] != null) {
+        s.price = yp[s.ticker];
+        s.fonte_preco = "yahoo";
+      }
+  }
+  return json(list);
 }
 
 // POST /api/stocks — adiciona uma ação (porta de adicionar_acao).
