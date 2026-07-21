@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DIVYVAL · Valuation por dividendos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233b5bdb'/><text x='16' y='23' font-family='Inter,Arial,sans-serif' font-size='21' font-weight='800' fill='white' text-anchor='middle'>D</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -119,6 +120,7 @@ button{font-family:inherit;}
 .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
 .tag{font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border);white-space:nowrap;}
 .tag.situ{background:var(--accent-soft);color:var(--accent);border-color:transparent;}
+.tag.est{background:transparent;color:var(--text-mute);border-style:dashed;cursor:help;}
 /* pílulas coloridas (Perfil, Governança) */
 .tagc{font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;display:inline-block;}
 .c-green{color:#1f9d63;background:rgba(31,157,99,.13);}
@@ -450,8 +452,8 @@ button{font-family:inherit;}
       <div class="page-head">
         <div>
           <h1 id="scrTitle">Screener</h1>
-          <p id="scrSub">Ações ordenadas por margem de segurança — quanto o preço justo (DDM) está acima do preço atual.</p>
-          <div class="sample-tag" id="sampleTag">Dados de exemplo — inicie o backend para cotações reais</div>
+          <p id="scrSub">Ações ordenadas por margem de segurança — quanto o preço justo está acima do preço atual.</p>
+          <div class="sample-tag" id="sampleTag">Dados de exemplo — carregando cotações reais…</div>
         </div>
         <div style="display:flex;gap:10px;align-items:flex-start;">
           <button class="btn" id="groupBtn" title="Agrupar classes da mesma empresa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M7 12h10M10 17h4"/></svg>Agrupar</button>
@@ -850,10 +852,17 @@ const RAW=[
 const EXAMPLE={ticker:"Exemplo",nome:"Empresa fictícia para ilustrar o método",cl:P("","",""),perfil:"",tamanho:"",gov:"",ctrl:"",tags:[],price:30.50,lpa:4.24,payout:.70,g1:.10,ke:.15,gp:.06};
 
 /* premissas de mercado / Claude derivadas da base */
-function withPresets(s){return s;}   /* modelo agora usa ROE/fade; presets removidos */
+/* Amostra/exemplo estão no schema antigo (payout/g1/gp/ke). Mapeia p/ o modelo atual (modo 'g',
+   crescimento digitado) só nesses casos — dados reais da API já vêm com roe_i/payout_i e passam direto.
+   Sem isso o computeDDM lê campos undefined e devolve NaN (fair "—" em toda a amostra). */
+function withPresets(s){
+  if(s.roe_i==null&&s.g1!=null)
+    return {...s,growth_mode:"g",g_i:s.g1,g_t:s.gp,payout_i:s.payout,payout_t:s.payout,ke:s.ke,fade:10,roe_i:0.15,roe_t:0.12,modelo:s.modelo||M2};
+  return s;
+}
 let STOCKS=RAW.map(withPresets);
 
-/* premissas do usuário: persistidas no backend (SQLite) */
+/* premissas do usuário: persistidas no backend (Supabase/Postgres) */
 let currentHist=[];
 
 /* ===== modelo DDM com fade =====
@@ -918,11 +927,17 @@ const r1Payout=s=>s&&s.payout_i!=null?s.payout_i:(s&&s.payout!=null?s.payout:0.4
 function fairResult(s){
   const m=s.modelo||M2;
   if(m===M_NA)return {model:m,fair:null,valid:false};   // "Sem valuation": não calcula preço justo
-  if(m===M_OE){const r=computeOE({lpa:s.lpa,g:oeG(s),gT:oeGT(s),disc:oeD(s),years:oeN(s)});return {model:m,fair:r.fair,valid:r.valid};}
-  if(m===M_R1){const g=oeG(s);const r=computeR1({lpa:s.lpa,g,futPE:s.fut_pe!=null?s.fut_pe:defPE(g),req:s.ke!=null?s.ke:globalCfg.ke,years:oeN(s),mos:s.mos!=null?s.mos:0.5,payout:s.payout_i!=null?s.payout_i:r1Payout(s)});return {model:m,fair:r.sticker,valid:r.valid,buy:r.buy};}
-  const r=computeDDM(params(s));return {model:m,fair:r.fair,valid:r.valid};
+  // Sem LPA positivo não há valuation confiável (empresa deficitária): não exibe preço justo.
+  if(!(s.lpa>0))return {model:m,fair:null,valid:false};
+  if(m===M_OE){const r=computeOE({lpa:s.lpa,g:oeG(s),gT:oeGT(s),disc:oeD(s),years:oeN(s)});return {model:m,fair:r.valid?r.fair:null,valid:r.valid};}
+  if(m===M_R1){const g=oeG(s);const r=computeR1({lpa:s.lpa,g,futPE:s.fut_pe!=null?s.fut_pe:defPE(g),req:s.ke!=null?s.ke:globalCfg.ke,years:oeN(s),mos:s.mos!=null?s.mos:0.5,payout:s.payout_i!=null?s.payout_i:r1Payout(s)});return {model:m,fair:r.valid?r.sticker:null,valid:r.valid,buy:r.buy};}
+  const r=computeDDM(params(s));return {model:m,fair:r.valid?r.fair:null,valid:r.valid};   // Gordon inválido (ke≤g) => sem preço justo (não exibe valor subestimado)
 }
 const marginOf=s=>{if(!s.price||!s.lpa||s.lpa<=0)return null;const r=fairResult(s);return (r.valid&&isFinite(r.fair))?(r.fair-s.price)/s.price*100:null;};
+/* Premissa estimada: ROE/payout reais não puderam ser derivados no build → caíram no default
+   (roe_i=15% / payout_i=45%). O valuation dessas ações é aproximado — sinalizamos na UI. */
+const isEstimated=s=>{if(!s||s.modelo===M_NA)return false;const near=(v,t)=>v!=null&&Math.abs(v-t)<0.0005;return near(s.roe_i,0.15)||near(s.payout_i,0.45);};
+const estTag='<span class="tag est" title="ROE/payout reais indisponíveis — premissa no valor padrão. O preço justo desta ação é aproximado.">estimado</span>';
 /* ordenação: Tamanho e Governança por hierarquia (não alfabética) */
 const RANK_TAM={"Large cap":3,"Mid cap":2,"Small cap":1};
 const RANK_GOV={"Novo Mercado":4,"Nível 2":3,"Nível 1":2,"Tradicional":1};
@@ -934,13 +949,14 @@ function sortVal(o,k){switch(k){
   case"situacao":return (o.s.tags||[]).join(",");
   case"tamanho":return RANK_TAM[o.s.tamanho]||0; case"gov":return RANK_GOV[o.s.gov]||0;
   case"liquidez":return o.s.liquidez==null?-Infinity:o.s.liquidez;
-  case"price":return o.s.price==null?-Infinity:o.s.price; case"fair":return o.fair; default:return o.margin==null?-Infinity:o.margin;
+  case"price":return o.s.price==null?-Infinity:o.s.price; case"fair":return (o.fair==null||!isFinite(o.fair))?-Infinity:o.fair; default:return o.margin==null?-Infinity:o.margin;
 }}
 
 /* tags html */
 function tagsHtml(s){
   const t=[s.perfil,s.tamanho,s.gov,s.ctrl].filter(Boolean).map(x=>`<span class="tag">${x}</span>`);
   const situ=(s.tags||[]).map(x=>`<span class="tag situ">${x}</span>`);
+  if(isEstimated(s))situ.push(estTag);
   return t.concat(situ).join("");
 }
 
@@ -1105,7 +1121,7 @@ function renderScreener(){
   const pill=(m,v,c)=>`<td class="l col-${c}">${v?`<span class="tagc ${m[v]||'c-neutral'}">${v}</span>`:'—'}</td>`;
   $("scrBody").innerHTML=units.map(u=>{
     const s=u.s,n=u.members.length,key=groupKey(s),exp=n>1;
-    const situ=(s.tags||[]).map(x=>`<span class="tag situ">${x}</span>`).join("")||'<span class="td-attr">—</span>';
+    const situ=((s.tags||[]).map(x=>`<span class="tag situ">${x}</span>`).join("")+(isEstimated(s)?estTag:""))||'<span class="td-attr">—</span>';
     const parent=`<tr class="${exp?'grp-parent':''}" data-ticker="${s.ticker}" data-grp="${key}">
       <td class="l t-ticker col-ticker">${exp?`<span class="chev">▸</span>${s.ticker} <span class="grp-badge">·${n}</span>`:`<a class="tk-link" href="#/acao/${s.ticker}">${s.ticker}</a>`}</td>
       <td class="l emp col-nome" title="${s.nome}"><span class="t-name">${s.nome}</span></td>
@@ -1156,27 +1172,18 @@ $("scrBody").addEventListener("click",e=>{
 function updateGroupBtn(){$("groupBtn").classList.toggle("on",grouped);}
 $("groupBtn").addEventListener("click",()=>{grouped=!grouped;try{localStorage.setItem("ddm-grouped",grouped?"1":"0");}catch(e){}updateGroupBtn();renderScreener();});
 
-/* ===== GRÁFICO (SVG, série sintética por ticker) ===== */
-function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-const seriesCache={};
-function genSeries(ticker,endPrice,days=1300){
-  endPrice=endPrice||30;
-  if(seriesCache[ticker])return seriesCache[ticker];
-  const r=mulberry32(hashStr(ticker));let p=endPrice,arr=[];
-  for(let i=0;i<days;i++){const ret=(r()-0.5)*0.03+0.0003;p=p/(1+ret);arr.push(p);}
-  arr.reverse();
-  const today=new Date();const out=arr.map((c,i)=>({t:new Date(today.getTime()-(days-1-i)*86400000),c}));
-  out[out.length-1].c=endPrice;
-  return seriesCache[ticker]=out;
-}
+/* ===== GRÁFICO (SVG, histórico REAL de fechamento — Yahoo) ===== */
 let chartState={ticker:null,fair:0,period:365,price:0};
 const realSeries={};   /* histórico real do Yahoo, por ticker */
+const histState={};    /* ticker -> 'loading' | 'ok' | 'empty' (nunca inventamos série) */
 function loadPriceHistory(ticker){
   if(realSeries[ticker]){renderChart();return;}
+  histState[ticker]="loading";renderChart();
   fetch(`/api/history/${ticker}?range=5y`).then(r=>r.ok?r.json():null).then(d=>{
-    if(d&&d.series&&d.series.length){realSeries[ticker]=d.series.map(a=>({t:new Date(a[0]),c:a[1]}));renderChart();}
-  }).catch(()=>{});
+    if(d&&d.series&&d.series.length){realSeries[ticker]=d.series.map(a=>({t:new Date(a[0]),c:a[1]}));histState[ticker]="ok";}
+    else histState[ticker]="empty";
+    renderChart();
+  }).catch(()=>{histState[ticker]="empty";renderChart();});
 }
 const PERIODS=[["1M",30],["3M",90],["6M",180],["1A",365],["5A",1300]];
 function renderPeriods(){$("periods").innerHTML=PERIODS.map(([l,d])=>`<button class="period${d===chartState.period?' active':''}" data-d="${d}">${l}</button>`).join("");}
@@ -1185,7 +1192,12 @@ function renderChart(){
   const wrap=$("chartWrap");
   const W=Math.max(280,Math.round(wrap.clientWidth||900));
   const H=Math.round(Math.max(190,Math.min(300,W*0.34)));
-  const full=realSeries[chartState.ticker]||genSeries(chartState.ticker,chartState.price);
+  const full=realSeries[chartState.ticker];
+  if(!full||!full.length){   // sem série real: NUNCA inventamos — mostra estado honesto
+    const msg=histState[chartState.ticker]==="empty"?"Sem histórico de preço disponível para esta ação.":"Carregando histórico…";
+    wrap.innerHTML=`<div style="height:${H}px;display:flex;align-items:center;justify-content:center;color:var(--text-mute);font-size:14px;text-align:center;padding:0 16px">${msg}</div>`;
+    return;
+  }
   const data=full.slice(-Math.min(chartState.period,full.length));
   const fair=chartState.fair;
   const ys=data.map(d=>d.c).concat(isFinite(fair)?[fair]:[]);
@@ -1310,7 +1322,7 @@ function renderDDM(){
   $("roeTVal").textContent=pctv(+$("roeT").value);$("payoutTVal").textContent=pctv(+$("payoutT").value);
   $("gIVal").textContent=pctv(+$("gI").value);$("gTVal").textContent=pctv(+$("gT").value);
   $("fadeVal").textContent=Math.round(a.fade);$("keVal").textContent=pctv(+$("ke").value);
-  const r=computeDDM(a),ok=r.valid&&isFinite(r.fair);
+  const r=computeDDM(a),lpaOk=a.lpa>0,ok=r.valid&&isFinite(r.fair)&&lpaOk;   // LPA≤0 (deficitária) não tem DDM válido
   $("fairValue").textContent=ok?brl(r.fair):"—";
   const b=$("mosBadge");
   if(price>0&&ok){const m=(r.fair-price)/price*100,cls=m>=0?"good":"bad",sig=(m>=0?"+":"")+dec(m,1)+"%";
@@ -1342,7 +1354,9 @@ function renderDDM(){
     $("compS1").textContent=brl(r.pvDiv);$("compS2").textContent=brl(r.terminalPV);$("compFair").textContent=brl(r.fair);
     $("compBarS1").style.width=Math.max(0,p1)+"%";$("compBarS2").style.width=Math.max(0,p2)+"%";
     $("compNote").innerHTML=`Dividendo base de <b>${brl(d0)}/ação</b>. Do valor justo, <b>${dec(p2,0)}%</b> vem do valor terminal e <b>${dec(p1,0)}%</b> dos ${Math.round(a.fade)} anos de fade. Crescimento terminal g = <b>${pctv(r.gT*100)}</b>.`;}
-  else{$("compFair").textContent="—";$("compNote").innerHTML="Ke ≤ g terminal: a perpetuidade não converge. Aumente o Ke, reduza o ROE terminal ou aumente o payout final.";}
+  else{$("compFair").textContent="—";$("compNote").innerHTML=!lpaOk
+    ?"LPA não positivo (empresa deficitária): o DDM não se aplica — considere marcar esta ação como <b>“Sem valuation”</b>."
+    :"Ke ≤ g terminal: a perpetuidade não converge. Aumente o Ke, reduza o ROE terminal ou aumente o payout final.";}
   chartState.fair=ok?r.fair:NaN;chartState.price=price;renderChart();
 }
 
@@ -1500,7 +1514,7 @@ $("oeSaveBtn").addEventListener("click",async()=>{
     const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.g_t=gT;st.ke=d;st.fade=n;st.growth_mode="g";}
     await commitModel();
     await loadPremissas(currentStock.ticker);
-  }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
+  }catch(e){alert("Não consegui salvar — verifique sua conexão e tente de novo.");}
   btn.disabled=false;btn.innerHTML=lbl;
 });
 $("r1SaveBtn").addEventListener("click",async()=>{
@@ -1515,10 +1529,10 @@ $("r1SaveBtn").addEventListener("click",async()=>{
     const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.growth_mode="g";st.payout_i=payout;st.fut_pe=futPE;st.mos=mos;st.ke=kd?globalCfg.ke:ke;st.fade=fd?globalCfg.fade:fade;}
     await commitModel();
     await loadPremissas(currentStock.ticker);
-  }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
+  }catch(e){alert("Não consegui salvar — verifique sua conexão e tente de novo.");}
   btn.disabled=false;btn.innerHTML=lbl;
 });
-/* salvar premissas -> backend (SQLite) */
+/* salvar premissas -> backend (Supabase/Postgres) */
 $("saveBtn").addEventListener("click",async()=>{
   if(!currentStock||currentStock.ticker==="Exemplo")return;
   const now=new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
@@ -1542,7 +1556,7 @@ $("saveBtn").addEventListener("click",async()=>{
       st.ke=flags.ke_default?globalCfg.ke:a.ke;}
     await commitModel();   // grava o modelo pré-visualizado como padrão da ação
     await loadPremissas(currentStock.ticker);   // recarrega histórico do banco
-  }catch(e){alert("Não consegui salvar (o backend está rodando?).");}
+  }catch(e){alert("Não consegui salvar — verifique sua conexão e tente de novo.");}
   btn.disabled=false;btn.innerHTML=lbl;
 });
 async function loadPremissas(ticker){
@@ -1664,7 +1678,7 @@ async function saveCreate(){
   try{
     const r=await fetch("/api/stocks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     if(!r.ok){const e=await r.json().catch(()=>({}));alert("Não salvou: "+(e.erro||"erro no backend"));return;}
-  }catch(e){alert("Backend indisponível — não consegui salvar a ação.");return;}
+  }catch(e){alert("Não consegui salvar a ação — verifique sua conexão e tente de novo.");return;}
   STOCKS.push(withPresets(fromApi({...payload,price,payout_i:payload.payout,
     roe_t:globalCfg.roet,payout_t:globalCfg.payoutt,fade:globalCfg.fade,ke:globalCfg.ke})));
   closeModal();location.hash="#/acao/"+tk;
@@ -1760,7 +1774,8 @@ function showModelPage(model){
   const info={
     [M2]:["DDM · 2 estágios","O <b>Dividend Discount Model</b> em 2 estágios projeta os dividendos ao longo do fade (estágio 1) e condensa o resto numa perpetuidade de Gordon (estágio 2), tudo descontado ao Ke. É o modelo padrão do screener. A conta passo a passo aparece na página de cada empresa."],
     [M_OE]:["Owner Earnings DCF · Buffett","O método que <b>Warren Buffett</b> descreve (relatório de 1986): valua o <b>lucro do dono</b> (owner earnings ≈ LPA) — não só os dividendos —, trazendo-o a valor presente por N anos e somando uma perpetuidade de Gordon. A taxa de desconto é ancorada no <b>juro longo do governo + prêmio</b>; o crescimento terminal é conservador (PIB de longo prazo). Gera um preço justo comparável ao do DDM."],
-    [M_R1]:["Regra nº1 · Phil Town","A versão simples de varejo do estilo Buffett/Graham (Phil Town / Preston Pysh): projeta o <b>LPA</b> por N anos, aplica um <b>P/L futuro</b> de saída, desconta ao <b>retorno exigido</b> (padrão 15%) para achar o preço justo (sticker) e aplica uma <b>margem de segurança</b> (padrão 50%) para o preço-teto de compra."]
+    [M_R1]:["Regra nº1 · Phil Town","A versão simples de varejo do estilo Buffett/Graham (Phil Town / Preston Pysh): projeta o <b>LPA</b> por N anos, aplica um <b>P/L futuro</b> de saída, desconta ao <b>retorno exigido</b> (padrão 15%) para achar o preço justo (sticker) e aplica uma <b>margem de segurança</b> (padrão 50%) para o preço-teto de compra."],
+    [M_NA]:["Sem valuation","Ação marcada como <b>Sem valuation</b> — sem preço justo nem margem. Útil para empresas com prejuízo crônico (LPA ≤ 0), onde qualquer premissa de dividendos ou crescimento seria um chute. Escolha um modelo (DDM, Owner Earnings ou Regra nº1) na página da ação para calcular um preço justo."]
   };
   const i=info[model]||info[M2];
   $("modeloTitle").textContent=i[0];$("modeloAbout").innerHTML=i[1];
@@ -1774,7 +1789,7 @@ function router(){
     else if(parts[0]==="config"){setActiveNav("config");show("config");renderConfig();closePop();}
     else{scope=parts[0]==="monitoradas"?"monitoradas":"all";setActiveNav(scope==="monitoradas"?"monitoradas":"screener");show("screener");
       $("scrTitle").textContent=scope==="monitoradas"?"Monitoradas":"Screener";
-      $("scrSub").textContent=scope==="monitoradas"?"Sua watchlist — as ações que você acompanha, ordenadas por margem de segurança.":"Ações ordenadas por margem de segurança — quanto o preço justo (DDM) está acima do preço atual.";
+      $("scrSub").textContent=scope==="monitoradas"?"Sua watchlist — as ações que você acompanha, ordenadas por margem de segurança.":"Ações ordenadas por margem de segurança — quanto o preço justo está acima do preço atual.";
       $("addBtnLabel").textContent=scope==="monitoradas"?"Adicionar às monitoradas":"Adicionar ação";
       renderScreener();updateFilterButtons();}
     window.scrollTo(0,0);
