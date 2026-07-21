@@ -36,13 +36,17 @@ As Functions são **buildless** (`fetch` puro, zero npm). A lógica de merge/CRU
 cd dashboard && npx wrangler pages dev .   # → http://localhost:8788/
 ```
 Segredos locais em `dashboard/.dev.vars` (gitignored): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
-(no dev pode ser a **anon** key — RLS off), `APP_PASSWORD` (vazio = app aberto no dev).
+(**precisa ser a service key** `sb_secret_…`, porque o **RLS está ligado** — a anon/publishable é
+bloqueada), `APP_PASSWORD` (vazio = app aberto no dev).
 Atenção: aponta pro Supabase de **produção**.
 
 ## Persistência
 PostgreSQL no **Supabase**, acessado via **PostgREST REST** (`fetch`, sem driver) em `_lib/db.js`.
-A chave (`SUPABASE_SERVICE_KEY`) fica **só na Function** (env), nunca no client — por isso RLS off
-segue seguro (a anon key não é exposta). Não há mais `init_db`/seed no boot: a base já está semeada
+A chave (`SUPABASE_SERVICE_KEY` = **service key** `sb_secret_…`, que **ignora o RLS**) fica **só na
+Function** (env), nunca no client. **RLS está LIGADO** em todas as tabelas, **sem políticas** →
+anon/publishable ficam totalmente bloqueadas; só a service key (server-side) acessa. (Ligado em
+jul/2026 após o advisor do Supabase; o `sb_secret` deve ir como `apikey`+`Bearer`, ambos funcionam.)
+Não há mais `init_db`/seed no boot: a base já está semeada
 (379 ações); re-semear é tarefa **offline** (`build_universe.py` + seed script), só ao baixar um ano
 novo da CVM. O projeto Supabase `divyval` é administrável pelo **MCP** (`list_tables` /
 `execute_sql` / `apply_migration`).
