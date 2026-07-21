@@ -58,20 +58,32 @@ usuário edita** (`modelo`, classificação, `tags`) porque nada é re-semeado e
 
 ## Preços e histórico
 - **Preço (screener):** `brapi.dev/api/quote/list` — **1 request, sem token, ~todas as ações da B3**
-  (campo `close`), com CORS. Cobre ~362/379 (17 ilíquidos ficam sem preço — o front trata como
-  `indisponível`). Cache de **15 min** no edge (`caches.default`). Sem cron, sem KV.
+  (campo `close`), com CORS. Cache de **15 min** no edge (`caches.default`). Sem cron, sem KV.
+- **Fallback de preço (ilíquidas):** a brapi cobre ~360/379 — ~19 classes ilíquidas (HBTS5, CGAS3,
+  USIM6, CEGR3, COCE3, BRSR5…) ficam de fora. `getMissingPrices` (`_lib/quotes.js`, chamada em
+  `api/stocks.js`) busca essas no **Yahoo chart** (per-ticker, em lotes de 6, cache 15 min) → hoje
+  **379/379 com cotação** (o Yahoo do edge da CF não é bloqueado; confirmado). O que o Yahoo também
+  não tiver fica `indisponível` (nunca inventa valor).
 - **Histórico (gráfico):** Yahoo chart `v8/finance/chart/{TICKER}.SA` per-ticker, sob demanda,
   cache de **30 min**. Se o Yahoo falhar (ex.: bloqueio de IP), o front mostra série vazia com `erro`
   — degradação graciosa, não quebra a página.
 
 ## Deploy
-**Cloudflare Pages** (free, **~zero cold start**), **auto-deploy no push pra `main`**, repo público
-`henriqueSpencer/divyval`, **root directory `dashboard`**, sem build command. Env vars no painel do
-Pages: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (a **service_role** em prod), `APP_PASSWORD`
-(Basic Auth — só a senha é validada, o usuário é ignorado). `_middleware.js` protege tudo (inclusive
-o HTML) e mantém `Cache-Control: no-cache` no HTML pra não servir JS/estado velhos após um deploy.
-> Migrado do **Render** (que dormia após ~15 min → cold start) em jul/2026. O `render.yaml` e o
-> `backend/` ficam no repo mas o serviço do Render pode ser desligado após validar o Pages.
+No ar em **https://divyval.pages.dev** (Cloudflare Pages, free, **~zero cold start**; senha `divyval2026`).
+Projeto `divyval`, account `b7345f757a0fc365da5dcdea7a033db5` (`wrangler` já logado como
+`henriquespencer11@gmail.com`). Deploy é **manual, direct-upload** (NÃO tem git-integration ainda →
+push no GitHub **não** redeploya sozinho):
+```bash
+cd dashboard && npx wrangler pages deploy . --project-name=divyval --branch=main --commit-dirty=true
+```
+> **Trocar um secret exige redeploy** pra a Function pegar (um deploy que correu antes do secret
+> propagar já serviu dado errado). Secrets: `wrangler pages secret put NOME --project-name=divyval`.
+
+Secrets do projeto: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (**service key `sb_secret_…`**),
+`APP_PASSWORD` (Basic Auth — só a senha é validada, o usuário é ignorado). `_middleware.js` protege
+tudo (inclusive o HTML) e mantém `Cache-Control: no-cache` no HTML.
+> Migrado do **Render** (que dormia → cold start) em jul/2026; o Render segue dormindo (inofensivo,
+> desligar exige painel/API do Render). `render.yaml` e `backend/` ficam no repo como legado.
 
 ## Modelos de valuation (escolhíveis por ação — campo `stocks.modelo`)
 Todo o cálculo é no **frontend** (`index.html`), despachado por `fairResult(s)`:

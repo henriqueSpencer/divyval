@@ -62,10 +62,11 @@ Lembre: preço/cotação **não** vem daqui (é yfinance, no dashboard).
 
 ## Dashboard (DIVYVAL) — `dashboard/`
 SPA de screener/valuation (`dashboard/index.html`) + **Cloudflare Pages Functions**
-(`dashboard/functions/`, edge serverless em JS) que servem `/api/*`. Preço da B3 via brapi,
-histórico via Yahoo; persistência em PostgreSQL no Supabase (via PostgREST). Auto-deploy no push
-pra `main` (Cloudflare Pages, root directory `dashboard`). O FastAPI em `dashboard/backend/app.py`
-é **legado** (referência, não deployado).
+(`dashboard/functions/`, edge serverless em JS) que servem `/api/*`. No ar em **divyval.pages.dev**.
+Preço da B3 via brapi (+ fallback Yahoo p/ ilíquidas), histórico via Yahoo; persistência em
+PostgreSQL no Supabase (via PostgREST, **RLS ligado** + service key). Deploy **manual** via
+`wrangler pages deploy` (NÃO auto-deploya no push). O FastAPI em `dashboard/backend/app.py` é
+**legado** (referência, não deployado).
 
 **As instruções completas do dashboard estão em `dashboard/CLAUDE.md`** (rodar local com
 `wrangler pages dev`, modelos de valuation, universo/`universe.json`, deploy, endpoints, preços).
