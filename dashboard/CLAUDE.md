@@ -115,6 +115,20 @@ brapi) → `cd_cvm` (match por nome) → fundamentos da CVM.
 - O frontend cai nos dados de exemplo embutidos se as Functions estiverem fora. O `bootstrap`
   faz só um retry curto (não há mais cold start pra cobrir).
 
+## Identidade visual ("Mesa de análise", jul/2026)
+Re-skin sóbrio de nota de research (não é o SaaS azul/Inter genérico antigo). Tudo via CSS
+variables no `<style>`, temas claro/escuro:
+- **Paleta:** fundo porcelana `#f1f0ec`; `--accent` índigo-tinta `#2c3e6e`; par semântico
+  **`--good` pinho `#1b6b4c` / `--bad` argila `#a8432f`**; **`--worth` latão** `#9a7b34` = "valor
+  intrínseco" (usado no preço justo do hero e nos ticks do medidor).
+- **Fontes:** **Space Grotesk** (títulos/tickers/rótulos/`.disp`), **IBM Plex Mono** (`.num`/`.mono`
+  — todos os números), **Inter** (corpo/tabelas). Carregadas via Google Fonts no `<link>`.
+- **Assinatura — Medidor de Margem de Segurança:** mostra preço↔justo. Grande no hero
+  (`#heroGauge`, função `updateHeroGauge`, chamada em `renderDDM`/`setVerdict`/`renderNA`); mini na
+  coluna Margem do screener (`marginCell`/`.mos-bar` — tick de latão central, fill pinho/argila).
+  É **aditivo** (ilustra números já calculados; não altera valuation). O passo a passo do
+  DDM/OE/R1 e todas as explicações ficam intactos — mudou só a "roupa" (fonte/cor).
+
 ## Git
 Conta **henriqueSpencer** (`gh auth switch --user henriqueSpencer`), autor
 `Henrique Spencer <henriquespencer11@gmail.com>`. Commits/PRs **sem nenhuma menção a IA/Claude/
