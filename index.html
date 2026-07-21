@@ -7,33 +7,40 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%233b5bdb'/><text x='16' y='23' font-family='Inter,Arial,sans-serif' font-size='21' font-weight='800' fill='white' text-anchor='middle'>D</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ===== tema ===== */
 :root,[data-theme="light"]{
-  --bg:#eceef2;--surface:#fff;--surface-2:#f5f6f9;--border:#e6e8ee;--border-2:#eef0f4;
-  --text:#1a1e26;--text-soft:#545b66;--text-mute:#949aa5;
-  --accent:#3b5bdb;--accent-2:#3550c8;--accent-soft:#eef1fe;
-  --badge-bg:#3b5bdb;--badge-tx:#fff;--good:#1f9d63;--bad:#d64545;
-  --nav-active:#eef1fe;--overlay:rgba(20,28,50,.42);
-  --shadow:0 1px 2px rgba(20,30,55,.04),0 8px 24px rgba(20,30,55,.05);
-  --shadow-lg:0 12px 40px rgba(20,30,55,.18);
+  --bg:#f1f0ec;--surface:#fbfbf9;--surface-2:#f4f3ef;--border:#e4e2db;--border-2:#eceae4;
+  --text:#1b1d1a;--text-soft:#5a5c54;--text-mute:#93948a;
+  --accent:#2c3e6e;--accent-2:#3853a8;--accent-soft:#eaecf4;
+  --badge-bg:#2c3e6e;--badge-tx:#fff;--good:#1b6b4c;--bad:#a8432f;
+  --worth:#9a7b34;--worth-soft:rgba(154,123,52,.14);
+  --nav-active:#eaecf4;--overlay:rgba(27,29,26,.4);
+  --shadow:0 1px 2px rgba(30,28,20,.04),0 8px 24px rgba(30,28,20,.06);
+  --shadow-lg:0 12px 40px rgba(30,28,20,.16);
 }
 [data-theme="dark"]{
-  --bg:#0a0d12;--surface:#12161d;--surface-2:#171c25;--border:#242b37;--border-2:#1c222c;
-  --text:#e7eaf0;--text-soft:#a7aebb;--text-mute:#6d7684;
-  --accent:#7f9cff;--accent-2:#93aaff;--accent-soft:#1b2233;
-  --badge-bg:#3b5bdb;--badge-tx:#fff;--good:#37c983;--bad:#ff6b6b;
-  --nav-active:#1a2130;--overlay:rgba(0,0,0,.6);
+  --bg:#131311;--surface:#1b1a17;--surface-2:#201f1b;--border:#2d2b26;--border-2:#232219;
+  --text:#eae7de;--text-soft:#a8a498;--text-mute:#726e63;
+  --accent:#8ea3e0;--accent-2:#a4b6ec;--accent-soft:#20222b;
+  --badge-bg:#2c3e6e;--badge-tx:#fff;--good:#4bbf8a;--bad:#e0765c;
+  --worth:#cba85a;--worth-soft:rgba(203,168,90,.16);
+  --nav-active:#20222b;--overlay:rgba(0,0,0,.6);
   --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.35);
   --shadow-lg:0 16px 50px rgba(0,0,0,.55);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
   font-size:15px;line-height:1.55;letter-spacing:-.005em;-webkit-font-smoothing:antialiased;transition:background .35s,color .35s;}
-.num{font-variant-numeric:tabular-nums;}
+.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
 .accent{color:var(--accent);font-weight:600;}
-.mono{font-family:'Roboto Mono',ui-monospace,monospace;font-size:.92em;}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.9em;}
+/* "voz" da marca — Space Grotesk nos títulos, tickers, rótulos e controles; Inter fica no corpo/tabelas */
+.disp,h1,h2,h3,.page-head h1,.btn,.chip,.nav a,.brand .logo,
+.stat .k,.fair-label,.sec-label,.hp-lbl,.verdictLabel,#verdictLabel,
+.pk-tk,#dTicker,.tag,.tagc,th{font-family:'Space Grotesk','Inter',sans-serif;}
+[data-theme="dark"] .brand .logo{color:#14140f;}
 a{color:inherit;text-decoration:none;}
 button{font-family:inherit;}
 
@@ -207,8 +214,10 @@ button{font-family:inherit;}
 .situ-cell{display:flex;flex-wrap:wrap;gap:4px;max-width:130px;}
 .mos{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;}
 .mos.pos{color:var(--good);}.mos.neg{color:var(--bad);}
-.mos-bar{display:inline-block;width:40px;height:5px;border-radius:3px;background:var(--border);margin-left:8px;vertical-align:middle;overflow:hidden;position:relative;}
-.mos-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;}
+/* mini medidor de margem: tick de latão no centro (=justo), preenchimento pinho à esq. (barata) / argila à dir. (cara) */
+.mos-bar{display:inline-block;width:66px;height:6px;border-radius:4px;background:var(--surface-2);border:1px solid var(--border);margin-left:9px;vertical-align:middle;position:relative;}
+.mos-bar::before{content:"";position:absolute;left:50%;top:-1px;bottom:-1px;width:2px;background:var(--worth);transform:translateX(-50%);border-radius:1px;}
+.mos-bar i{position:absolute;top:0;bottom:0;border-radius:2px;}
 
 /* breadcrumb + título ação */
 .crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mute);margin-bottom:16px;}
@@ -231,6 +240,19 @@ button{font-family:inherit;}
 .badge-mos{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:5px 11px;border-radius:999px;font-size:13px;font-weight:600;}
 .badge-mos.good{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good);}
 .badge-mos.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad);}
+/* Medidor de margem de segurança (assinatura): preço ↔ justo, faixa pinho (barata) / argila (cara), justo em latão */
+.verdict .fair-value{color:var(--worth);}
+.hero-gauge{margin-top:26px;padding-bottom:20px;}
+.hero-gauge:empty{display:none;}
+.hg-track{position:relative;height:11px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);}
+.hg-fill{position:absolute;top:0;bottom:0;border-radius:5px;}
+.hg-fill.good{background:var(--good);}
+.hg-fill.bad{background:var(--bad);}
+.hg-fairmark{position:absolute;left:50%;top:-3px;bottom:-3px;width:2.5px;background:var(--worth);border-radius:2px;transform:translateX(-50%);}
+.hg-price{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;background:var(--surface);border:2.5px solid var(--text);transform:translate(-50%,-50%);}
+.hg-lab{position:absolute;font-family:'Space Grotesk',sans-serif;font-size:10.5px;font-weight:600;white-space:nowrap;transform:translateX(-50%);}
+.hg-lab.fair{top:-18px;color:var(--worth);letter-spacing:.04em;}
+.hg-lab.price{bottom:-19px;color:var(--text-soft);}
 .assumptions{display:flex;flex-direction:column;gap:11px;justify-content:center;}
 
 /* HERO do ativo: identidade + veredito do valuation */
@@ -495,6 +517,7 @@ button{font-family:inherit;}
           <div class="fair-label" id="verdictLabel">Preço justo · DDM</div>
           <div class="fair-value num" id="fairValue">—</div>
           <div class="badge-mos" id="mosBadge"><span id="mosText"></span></div>
+          <div class="hero-gauge" id="heroGauge"></div>
         </div>
       </div>
 
@@ -1090,8 +1113,10 @@ function renderStats(units,list){
     <div class="stat"><div class="k">Sobrevalorizadas</div><div class="v bad">${over}</div></div>`;
 }
 function marginCell(margin,maxAbs){
-  const hasM=margin!=null,pos=hasM&&margin>=0,w=hasM?Math.min(100,Math.abs(margin)/maxAbs*100):0;
-  return `<td class="col-margin">${hasM?`<span class="mos ${pos?'pos':'neg'}">${pos?'+':''}${dec(margin,1)}%</span><span class="mos-bar"><i style="width:${w}%;background:${pos?'var(--good)':'var(--bad)'}"></i></span>`:'<span class="td-attr">—</span>'}</td>`;
+  const hasM=margin!=null,pos=hasM&&margin>=0,w=hasM?Math.min(50,Math.abs(margin)/maxAbs*50):0;
+  // barata (margem +) enche do centro p/ a esquerda em pinho; cara (−) do centro p/ a direita em argila
+  const fill=pos?`right:50%;width:${w}%;background:var(--good)`:`left:50%;width:${w}%;background:var(--bad)`;
+  return `<td class="col-margin">${hasM?`<span class="mos ${pos?'pos':'neg'}">${pos?'+':''}${dec(margin,1)}%</span><span class="mos-bar"><i style="${fill}"></i></span>`:'<span class="td-attr">—</span>'}</td>`;
 }
 function renderScreener(){
   let list=STOCKS.filter(s=>scope==="monitoradas"?s.monitored:true)
@@ -1358,6 +1383,24 @@ function renderDDM(){
     ?"LPA não positivo (empresa deficitária): o DDM não se aplica — considere marcar esta ação como <b>“Sem valuation”</b>."
     :"Ke ≤ g terminal: a perpetuidade não converge. Aumente o Ke, reduza o ROE terminal ou aumente o payout final.";}
   chartState.fair=ok?r.fair:NaN;chartState.price=price;renderChart();
+  updateHeroGauge(ok?r.fair:null);
+}
+
+/* Medidor do hero: preço ↔ justo. Aditivo — só ilustra os números já exibidos (não altera cálculo). */
+function updateHeroGauge(fair){
+  const g=$("heroGauge");if(!g)return;
+  const price=currentPrice;
+  if(fair==null||!isFinite(fair)||price==null){g.innerHTML="";return;}
+  const margin=(fair-price)/price*100,pos=margin>=0,cap=40;
+  const m=Math.max(-cap,Math.min(cap,margin));
+  const priceLeft=50-(m/cap*50);   // barata -> preço à esquerda do justo (centro)
+  const lo=Math.min(50,priceLeft),hi=Math.max(50,priceLeft);
+  const pl=Math.max(9,Math.min(91,priceLeft));   // rótulo não vaza da barra
+  g.innerHTML=`<div class="hg-track">`
+    +`<div class="hg-fill ${pos?'good':'bad'}" style="left:${lo}%;right:${100-hi}%"></div>`
+    +`<div class="hg-fairmark"></div><div class="hg-price" style="left:${priceLeft}%"></div>`
+    +`<div class="hg-lab fair" style="left:50%">justo ${brl(fair)}</div>`
+    +`<div class="hg-lab price" style="left:${pl}%">preço ${brl(price)}</div></div>`;
 }
 
 /* ===== dispatcher de modelo no detalhe (DDM / Owner Earnings / Regra nº1) ===== */
@@ -1374,6 +1417,7 @@ function setVerdict(fair,price){
   if(price>0&&ok){const m=(fair-price)/price*100,cls=m>=0?"good":"bad",sig=(m>=0?"+":"")+dec(m,1)+"%";
     b.className="badge-mos "+cls;$("mosText").textContent=sig+" de margem vs "+brl(price);}
   else{b.className="badge-mos";$("mosText").textContent=price>0?"—":"sem preço";}
+  updateHeroGauge(ok?fair:null);
 }
 function setMarginRow(id,lblid,fair,price){const im=$(id),ok=isFinite(fair);
   if(price>0&&ok){const m=(fair-price)/price*100;im.className="v num "+(m>=0?"pos":"neg");
@@ -1483,6 +1527,7 @@ function renderNA(){   // "Sem valuation": sem preço justo; mantém preço e gr
   $("fairValue").textContent="—";
   $("mosBadge").className="badge-mos";$("mosText").textContent="sem preço justo";
   chartState.fair=NaN;chartState.price=currentPrice||0;renderChart();
+  updateHeroGauge(null);
 }
 $("naSaveBtn").addEventListener("click",async()=>{
   if(!currentStock||currentStock.ticker==="Exemplo")return;
