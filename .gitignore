@@ -14,6 +14,11 @@ cvm_base/.venv/
 dashboard/backend/divyval.db
 dashboard/backend/divyval.db.bak
 
+# === Cloudflare Pages: segredos locais e cache de build/wrangler ===
+dashboard/.dev.vars
+.wrangler/
+node_modules/
+
 # === Python / SO ===
 __pycache__/
 *.pyc
