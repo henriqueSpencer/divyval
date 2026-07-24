@@ -101,6 +101,14 @@ padrão global (Configurações) via checkbox "padrão". Premissas por ação em
 `premissa_hist`; o R1 acrescentou as colunas **`fut_pe`** (P/L futuro) e **`mos`** (margem);
 payout→`payout_i`, retorno→`ke`, horizonte→`fade`. Screener e histórico recalculam por modelo.
 
+**Ke global — dois modos de entrada** (Configurações, jul/2026): *Nominal* (slider, como antes) ou
+*IPCA + NTN-B*, que compõe **Ke = (1+IPCA)×(1+taxa real do título)×(1+prêmio de risco) − 1** (Fisher;
+o prêmio é opcional, default 0). O nominal equivalente aparece no próprio campo. **O resto do app
+segue lendo só `globalCfg.ke`** — o modo apenas registra como o número foi obtido; as chaves
+`ipca_global`/`ntnb_global`/`premio_global`/`ke_mode_global` (0/1) vivem na tabela `config` e são
+expostas por `api/config.js` (`ke_mode` vai como string `"nom"`/`"real"` na API). Motivo de usar o
+nominal: LPA e dividendos projetados nos modelos são nominais.
+
 **O modelo é escolhido por pré-visualização:** o seletor no detalhe só troca a visualização
 (`previewModel`); o modelo só grava na ação (`stocks.modelo`, via `commitModel`→PATCH) ao clicar em
 **"Salvar premissas"**. Trocar o seletor não altera screener/Monitoradas até salvar.
