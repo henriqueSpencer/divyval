@@ -323,6 +323,16 @@ button{font-family:inherit;}
 .cfg-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25);}
 .cfg-val{font-size:22px;font-weight:700;color:var(--accent);min-width:64px;text-align:right;}
 .cfg-note{font-size:12.5px;color:var(--text-soft);margin-top:16px;}
+/* Ke por composição: IPCA + taxa real da NTN-B (+ prêmio) */
+.cfg-parts{display:flex;flex-direction:column;gap:9px;}
+.cfg-part{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:500;color:var(--text-soft);}
+.cfg-part small{display:block;font-size:11.5px;margin-top:1px;}
+.cfg-part .pct{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--text-mute);flex:none;}
+.cfg-part input{width:74px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:6px 8px;}
+.cfg-part input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent);}
+.cfg-eq{margin-top:13px;padding-top:12px;border-top:1px dashed var(--border);justify-content:space-between;}
+.cfg-eqlbl{font-size:13px;font-weight:600;color:var(--text);}
+.cfg-eqlbl small{display:block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:400;color:var(--text-mute);margin-top:2px;}
 
 /* gráfico */
 .chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;}
@@ -779,7 +789,21 @@ button{font-family:inherit;}
         <div class="card-title">Premissas globais</div>
         <div class="cfg-field">
           <label>Taxa de desconto — Ke <span class="cfg-hint">retorno mínimo que você exige do ativo</span></label>
-          <div class="cfg-row"><input type="range" id="cfgKe" min="6" max="25" step="0.5"><span class="cfg-val num" id="cfgKeVal">14%</span></div>
+          <div class="periods" id="cfgKeMode" style="margin:-4px 0 12px;">
+            <button class="period" data-mode="nom">Nominal</button>
+            <button class="period" data-mode="real">IPCA + NTN-B</button>
+          </div>
+          <div id="cfgKeNom">
+            <div class="cfg-row"><input type="range" id="cfgKe" min="6" max="25" step="0.5"><span class="cfg-val num" id="cfgKeVal">14%</span></div>
+          </div>
+          <div id="cfgKeReal" hidden>
+            <div class="cfg-parts">
+              <label class="cfg-part"><span>IPCA esperado <small style="color:var(--text-mute);font-weight:400">inflação de longo prazo</small></span><span class="pct"><input type="text" inputmode="decimal" id="cfgIpca">%</span></label>
+              <label class="cfg-part"><span>Taxa real do título <small style="color:var(--text-mute);font-weight:400">o “+” da NTN-B</small></span><span class="pct"><input type="text" inputmode="decimal" id="cfgNtnb">%</span></label>
+              <label class="cfg-part"><span>Prêmio de risco <small style="color:var(--text-mute);font-weight:400">exigido acima do título — opcional</small></span><span class="pct"><input type="text" inputmode="decimal" id="cfgPremio">%</span></label>
+            </div>
+            <div class="cfg-row cfg-eq"><span class="cfg-eqlbl">Ke nominal equivalente <small>(1+IPCA) × (1+real) × (1+prêmio) − 1</small></span><span class="cfg-val num" id="cfgKeEq">—</span></div>
+          </div>
         </div>
         <div class="cfg-field">
           <label>ROE terminal <span class="cfg-hint">retorno sobre patrimônio ao qual a empresa converge no longo prazo</span></label>
@@ -793,7 +817,7 @@ button{font-family:inherit;}
           <label>Anos de fade <span class="cfg-hint">período em que ROE e payout convergem do atual ao terminal</span></label>
           <div class="cfg-row"><input type="range" id="cfgFade" min="2" max="20" step="1"><span class="cfg-val num" id="cfgFadeVal">10</span></div>
         </div>
-        <p class="cfg-note">Salvo automaticamente. O crescimento (g) é derivado: <b>g = ROE × (1 − payout)</b>. Vale para todo ativo com o "padrão" marcado — valor justo e margem recalculam na hora.</p>
+        <p class="cfg-note">Salvo automaticamente. O crescimento (g) é derivado: <b>g = ROE × (1 − payout)</b>. Vale para todo ativo com o "padrão" marcado — valor justo e margem recalculam na hora.<br>No modo <b>IPCA + NTN-B</b> o Ke é <b>nominal equivalente</b> à taxa do título (ex.: IPCA 4,5% + 8,2% ⇒ 13,1%) — é esse nominal que entra nos modelos, porque LPA e dividendos projetados também são nominais.</p>
       </div>
     </section>
   </main>
@@ -988,7 +1012,10 @@ let sort={key:"margin",dir:-1},scope="all";
 let grouped=localStorage.getItem("ddm-grouped")!=="0";   // agrupar classes da mesma empresa (padrão on)
 const groupKey=s=>s.cd_cvm||s.ticker.slice(0,4);
 const typeLabel=tk=>({"3":"ON","4":"PN","5":"PNA","6":"PNB","7":"PNC","8":"PND","11":"UNIT"}[(tk.match(/(\d+)$/)||[])[1]]||"");
-let globalCfg={ke:0.14,roet:0.12,payoutt:0.60,fade:10};   // premissas globais — vêm do backend
+/* premissas globais — vêm do backend. O Ke pode ser digitado direto (ke_mode='nom') ou composto
+   a partir de IPCA + taxa real da NTN-B (+ prêmio de risco) — nesse caso `ke` guarda o nominal
+   equivalente já calculado, então todo o resto do app segue lendo só `globalCfg.ke`. */
+let globalCfg={ke:0.14,roet:0.12,payoutt:0.60,fade:10,ke_mode:"nom",ipca:0.045,ntnb:0.072,premio:0};
 const filterState={};
 /* colunas na MESMA ordem do cabeçalho */
 const COLUMNS=[
@@ -1777,17 +1804,39 @@ $("removeBtn").addEventListener("click",async()=>{
 
 /* ===== ROTEADOR ===== */
 function show(v){["screener","detail","modelo","config"].forEach(n=>$("view-"+n).hidden=n!==v);}
+/* "4,5" ou "4.5" → 4.5 (o usuário digita com vírgula) */
+const numv=(el,d=0)=>{const n=parseFloat(String(el.value).replace(",","."));return isFinite(n)?n:d;};
+/* Fisher composto: nominal = (1+IPCA)(1+real)(1+prêmio) − 1 */
+const keReal=()=>(1+numv($("cfgIpca"))/100)*(1+numv($("cfgNtnb"))/100)*(1+numv($("cfgPremio"))/100)-1;
+const cfgKeMode=()=>$("cfgKeReal").hidden?"nom":"real";
+function renderKeEq(){$("cfgKeEq").textContent=pctv(Math.round(keReal()*1000)/10);}
+function setKeMode(mode,syncSlider){
+  const real=mode==="real";
+  $("cfgKeNom").hidden=real; $("cfgKeReal").hidden=!real;
+  document.querySelectorAll("#cfgKeMode .period").forEach(b=>b.classList.toggle("active",(b.dataset.mode==="real")===real));
+  if(real)renderKeEq();
+  // ao voltar pro nominal, o slider parte do que a composição dava (dentro dos limites dele)
+  else if(syncSlider){const v=Math.min(25,Math.max(6,Math.round(keReal()*200)/2));$("cfgKe").value=v;$("cfgKeVal").textContent=pctv(v);}
+}
 function renderConfig(){
   $("cfgKe").value=Math.round(globalCfg.ke*1000)/10; $("cfgKeVal").textContent=pctv(globalCfg.ke*100);
+  $("cfgIpca").value=dec(globalCfg.ipca*100,1); $("cfgNtnb").value=dec(globalCfg.ntnb*100,1); $("cfgPremio").value=dec(globalCfg.premio*100,1);
+  setKeMode(globalCfg.ke_mode==="real"?"real":"nom");
   $("cfgRoet").value=Math.round(globalCfg.roet*1000)/10; $("cfgRoetVal").textContent=pctv(globalCfg.roet*100);
   $("cfgPayoutt").value=Math.round(globalCfg.payoutt*100); $("cfgPayouttVal").textContent=pctv(globalCfg.payoutt*100);
   $("cfgFade").value=globalCfg.fade; $("cfgFadeVal").textContent=Math.round(globalCfg.fade)+" anos";
 }
 function saveConfig(){
-  globalCfg={ke:+$("cfgKe").value/100,roet:+$("cfgRoet").value/100,payoutt:+$("cfgPayoutt").value/100,fade:+$("cfgFade").value};
+  const mode=cfgKeMode();
+  globalCfg={ke:mode==="real"?keReal():+$("cfgKe").value/100,
+    roet:+$("cfgRoet").value/100,payoutt:+$("cfgPayoutt").value/100,fade:+$("cfgFade").value,
+    ke_mode:mode,ipca:numv($("cfgIpca"))/100,ntnb:numv($("cfgNtnb"))/100,premio:numv($("cfgPremio"))/100};
   fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(globalCfg)})
     .then(()=>fetchStocks()).then(()=>{if(!$("view-screener").hidden)renderScreener();}).catch(()=>{});
 }
+$("cfgKeMode").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.mode===cfgKeMode())return;
+  setKeMode(b.dataset.mode,true);saveConfig();});
+["cfgIpca","cfgNtnb","cfgPremio"].forEach(id=>{$(id).addEventListener("input",renderKeEq);$(id).addEventListener("change",saveConfig);});
 $("cfgKe").addEventListener("input",()=>$("cfgKeVal").textContent=pctv(+$("cfgKe").value));
 $("cfgRoet").addEventListener("input",()=>$("cfgRoetVal").textContent=pctv(+$("cfgRoet").value));
 $("cfgPayoutt").addEventListener("input",()=>$("cfgPayouttVal").textContent=pctv(+$("cfgPayoutt").value));
@@ -1869,7 +1918,7 @@ async function fetchStocks(){
   return faltam;
 }
 async function bootstrap(){
-  try{const rc=await fetch("/api/config");if(rc.ok)globalCfg=await rc.json();}catch(e){}
+  try{const rc=await fetch("/api/config");if(rc.ok)globalCfg={...globalCfg,...await rc.json()};}catch(e){}
   router();   // mostra a amostra imediatamente
   // Dados reais: no edge (Cloudflare Pages) não há cold start, e as cotações vêm de uma vez
   // no /api/stocks (B3 via brapi). Um retry curto cobre só um soluço transitório de rede/API.
