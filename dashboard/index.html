@@ -589,7 +589,7 @@ button{font-family:inherit;}
               <div class="field g-only" style="display:none"><label for="gT">Crescimento terminal (g) <label class="chk"><input type="checkbox" id="gtDefault" checked><span id="gtDefLbl">padrão</span></label></label><span class="val num" id="gTVal">5%</span><input type="range" id="gT" min="-2" max="15" value="5" step="0.5"></div>
               <div class="field"><label for="payoutT">Payout final <label class="chk"><input type="checkbox" id="payouttDefault" checked><span id="payouttDefLbl">padrão</span></label></label><span class="val num" id="payoutTVal">60%</span><input type="range" id="payoutT" min="0" max="100" value="60" step="1"></div>
               <div class="field"><label for="fade">Anos de fade <label class="chk"><input type="checkbox" id="fadeDefault" checked><span id="fadeDefLbl">padrão</span></label></label><span class="val num" id="fadeVal">10</span><input type="range" id="fade" min="2" max="20" value="10" step="1"></div>
-              <div class="field"><label for="ke">Taxa de desconto (Ke) <label class="chk"><input type="checkbox" id="keDefault" checked><span id="keDefLbl">padrão</span></label></label><span class="val num" id="keVal">14%</span><input type="range" id="ke" min="6" max="25" value="14" step="0.5"></div>
+              <div class="field"><label for="ke">Taxa de desconto (Ke) <label class="chk"><input type="checkbox" id="keDefault" checked><span id="keDefLbl">padrão</span></label></label><span class="val num" id="keVal">14%</span><input type="range" id="ke" min="6" max="25" value="14" step="0.1"></div>
               <div class="save-row"><button class="btn sm" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
             </div>
           </div>
@@ -665,7 +665,7 @@ button{font-family:inherit;}
               <div class="field"><label for="oe-n">Horizonte (anos) <label class="chk"><input type="checkbox" id="oe-nDefault" checked><span id="oe-nDefLbl">padrão</span></label></label><span class="val num" id="oe-nVal">10</span><input type="range" id="oe-n" min="3" max="20" value="10" step="1"></div>
               <div class="asm-group">perpetuidade e desconto</div>
               <div class="field"><label for="oe-gt">Crescimento terminal (g∞)</label><span class="val num" id="oe-gtVal">3%</span><input type="range" id="oe-gt" min="0" max="8" value="3" step="0.5"></div>
-              <div class="field"><label for="oe-d">Taxa de desconto (Ke) <label class="chk"><input type="checkbox" id="oe-dDefault" checked><span id="oe-dDefLbl">padrão</span></label></label><span class="val num" id="oe-dVal">14%</span><input type="range" id="oe-d" min="6" max="25" value="14" step="0.5"></div>
+              <div class="field"><label for="oe-d">Taxa de desconto (Ke) <label class="chk"><input type="checkbox" id="oe-dDefault" checked><span id="oe-dDefLbl">padrão</span></label></label><span class="val num" id="oe-dVal">14%</span><input type="range" id="oe-d" min="6" max="25" value="14" step="0.1"></div>
               <div class="save-row"><button class="btn sm" id="oeSaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
             </div>
           </div>
@@ -726,7 +726,7 @@ button{font-family:inherit;}
               <div class="field g-only" style="display:none"><label for="r1-g">Crescimento do LPA (g)</label><span class="val num" id="r1-gVal">10%</span><input type="range" id="r1-g" min="-5" max="30" value="10" step="0.5"></div>
               <div class="field"><label for="r1-payout">Payout (dividendos)</label><span class="val num" id="r1-payoutVal">40%</span><input type="range" id="r1-payout" min="0" max="100" value="40" step="5"></div>
               <div class="field wide"><label for="r1-pe">P/L futuro (saída)</label><input type="number" id="r1-pe" value="15" step="0.5"></div>
-              <div class="field"><label for="r1-req">Retorno exigido (Ke) <label class="chk"><input type="checkbox" id="r1-reqDefault" checked><span id="r1-reqDefLbl">padrão</span></label></label><span class="val num" id="r1-reqVal">14%</span><input type="range" id="r1-req" min="8" max="25" value="14" step="0.5"></div>
+              <div class="field"><label for="r1-req">Retorno exigido (Ke) <label class="chk"><input type="checkbox" id="r1-reqDefault" checked><span id="r1-reqDefLbl">padrão</span></label></label><span class="val num" id="r1-reqVal">14%</span><input type="range" id="r1-req" min="8" max="25" value="14" step="0.1"></div>
               <div class="field"><label for="r1-mos">Margem de segurança</label><span class="val num" id="r1-mosVal">50%</span><input type="range" id="r1-mos" min="0" max="70" value="50" step="5"></div>
               <div class="field"><label for="r1-n">Horizonte (anos) <label class="chk"><input type="checkbox" id="r1-nDefault" checked><span id="r1-nDefLbl">padrão</span></label></label><span class="val num" id="r1-nVal">10</span><input type="range" id="r1-n" min="3" max="20" value="10" step="1"></div>
               <div class="save-row"><button class="btn sm" id="r1SaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
@@ -833,7 +833,7 @@ button{font-family:inherit;}
             <button class="period" data-mode="real">IPCA + NTN-B</button>
           </div>
           <div id="cfgKeNom">
-            <div class="cfg-row"><input type="range" id="cfgKe" min="6" max="25" step="0.5"><span class="cfg-val num" id="cfgKeVal">14%</span></div>
+            <div class="cfg-row"><input type="range" id="cfgKe" min="6" max="25" step="0.1"><span class="cfg-val num" id="cfgKeVal">14%</span></div>
           </div>
           <div id="cfgKeReal" hidden>
             <div class="cfg-parts">
@@ -1459,13 +1459,22 @@ $("periods").addEventListener("click",e=>{const b=e.target.closest(".period");if
 let currentStock=null;
 let currentPrice=null;   /* preço real da ação (Yahoo) — não é premissa editável */
 let growthMode="roe";   // 'roe' (deriva g do ROE) ou 'g' (crescimento digitado direto)
+/* Valor EXATO da premissa semeada (o slider arredonda ao seu passo — ex.: g_i=8,04% vira 8,0% —
+   e computar do slider divergiria do screener). Guardamos o valor cheio e o mostrado ao semear;
+   enquanto o usuário não mexer no slider (valor idêntico ao semeado), o cálculo usa o exato.
+   Ao arrastar, o slider passa a valer. Assim detalhe = screener até uma edição consciente. */
+let seedExact={}, seedShown={};
+function bindExact(id,ratio){seedShown[id]=+$(id).value;seedExact[id]=ratio;}
+function rv(id,div){div=div||1;return (id in seedExact && Math.abs(+$(id).value-seedShown[id])<1e-9)?seedExact[id]:+$(id).value/div;}
 function seed(s){
   growthMode=s.growth_mode||"roe";
+  seedExact={};seedShown={};
   $("lpa").value=s.lpa;
-  $("roeI").value=Math.round((s.roe_i!=null?s.roe_i:0.15)*1000)/10;
-  $("payoutI").value=Math.round((s.payout_i!=null?s.payout_i:0.5)*100);
-  const gi=s.g_i!=null?s.g_i:(s.roe_i!=null?s.roe_i*(1-(s.payout_i!=null?s.payout_i:0.5)):0.05);
-  $("gI").value=Math.round(gi*1000)/10;
+  const roe=s.roe_i!=null?s.roe_i:0.15, po=s.payout_i!=null?s.payout_i:0.5;
+  $("roeI").value=Math.round(roe*1000)/10;bindExact("roeI",roe);
+  $("payoutI").value=Math.round(po*100);bindExact("payoutI",po);
+  const gi=s.g_i!=null?s.g_i:(s.roe_i!=null?s.roe_i*(1-po):0.05);
+  $("gI").value=Math.round(gi*1000)/10;bindExact("gI",gi);
 }
 const DEF=[["keDefault","ke","ke","keDefLbl"],["roetDefault","roeT","roet","roetDefLbl"],
            ["payouttDefault","payoutT","payoutt","payouttDefLbl"],["fadeDefault","fade","fade","fadeDefLbl"]];
@@ -1500,9 +1509,17 @@ $("gtDefault").addEventListener("change",()=>{$("roetDefault").checked=$("gtDefa
 $("growthToggle").addEventListener("click",e=>{const b=e.target.closest(".gt-btn");if(!b)return;
   growthMode=b.dataset.mode;applyMode();renderDDM();});
 function clearPresetActive(){}   // presets removidos
-function readAssum(){return {lpa:+$("lpa").value,mode:growthMode,
-  roeI:+$("roeI").value/100,payoutI:+$("payoutI").value/100,roeT:+$("roeT").value/100,payoutT:+$("payoutT").value/100,
-  gI:+$("gI").value/100,gTerm:+$("gT").value/100,fade:+$("fade").value,ke:+$("ke").value/100};}
+/* Premissas "padrão" usam o valor GLOBAL EXATO (não o do slider): o Ke global pode ter mais casas
+   que o passo do slider (ex.: 13,7831% de IPCA+NTN-B), e ler o slider arredondaria (→14%), fazendo
+   o justo do detalhe divergir do screener. Trava marcada ⇒ compute com o global; o slider é só
+   visual. Assim detalhe e screener batem exatamente. */
+function readAssum(){
+  const keOn=$("keDefault").checked, rtOn=$("roetDefault").checked, ptOn=$("payouttDefault").checked, fOn=$("fadeDefault").checked;
+  return {lpa:+$("lpa").value,mode:growthMode,
+  roeI:rv("roeI",100),payoutI:rv("payoutI",100),
+  roeT:rtOn?globalCfg.roet:rv("roeT",100),payoutT:ptOn?globalCfg.payoutt:rv("payoutT",100),
+  gI:rv("gI",100),gTerm:rtOn?gtGlobal():rv("gT",100),
+  fade:fOn?globalCfg.fade:+$("fade").value,ke:keOn?globalCfg.ke:rv("ke",100)};}
 function renderDDM(){
   const a=readAssum(),price=currentPrice||0,useG=a.mode==="g";
   $("roeIVal").textContent=pctv(+$("roeI").value);$("payoutIVal").textContent=pctv(+$("payoutI").value);
@@ -1669,30 +1686,34 @@ function applyDefList(list){
 }
 function seedModels(s){
   $("oe-lpa").value=s.lpa!=null?s.lpa:0;
-  $("oe-g").value=Math.round(oeG(s)*1000)/10;$("oe-gt").value=Math.round(oeGT(s)*1000)/10;
+  $("oe-g").value=Math.round(oeG(s)*1000)/10;bindExact("oe-g",oeG(s));
+  $("oe-gt").value=Math.round(oeGT(s)*1000)/10;bindExact("oe-gt",oeGT(s));
   const gR1=r1G(s);   // g do R1 já respeita o modo (via ROE ou digitado)
-  $("r1-lpa").value=s.lpa!=null?s.lpa:0;$("r1-g").value=Math.round(oeG(s)*1000)/10;
-  $("r1-roe").value=Math.round((s.roe_i!=null?s.roe_i:0.15)*1000)/10;
-  $("r1-payout").value=Math.round(r1Payout(s)*100);
+  $("r1-lpa").value=s.lpa!=null?s.lpa:0;$("r1-g").value=Math.round(oeG(s)*1000)/10;bindExact("r1-g",oeG(s));
+  const r1roe=s.roe_i!=null?s.roe_i:0.15;
+  $("r1-roe").value=Math.round(r1roe*1000)/10;bindExact("r1-roe",r1roe);
+  $("r1-payout").value=Math.round(r1Payout(s)*100);bindExact("r1-payout",r1Payout(s));
   $("r1-pe").value=s.fut_pe!=null?s.fut_pe:defPE(gR1);$("r1-mos").value=Math.round((s.mos!=null?s.mos:0.5)*100);
   ["oe-dDefault","oe-nDefault","r1-reqDefault","r1-nDefault"].forEach(id=>$(id).checked=true);
   applyDefList(DEF_OE);applyDefList(DEF_R1);
 }
 function seedModelsPrem(p){   // ajusta OE/R1 a partir da premissa salva (respeita flags "padrão")
   if(p.lpa!=null){$("oe-lpa").value=p.lpa;$("r1-lpa").value=p.lpa;}
-  if(p.g_i!=null){$("oe-g").value=Math.round(p.g_i*1000)/10;$("r1-g").value=Math.round(p.g_i*1000)/10;}
-  if(p.g_t!=null)$("oe-gt").value=Math.round(p.g_t*1000)/10;
-  if(p.roe_i!=null)$("r1-roe").value=Math.round(p.roe_i*1000)/10;
-  if(p.payout_i!=null)$("r1-payout").value=Math.round(p.payout_i*100);
+  if(p.g_i!=null){$("oe-g").value=Math.round(p.g_i*1000)/10;bindExact("oe-g",p.g_i);$("r1-g").value=Math.round(p.g_i*1000)/10;bindExact("r1-g",p.g_i);}
+  if(p.g_t!=null){$("oe-gt").value=Math.round(p.g_t*1000)/10;bindExact("oe-gt",p.g_t);}
+  if(p.roe_i!=null){$("r1-roe").value=Math.round(p.roe_i*1000)/10;bindExact("r1-roe",p.roe_i);}
+  if(p.payout_i!=null){$("r1-payout").value=Math.round(p.payout_i*100);bindExact("r1-payout",p.payout_i);}
   if(p.fut_pe!=null)$("r1-pe").value=p.fut_pe;
   if(p.mos!=null)$("r1-mos").value=Math.round(p.mos*100);
-  const sd=(chk,slider,val,def,isFade)=>{const on=def==null?true:!!def;$(chk).checked=on;if(!on&&val!=null)$(slider).value=isFade?Math.round(val):Math.round(val*1000)/10;};
+  const sd=(chk,slider,val,def,isFade)=>{const on=def==null?true:!!def;$(chk).checked=on;if(!on&&val!=null){$(slider).value=isFade?Math.round(val):Math.round(val*1000)/10;if(!isFade)bindExact(slider,val);}};
   sd("oe-dDefault","oe-d",p.ke,p.ke_default);sd("oe-nDefault","oe-n",p.fade,p.fade_default,true);
   sd("r1-reqDefault","r1-req",p.ke,p.ke_default);sd("r1-nDefault","r1-n",p.fade,p.fade_default,true);
   applyDefList(DEF_OE);applyDefList(DEF_R1);
 }
 function renderOE(){
-  const lpa=+$("oe-lpa").value,g=+$("oe-g").value/100,gT=+$("oe-gt").value/100,disc=+$("oe-d").value/100,years=+$("oe-n").value,price=currentPrice||0;
+  // Ke/horizonte "padrão" ⇒ valor global exato (o slider arredonda; ver readAssum) — casa com o screener.
+  const disc=$("oe-dDefault").checked?globalCfg.ke:rv("oe-d",100), years=$("oe-nDefault").checked?globalCfg.fade:+$("oe-n").value;
+  const lpa=+$("oe-lpa").value,g=rv("oe-g",100),gT=rv("oe-gt",100),price=currentPrice||0;
   $("oe-gVal").textContent=pctv(+$("oe-g").value);$("oe-gtVal").textContent=pctv(+$("oe-gt").value);
   $("oe-dVal").textContent=pctv(+$("oe-d").value);$("oe-nVal").textContent=Math.round(years);
   const r=computeOE({lpa,g,gT,disc,years}),ok=r.valid&&isFinite(r.fair);
@@ -1719,10 +1740,12 @@ function renderOE(){
   chartState.fair=ok?r.fair:NaN;chartState.price=price;renderChart();
 }
 function renderR1(){
-  const lpa=+$("r1-lpa").value,payout=+$("r1-payout").value/100,futPE=+$("r1-pe").value,req=+$("r1-req").value/100,mos=+$("r1-mos").value/100,years=+$("r1-n").value,price=currentPrice||0;
+  // Ke/horizonte "padrão" ⇒ valor global exato (o slider arredonda; ver readAssum) — casa com o screener.
+  const req=$("r1-reqDefault").checked?globalCfg.ke:rv("r1-req",100), years=$("r1-nDefault").checked?globalCfg.fade:+$("r1-n").value;
+  const lpa=+$("r1-lpa").value,payout=rv("r1-payout",100),futPE=+$("r1-pe").value,mos=+$("r1-mos").value/100,price=currentPrice||0;
   // crescimento: derivado do ROE (g = ROE × (1 − payout)) ou digitado direto — mesmo par de modos do DDM
-  const useRoe=growthMode!=="g",roe=+$("r1-roe").value/100;
-  const g=useRoe?roe*(1-payout):+$("r1-g").value/100;
+  const useRoe=growthMode!=="g",roe=rv("r1-roe",100);
+  const g=useRoe?roe*(1-payout):rv("r1-g",100);
   $("r1-roeVal").textContent=pctv(+$("r1-roe").value);
   $("r1-impl-g").textContent=(g>=0?"+":"")+dec(g*100,1)+"% a.a.";
   $("r1-impl-gsrc").innerHTML=useRoe?"g = ROE × (1 − payout)":"crescimento digitado (direto)";
@@ -1867,18 +1890,18 @@ async function loadPremissas(ticker){
 function seedPrem(p){
   growthMode=p.growth_mode||"roe";
   if(p.lpa!=null)$("lpa").value=p.lpa;
-  if(p.roe_i!=null)$("roeI").value=Math.round(p.roe_i*1000)/10;
-  if(p.payout_i!=null)$("payoutI").value=Math.round(p.payout_i*100);
-  if(p.g_i!=null)$("gI").value=Math.round(p.g_i*1000)/10;
+  if(p.roe_i!=null){$("roeI").value=Math.round(p.roe_i*1000)/10;bindExact("roeI",p.roe_i);}
+  if(p.payout_i!=null){$("payoutI").value=Math.round(p.payout_i*100);bindExact("payoutI",p.payout_i);}
+  if(p.g_i!=null){$("gI").value=Math.round(p.g_i*1000)/10;bindExact("gI",p.g_i);}
   const set=(chk,slider,val,def,isFade)=>{const on=def==null?true:!!def;$(chk).checked=on;
-    if(!on&&val!=null)$(slider).value=isFade?Math.round(val):Math.round(val*1000)/10;};
+    if(!on&&val!=null){$(slider).value=isFade?Math.round(val):Math.round(val*1000)/10;if(!isFade)bindExact(slider,val);}};
   set("keDefault","ke",p.ke,p.ke_default);
   set("roetDefault","roeT",p.roe_t,p.roet_default);
   set("payouttDefault","payoutT",p.payout_t,p.payoutt_default);
   set("fadeDefault","fade",p.fade,p.fade_default,true);
   // g terminal compartilha o flag do terminal (roet_default)
   $("gtDefault").checked=$("roetDefault").checked;
-  if(!$("gtDefault").checked&&p.g_t!=null)$("gT").value=Math.round(p.g_t*1000)/10;
+  if(!$("gtDefault").checked&&p.g_t!=null){$("gT").value=Math.round(p.g_t*1000)/10;bindExact("gT",p.g_t);}
   applyMode();
 }
 const dfl=f=>f==null?true:!!f;   // flag "padrão" ausente ⇒ usa global
