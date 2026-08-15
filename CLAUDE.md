@@ -5,14 +5,15 @@ build). O backend virou **Cloudflare Pages Functions** (edge serverless, JS) em 
 substituíram o antigo FastAPI. Servem as rotas `/api/*`; o próprio Pages serve os estáticos.
 Classificação curada em `backend/stocks_meta.json`.
 
-> O repositório git é a pasta-mãe `~/Documents/Investimentos` (remote `henriqueSpencer/divyval`);
-> o Cloudflare Pages usa **root directory `dashboard`**. O `CLAUDE.md` da raiz (base CVM/DuckDB)
-> continua valendo: **nunca leia os CSVs brutos da CVM** — consulte `cvm_base/cvm.duckdb`.
-> O **FastAPI legado** (`backend/app.py`) fica no repo como referência mas **não é mais deployado**.
+> **Esta pasta É a raiz do repositório git** (remote `henriqueSpencer/divyval`); o Cloudflare Pages
+> serve a partir da raiz. A base CVM/DuckDB e o `CLAUDE.md` da raiz **não estão neste repo** — ficam
+> em `~/Documents/Investimentos` (fora do git). Ao consultar dados da CVM lá: **nunca leia os CSVs
+> brutos** — use `cvm_base/cvm.duckdb`. O **FastAPI legado** (`backend/app.py`) fica no repo como
+> referência mas **não é mais deployado**.
 
 ## Arquitetura (Cloudflare Pages + Functions)
 ```
-dashboard/                    ← Pages "root directory"
+./                            ← raiz do repo = Pages "root directory"
   index.html, ddm.html        ← estáticos (servidos grátis, ilimitado)
   wrangler.toml               ← config do Pages (buildless)
   functions/                  ← rotas /api/* (edge)
@@ -33,7 +34,7 @@ As Functions são **buildless** (`fetch` puro, zero npm). A lógica de merge/CRU
 
 ## Rodar local
 ```bash
-cd dashboard && npx wrangler pages dev .   # → http://localhost:8788/
+npx wrangler pages dev .   # na raiz do repo → http://localhost:8788/
 ```
 Segredos locais em `dashboard/.dev.vars` (gitignored): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
 (**precisa ser a service key** `sb_secret_…`, porque o **RLS está ligado** — a anon/publishable é
@@ -74,7 +75,7 @@ Projeto `divyval`, account `b7345f757a0fc365da5dcdea7a033db5` (`wrangler` já lo
 `henriquespencer11@gmail.com`). Deploy é **manual, direct-upload** (NÃO tem git-integration ainda →
 push no GitHub **não** redeploya sozinho):
 ```bash
-cd dashboard && npx wrangler pages deploy . --project-name=divyval --branch=main --commit-dirty=true
+npx wrangler pages deploy . --project-name=divyval --branch=main --commit-dirty=true   # na raiz do repo
 ```
 > **Trocar um secret exige redeploy** pra a Function pegar (um deploy que correu antes do secret
 > propagar já serviu dado errado). Secrets: `wrangler pages secret put NOME --project-name=divyval`.
