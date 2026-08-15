@@ -1,0 +1,14 @@
+# === Cloudflare Pages: segredos locais e cache de build/wrangler ===
+.dev.vars
+.wrangler/
+node_modules/
+
+# === Banco local do backend legado (produção é Supabase) ===
+backend/divyval.db
+backend/divyval.db.bak
+
+# === Python / SO ===
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
