@@ -463,6 +463,74 @@ button{font-family:inherit;}
   .pill-claude{margin:12px 16px 4px;}
   .modal{padding:20px 18px;border-radius:14px;}
   .overlay{padding:20px 12px;}
+}
+/* ===== Carteira ===== */
+.stat .sub{font-size:11.5px;color:var(--text-mute);margin-top:3px;}
+.stat .sub.good{color:var(--good);}.stat .sub.bad{color:var(--bad);}
+.cart-grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-bottom:16px;}
+.cart-grid2b{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media (max-width:1080px){.cart-grid2,.cart-grid2b{grid-template-columns:1fr;}}
+.card-title .hint{font-size:11px;letter-spacing:0;text-transform:none;color:var(--text-mute);font-family:'Inter',sans-serif;font-weight:400;}
+.cart-bars{display:flex;flex-direction:column;gap:12px;}
+.cart-bar-row{display:grid;grid-template-columns:78px 1fr 56px;align-items:center;gap:12px;}
+.cart-bar-row .bk{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;}
+.cart-bar-row .bk:hover{color:var(--accent);}
+.cart-bar-track{height:12px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden;}
+.cart-bar-fill{height:100%;border-radius:6px 0 0 6px;background:var(--accent);}
+.cart-bar-fill.over{background:var(--bad);}
+.cart-bar-row .bv{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text-soft);}
+.cart-bar-row.flag .bv{color:var(--bad);font-weight:600;}
+.cart-thresh{margin-top:16px;font-size:12px;color:var(--text-mute);display:flex;align-items:flex-start;gap:7px;}
+.cart-thresh .dot{width:9px;height:9px;border-radius:2px;background:var(--bad);flex:none;margin-top:4px;}
+.cart-donut-wrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap;}
+.cart-donut{width:158px;height:158px;border-radius:50%;flex:none;position:relative;}
+.cart-donut::after{content:"";position:absolute;inset:26px;border-radius:50%;background:var(--surface);}
+.cart-donut-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-align:center;}
+.cart-donut-mid .dn{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
+.cart-donut-mid .dl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);margin-top:2px;}
+.cart-legend{display:flex;flex-direction:column;gap:9px;flex:1;min-width:170px;}
+.cart-leg-row{display:grid;grid-template-columns:12px 1fr auto;align-items:center;gap:10px;font-size:13px;}
+.cart-leg-sw{width:12px;height:12px;border-radius:3px;}
+.cart-leg-nm{color:var(--text-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cart-leg-v{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px;}
+.cart-hhi-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+@media (max-width:640px){.cart-hhi-grid{grid-template-columns:1fr;}}
+.cart-hhi-big{font-family:'IBM Plex Mono',monospace;font-size:34px;font-weight:600;line-height:1;letter-spacing:-.02em;}
+.cart-hhi-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-top:8px;}
+.cart-hhi-desc{font-size:12.5px;color:var(--text-soft);margin-top:6px;line-height:1.45;}
+.cart-gauge{height:8px;border-radius:5px;margin-top:18px;background:linear-gradient(90deg,var(--good),var(--worth) 55%,var(--bad));position:relative;}
+.cart-gauge .pin{position:absolute;top:-4px;width:3px;height:16px;border-radius:2px;background:var(--text);transform:translateX(-50%);}
+.cart-gauge-scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-mute);margin-top:6px;}
+.cart-wpill{display:inline-block;min-width:50px;text-align:right;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+.cart-tfoot td{padding:13px 10px;border-top:2px solid var(--border);font-weight:600;background:var(--surface-2);}
+.cart-tfoot td:first-child{position:sticky;left:0;background:var(--surface-2);}
+.cart-editbtn{background:none;border:1px solid transparent;border-radius:8px;cursor:pointer;color:var(--text-mute);padding:5px;display:inline-flex;}
+.cart-editbtn:hover{color:var(--accent);border-color:var(--border);background:var(--surface-2);}
+.cart-editbtn svg{width:15px;height:15px;}
+.cart-sug{display:flex;flex-direction:column;gap:11px;}
+.cart-sug-in{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px;color:var(--text-soft);}
+.cart-sug-in input{width:120px;font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-family:'IBM Plex Mono',monospace;}
+.cart-sug-in input:focus{outline:none;border-color:var(--accent);}
+.cart-sug-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);}
+.cart-sug-rank{width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;flex:none;}
+.cart-sug-tk{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;cursor:pointer;}
+.cart-sug-tk:hover{color:var(--accent);}
+.cart-sug-why{font-size:12.5px;color:var(--text-soft);margin-top:1px;}
+.cart-sug-amt{margin-left:auto;text-align:right;}
+.cart-sug-amt .a{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;}
+.cart-sug-amt .q{font-size:11.5px;color:var(--text-mute);}
+.cart-sug-msg{font-size:13px;color:var(--text-soft);padding:8px 2px;}
+.cart-income-hero{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+.cart-income-hero .big{font-family:'IBM Plex Mono',monospace;font-size:34px;font-weight:600;letter-spacing:-.02em;}
+.cart-income-hero .per{font-size:14px;color:var(--text-soft);}
+.cart-income-sub{font-size:13px;color:var(--text-soft);line-height:1.5;}
+.cart-note{margin-top:14px;font-size:12px;color:var(--text-mute);}
+.cart-empty{text-align:center;padding:64px 20px;color:var(--text-soft);}
+.cart-empty svg{width:44px;height:44px;color:var(--text-mute);margin-bottom:14px;}
+.cart-empty h2{font-size:18px;font-weight:700;margin-bottom:6px;}
+.cart-empty p{font-size:14px;max-width:44ch;margin:0 auto 18px;}
+@media (max-width:820px){
+  .cart-grid2,.cart-grid2b{grid-template-columns:1fr;}
   .theme-toggle span{display:none;}
   .theme-toggle{padding:9px;}
 }
@@ -476,6 +544,7 @@ button{font-family:inherit;}
     <nav class="nav" id="nav">
       <div class="nav-label">Análise</div>
       <a href="#/monitoradas" data-route="monitoradas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .8-5 4.9 1.3 7-6.3-3.4L5.7 21l1.3-7-5-4.9 7-.8z"/></svg>Monitoradas</a>
+      <a href="#/carteira" data-route="carteira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>Carteira</a>
       <a href="#/screener" data-route="screener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>Screener</a>
       <a href="#/config" data-route="config"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Config</a>
     </nav>
@@ -512,6 +581,19 @@ button{font-family:inherit;}
         </table>
         </div>
       </div>
+    </section>
+
+    <!-- CARTEIRA -->
+    <section class="view" id="view-carteira" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Carteira</h1>
+          <p>Suas posições cruzadas com o valuation do DIVYVAL — concentração, preço justo, retorno implícito e renda projetada.</p>
+          <div class="sample-tag" id="cartTag">—</div>
+        </div>
+        <button class="btn btn-primary" id="cartAddBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Adicionar posição</button>
+      </div>
+      <div id="cartBody"></div>
     </section>
 
     <!-- DETALHE -->
@@ -903,6 +985,29 @@ button{font-family:inherit;}
   </div>
 </div>
 
+<!-- modal adicionar/editar posição da carteira -->
+<div class="overlay" id="cartOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle" style="max-width:460px">
+    <h3 id="cartModalTitle">Adicionar posição</h3>
+    <div class="sub" id="cartModalSub">Escolha o ativo e informe quantas cotas você tem e o preço médio pago.</div>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div class="fld full"><label>Ativo</label>
+        <input id="cart-ticker" list="cartTickers" placeholder="Ex.: PETR4" autocomplete="off" maxlength="8">
+        <datalist id="cartTickers"></datalist>
+      </div>
+      <div class="fld"><label>Quantidade (cotas)</label><input id="cart-qt" type="number" min="0" step="1" placeholder="100"></div>
+      <div class="fld"><label>Preço médio (R$)</label><input id="cart-pm" type="number" min="0" step="0.01" placeholder="30,00"></div>
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn btn-danger" id="cartDelete" style="display:none">Remover</button>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="btn btn-ghost" id="cartCancel">Cancelar</button>
+        <button class="btn btn-primary" id="cartSave">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="col-pop" id="colPop" hidden></div>
 <div class="col-pop" id="colsMenu" hidden></div>
 <style id="colStyle"></style>
@@ -912,6 +1017,7 @@ button{font-family:inherit;}
 const brl=n=>(n==null||!isFinite(n))?"—":"R$ "+n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
 const brlC=v=>v==null?"—":v>=1e9?("R$ "+(v/1e9).toLocaleString("pt-BR",{maximumFractionDigits:2})+" bi"):v>=1e6?("R$ "+(v/1e6).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mi"):("R$ "+(v/1e3).toLocaleString("pt-BR",{maximumFractionDigits:0})+" mil");
 const dec=(n,d=2)=>n.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const brl0=n=>(n==null||!isFinite(n))?"—":"R$ "+Math.round(n).toLocaleString("pt-BR");   // dinheiro sem centavos (cards)
 const median=a=>{if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;};
 const pctv=n=>(Number.isInteger(n)?n:dec(n,1))+"%";
 const $=id=>document.getElementById(id);
@@ -1034,6 +1140,14 @@ const mosOf=s=>{if(!s.price||!s.lpa||s.lpa<=0)return null;const r=fairResult(s);
   return (r.valid&&isFinite(r.fair)&&r.fair>0)?(r.fair-s.price)/r.fair*100:null;};   // justo ≤ 0 não tem desconto a expressar
 const mosFromFair=(fair,price)=>(isFinite(fair)&&fair>0&&price>0)?(fair-price)/fair*100:null;
 
+/* ===== dividendos (base da renda projetada e do DY) =====
+   DPA = LPA × payout — MESMA base do "dividendo de partida" do DDM/R1 (impl-dpa0 = LPA × payout_i).
+   Sem lucro (LPA≤0) ou sem payout conhecido ⇒ dividendo 0 (não inventa distribuição).
+   payout_i tem prioridade (premissa do usuário/CVM); cai p/ payout do dado só na amostra. */
+const payoutEff=s=>s&&s.payout_i!=null?s.payout_i:(s&&s.payout!=null?s.payout:null);
+function dpaOf(s){const po=payoutEff(s);return (s&&s.lpa>0&&po!=null&&po>0)?s.lpa*po:0;}
+const dyOf=s=>(s&&s.price>0)?dpaOf(s)/s.price*100:null;   // dividend yield atual projetado (%)
+
 /* ===== TIR implícita (retorno esperado ao preço de mercado) =====
    É o MESMO modelo rodado ao contrário. Em vez de descontar ao Ke e comparar com o preço,
    procura-se a taxa r que faz o preço justo bater exatamente no preço de mercado:
@@ -1121,6 +1235,8 @@ const typeLabel=tk=>({"3":"ON","4":"PN","5":"PNA","6":"PNB","7":"PNC","8":"PND",
    a partir de IPCA + taxa real da NTN-B (+ prêmio de risco) — nesse caso `ke` guarda o nominal
    equivalente já calculado, então todo o resto do app segue lendo só `globalCfg.ke`. */
 let globalCfg={ke:0.14,roet:0.12,payoutt:0.60,fade:10,ke_mode:"nom",ipca:0.045,ntnb:0.072,premio:0};
+/* carteira do usuário: {ticker: {quantidade, preco_medio}} — persistida no Supabase (tabela carteira) */
+let PORTFOLIO={};
 const filterState={};
 /* colunas na MESMA ordem do cabeçalho */
 const COLUMNS=[
@@ -2051,8 +2167,301 @@ $("removeBtn").addEventListener("click",async()=>{
   location.hash="#/screener";
 });
 
+/* ===== CARTEIRA =====
+   Reusa os MESMOS cálculos do screener (fairResult, marginOf, mosOf, irrOf, oeD) — nada é
+   recalculado por fora. Pesos, concentração e agregados vêm do valor de MERCADO das posições. */
+const CONC_ALERT=20;                 // % de uma ação acima do qual sinaliza concentração
+/* paleta fixa p/ o donut de setores (decorativa; funciona nos dois temas) */
+const SEC_PAL=['#2c3e6e','#9a7b34','#1b6b4c','#3853a8','#a8432f','#5a6b8c','#c09a4a','#4b8b6c','#7a5c9a','#b06a4a','#6a8ba8','#8a8f5c'];
+const spct=(x,d=1)=>(x>0?"+":"")+dec(x,d)+"%";       // percentual com sinal (dec já traz o "−")
+let cartRows=[];                                     // cache das linhas p/ o recálculo do aporte
+
+/* uma linha por posição: junta a quantidade/PM do usuário com o objeto de ação (preço, justo…) */
+function portfolioRows(){
+  const rows=[];
+  for(const tk in PORTFOLIO){
+    const s=STOCKS.find(x=>x.ticker===tk); if(!s)continue;           // ticker sem ação carregada → ignora
+    const h=PORTFOLIO[tk], qt=+h.quantidade, pm=+h.preco_medio;
+    if(!(qt>0))continue;
+    const px=(s.price!=null&&isFinite(s.price))?s.price:null;
+    const val=px!=null?qt*px:null;                                    // valor de mercado
+    const cost=qt*pm;                                                 // custo
+    const fair=fairResult(s).fair;
+    const dpa=dpaOf(s);
+    rows.push({s,tk,qt,pm,px,val,cost,fair,
+      up:marginOf(s), ms:mosOf(s), tir:irrOf(s),
+      dpa, dy:(px>0?dpa/px*100:null),
+      plAbs:(val!=null?val-cost:null), plPct:(val!=null&&cost>0?(val/cost-1)*100:null), w:0});
+  }
+  return rows;
+}
+/* agregados da carteira — todas as divisões protegidas contra 0/vazio */
+function portfolioAgg(rows){
+  const priced=rows.filter(r=>r.val!=null);
+  const V=priced.reduce((a,r)=>a+r.val,0);
+  const cost=priced.reduce((a,r)=>a+r.cost,0);
+  priced.forEach(r=>r.w=V>0?r.val/V*100:0);                          // peso em % do valor de mercado
+  // concentração (HHI em fração 0..1) e nº efetivo de ações = 1/Σw²
+  const hhi=V>0?priced.reduce((a,r)=>a+(r.w/100)*(r.w/100),0):0;
+  const eff=hhi>0?1/hhi:0;
+  // renda: dividendos anuais R$ = Σ DPA×qtd; DY carteira = renda ÷ patrimônio
+  const annualDiv=priced.reduce((a,r)=>a+r.dpa*r.qt,0);
+  const dyCart=V>0?annualDiv/V*100:null;
+  // margem/upside AGREGADOS: só posições com preço justo válido (não dá p/ afirmar margem sem justo)
+  const valued=priced.filter(r=>r.fair!=null&&isFinite(r.fair)&&r.fair>0);
+  const fairTot=valued.reduce((a,r)=>a+r.fair*r.qt,0);
+  const mktValued=valued.reduce((a,r)=>a+r.px*r.qt,0);
+  const upAgg=mktValued>0?(fairTot-mktValued)/mktValued*100:null;    // (Σqᵢjustoᵢ − Σqᵢpreçoᵢ)/Σqᵢpreçoᵢ
+  const msAgg=fairTot>0?(fairTot-mktValued)/fairTot*100:null;        // base = justo (Graham)
+  // TIR ponderada: média das TIRs válidas, ponderada pelo valor da posição (renormalizada)
+  const tset=priced.filter(r=>r.tir!=null&&isFinite(r.tir));
+  const twSum=tset.reduce((a,r)=>a+r.val,0);
+  const tirW=twSum>0?tset.reduce((a,r)=>a+r.tir*r.val,0)/twSum:null;
+  const keW=twSum>0?tset.reduce((a,r)=>a+oeD(r.s)*r.val,0)/twSum:globalCfg.ke;  // Ke efetivo ponderado (benchmark)
+  return {priced,V,cost,plAbs:V-cost,plPct:cost>0?(V/cost-1)*100:null,
+    hhi,eff,annualDiv,dyCart,upAgg,msAgg,tirW,keW,
+    valuedN:valued.length,tirN:tset.length,unpriced:rows.length-priced.length};
+}
+/* concentração por setor B3 (valor de mercado) */
+function bySector(priced,V){
+  const m={};
+  priced.forEach(r=>{const k=r.s.cl.setor||"—";m[k]=(m[k]||0)+r.val;});
+  return Object.entries(m).map(([nm,v])=>({nm,v,w:V>0?v/V*100:0})).sort((a,b)=>b.w-a.w);
+}
+/* posição do pino no medidor de concentração — faixas do HHI (padrão antitruste: 1500 / 2500) */
+function hhiPin(h10k){
+  if(h10k<=1500)return h10k/1500*33;
+  if(h10k<=2500)return 33+(h10k-1500)/1000*33;
+  return Math.min(100,66+(h10k-2500)/2500*34);
+}
+/* aporte inteligente — HEURÍSTICA (não é recomendação): prioriza a mais barata (upside) que
+   também está sub-alocada (abaixo do peso igualitário). Só sugere o que está abaixo do preço justo. */
+function suggestAporte(rows,amount){
+  if(!(amount>0))return {list:[],msg:"Digite o valor do aporte para ver as sugestões."};
+  const cands=rows.filter(r=>r.val!=null&&r.up!=null&&isFinite(r.up));
+  if(!cands.length)return {list:[],msg:"Sem posições com preço justo para avaliar o aporte."};
+  const target=100/cands.length;                                     // peso-alvo igualitário (%)
+  const ups=cands.map(r=>r.up), maxU=Math.max(...ups), minU=Math.min(...ups), spanU=(maxU-minU)||1;
+  cands.forEach(r=>{
+    const cheap=(r.up-minU)/spanU;                                   // 0..1 (1 = mais barata do conjunto)
+    const under=Math.max(0,(target-r.w))/target;                     // 0..1 (1 = bem abaixo do alvo)
+    r._score=0.65*cheap+0.35*under;
+  });
+  // só sugere o que está abaixo do preço justo (up>0) E sub-alocado (abaixo do peso-alvo) —
+  // assim o aporte de fato REDUZ a concentração, como proposto (nunca engorda a maior posição).
+  const pool=cands.filter(r=>r.up>0&&r.w<target).sort((a,b)=>b._score-a._score);
+  if(!pool.length)return {list:[],msg:"Nenhuma posição barata e sub-alocada agora — as descontadas já pesam bastante na carteira. Vale olhar o screener para novos nomes."};
+  const top=pool.slice(0,3), sSum=top.reduce((a,r)=>a+r._score,0)||1;
+  const list=top.map(r=>{
+    const alloc=amount*r._score/sSum;
+    const shares=r.px>0?Math.floor(alloc/r.px):0;
+    return {r,alloc,shares,spent:shares*r.px};
+  }).filter(it=>it.shares>0);
+  if(!list.length)return {list:[],msg:"O valor do aporte não cobre uma cota das candidatas. Aumente o valor."};
+  return {list,msg:null};
+}
+/* recalcula só as sugestões (sem redesenhar a página inteira, p/ não perder o foco do input) */
+function renderAporte(){
+  const box=$("cartSugList");if(!box)return;
+  const {list,msg}=suggestAporte(cartRows,parseFloat($("cartAporte").value));
+  box.innerHTML=msg?`<div class="cart-sug-msg">${msg}</div>`
+    :list.map((it,i)=>{const r=it.r;
+      return `<div class="cart-sug-row"><div class="cart-sug-rank">${i+1}</div>
+        <div><div class="cart-sug-tk" data-cart-tk="${r.tk}">${r.tk}</div>
+        <div class="cart-sug-why">upside ${spct(r.up)} · ${dec(r.w,1)}% da carteira</div></div>
+        <div class="cart-sug-amt"><div class="a">${brl0(it.spent)}</div><div class="q">${it.shares} ${it.shares===1?'cota':'cotas'}</div></div></div>`;
+    }).join("");
+}
+function renderCarteira(){
+  const body=$("cartBody"), rows=portfolioRows();
+  cartRows=rows;
+  const nHold=Object.keys(PORTFOLIO).length;
+  if(!nHold){
+    $("cartTag").textContent="Carteira vazia";
+    body.innerHTML=`<div class="card"><div class="cart-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
+      <h2>Sua carteira está vazia</h2>
+      <p>Adicione suas posições (ticker, quantidade e preço médio) para ver concentração, margem, TIR e renda projetada.</p>
+      <button class="btn btn-primary" onclick="openCartModal()">Adicionar primeira posição</button>
+    </div></div>`;
+    return;
+  }
+  if(!rows.length){                                                  // há posições, mas as ações ainda não carregaram
+    $("cartTag").textContent="carregando cotações…";
+    body.innerHTML=`<div class="card card-pad"><div class="cart-sug-msg">Carregando cotações das suas posições…</div></div>`;
+    return;
+  }
+  const a=portfolioAgg(rows), sectors=bySector(a.priced,a.V);
+  $("cartTag").textContent=`${a.priced.length} ${a.priced.length===1?'posição':'posições'}`+(a.unpriced?` · ${a.unpriced} sem cotação`:"");
+
+  /* ---- 1. stat row ---- */
+  const plCls=a.plPct==null?"":a.plPct>=0?"good":"bad";
+  const tirCls=a.tirW==null?"":a.tirW>=a.keW?"good":"bad";
+  const msCls=a.msAgg==null?"":a.msAgg>=0?"good":"bad";
+  const stats=`<div class="stats">
+    <div class="stat"><div class="k">Patrimônio</div><div class="v num">${brl0(a.V)}</div><div class="sub">${a.priced.length} ${a.priced.length===1?'ativo':'ativos'}</div></div>
+    <div class="stat"><div class="k">Resultado</div><div class="v ${plCls} num">${a.plAbs>=0?"+":"-"}${brl0(Math.abs(a.plAbs))}</div><div class="sub ${plCls}">${a.plPct==null?"—":spct(a.plPct)} vs. custo</div></div>
+    <div class="stat" title="Dividendos projetados (Σ DPA×qtd) ÷ patrimônio · DPA = LPA × payout"><div class="k">DY da carteira</div><div class="v num">${a.dyCart==null?"—":dec(a.dyCart,1)+"%"}</div><div class="sub">≈ ${brl0(a.annualDiv/12)} / mês</div></div>
+    <div class="stat" title="Média das TIRs ponderada pelo valor de cada posição · Ke efetivo ponderado ${pctv(a.keW*100)}"><div class="k">TIR ponderada</div><div class="v ${tirCls} num">${a.tirW==null?"—":dec(a.tirW*100,1)+"%"}</div><div class="sub">retorno impl. a.a.${a.tirN<a.priced.length?` · ${a.tirN}/${a.priced.length}`:""}</div></div>
+    <div class="stat" title="(Σ justo − Σ preço) ÷ Σ justo, sobre as posições com preço justo · upside equivalente ${a.upAgg==null?"—":spct(a.upAgg)}"><div class="k">Margem seg.</div><div class="v ${msCls} num">${a.msAgg==null?"—":spct(a.msAgg)}</div><div class="sub">preço vs. justo${a.valuedN<a.priced.length?` · ${a.valuedN}/${a.priced.length}`:""}</div></div>
+    <div class="stat" title="Nº efetivo de ações = 1 ÷ Σ(peso²): quão diversificada é a carteira"><div class="k">Concentração</div><div class="v num">${dec(a.eff,1)}</div><div class="sub">ações efetivas (de ${a.priced.length})</div></div>
+  </div>`;
+
+  /* ---- 2. concentração: barras por ação + donut por setor ---- */
+  const byW=a.priced.slice().sort((x,y)=>y.w-x.w), maxW=byW.length?byW[0].w:1;
+  const bars=byW.map(r=>{const over=r.w>CONC_ALERT;
+    return `<div class="cart-bar-row ${over?'flag':''}">
+      <span class="bk" data-cart-tk="${r.tk}">${r.tk}</span>
+      <span class="cart-bar-track"><span class="cart-bar-fill ${over?'over':''}" style="width:${(r.w/maxW*100).toFixed(1)}%"></span></span>
+      <span class="bv">${dec(r.w,1)}%</span></div>`;}).join("");
+  const overN=byW.filter(r=>r.w>CONC_ALERT);
+  const threshNote=overN.length?`<div class="cart-thresh"><span class="dot"></span>${overN.map(r=>r.tk).join(", ")} ${overN.length>1?'passam':'passa'} de ${CONC_ALERT}% da carteira — candidata${overN.length>1?'s':''} a aparar no próximo rebalanceamento.</div>`:"";
+  let acc=0;const stops=sectors.map((s,i)=>{const from=acc;acc+=s.w;return `${SEC_PAL[i%SEC_PAL.length]} ${from}% ${acc}%`;}).join(",");
+  const legend=sectors.map((s,i)=>`<div class="cart-leg-row"><span class="cart-leg-sw" style="background:${SEC_PAL[i%SEC_PAL.length]}"></span><span class="cart-leg-nm">${s.nm}</span><span class="cart-leg-v">${dec(s.w,1)}%</span></div>`).join("");
+  const conc=`<div class="cart-grid2">
+    <div class="card card-pad">
+      <div class="card-title">Concentração por ação <span class="hint">alerta acima de ${CONC_ALERT}%</span></div>
+      <div class="cart-bars">${bars}</div>${threshNote}
+    </div>
+    <div class="card card-pad">
+      <div class="card-title">Concentração por setor B3</div>
+      <div class="cart-donut-wrap">
+        <div class="cart-donut" style="background:conic-gradient(${stops||'var(--surface-2) 0 100%'})"><div class="cart-donut-mid"><div class="dn">${sectors.length}</div><div class="dl">${sectors.length===1?'setor':'setores'}</div></div></div>
+        <div class="cart-legend">${legend}</div>
+      </div>
+    </div>
+  </div>`;
+
+  /* ---- HHI ---- */
+  const h10k=Math.round(a.hhi*10000), zone=h10k<1500?{t:"diluída",c:"var(--good)"}:h10k<=2500?{t:"moderada",c:"var(--worth)"}:{t:"concentrada",c:"var(--bad)"};
+  const topSec=sectors[0];
+  const hhi=`<div class="card card-pad" style="margin-bottom:16px">
+    <div class="card-title">Índice de concentração (HHI) <span class="hint">quanto o patrimônio depende de poucos nomes</span></div>
+    <div class="cart-hhi-grid">
+      <div>
+        <div class="cart-hhi-big num">${h10k.toLocaleString('pt-BR')}</div>
+        <div class="cart-hhi-lbl">HHI (0 = pulverizado · 10.000 = 1 ação)</div>
+        <div class="cart-hhi-desc">Equivale a <strong>${dec(a.eff,1)} ações igualmente distribuídas</strong>. Faixa <strong style="color:${zone.c}">${zone.t}</strong>.</div>
+      </div>
+      <div>
+        <div class="cart-gauge"><div class="pin" style="left:${hhiPin(h10k).toFixed(0)}%"></div></div>
+        <div class="cart-gauge-scale"><span>Diluída</span><span>Moderada</span><span>Concentrada</span></div>
+        ${topSec?`<div class="cart-hhi-desc" style="margin-top:16px">Maior aposta por setor: <strong>${topSec.nm} = ${dec(topSec.w,1)}%</strong>.</div>`:""}
+      </div>
+    </div>
+  </div>`;
+
+  /* ---- 3. tabela de posições ---- */
+  const maxAbs=Math.max(1,...rows.filter(r=>r.up!=null&&isFinite(r.up)).map(r=>Math.abs(r.up)));
+  const trs=byW.concat(rows.filter(r=>r.val==null)).map(r=>{
+    const plc=r.plPct==null?"":r.plPct>=0?"good":"bad";
+    return `<tr data-cart-tk="${r.tk}">
+      <td class="l"><div class="t-ticker">${r.tk}</div><div class="t-sec">${r.s.cl.setor||""}</div></td>
+      <td class="num">${r.qt.toLocaleString('pt-BR',{maximumFractionDigits:2})}</td>
+      <td class="num">${dec(r.pm)}</td>
+      <td class="num">${r.px==null?'<span class="td-attr">—</span>':dec(r.px)}</td>
+      <td class="num">${r.val==null?'<span class="td-attr">—</span>':brl0(r.val)}</td>
+      <td class="num"><span class="cart-wpill">${r.val==null?'—':dec(r.w,1)+'%'}</span></td>
+      <td class="num ${plc}" ${r.plAbs!=null?`title="${r.plAbs>=0?'+':'−'}${brl(Math.abs(r.plAbs))}"`:''}>${r.plPct==null?'—':spct(r.plPct)}</td>
+      <td class="num">${r.fair==null?'<span class="td-attr">—</span>':dec(r.fair)}</td>
+      ${marginCell(r.up,maxAbs)}
+      ${tirCell(r.tir,oeD(r.s))}
+      <td class="num">${r.dy==null?'<span class="td-attr">—</span>':dec(r.dy,1)+'%'}</td>
+      <td class="num"><button class="cart-editbtn" data-tk="${r.tk}" title="Editar posição"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button></td>
+    </tr>`;}).join("");
+  const foot=`<tr class="cart-tfoot">
+    <td class="l">Total</td><td></td><td></td><td></td>
+    <td class="num">${brl0(a.V)}</td><td class="num">100%</td>
+    <td class="num ${plCls}">${a.plPct==null?'—':spct(a.plPct)}</td><td></td>
+    <td class="num ${a.upAgg==null?'':a.upAgg>=0?'good':'bad'}">${a.upAgg==null?'—':spct(a.upAgg)}</td>
+    <td class="num ${tirCls}">${a.tirW==null?'—':dec(a.tirW*100,1)+'%'}</td>
+    <td class="num">${a.dyCart==null?'—':dec(a.dyCart,1)+'%'}</td><td></td></tr>`;
+  const table=`<div class="card" style="margin-bottom:16px">
+    <div class="card-pad" style="padding-bottom:4px"><div class="card-title" style="margin-bottom:2px">Posições</div></div>
+    <div class="table-scroll"><table class="table" style="min-width:1040px">
+      <thead class="th-sort"><tr>
+        <th class="l">Ativo</th><th>Qtd</th><th>Preço médio</th><th>Preço</th><th>Posição</th>
+        <th>% carteira</th><th>Resultado</th><th>Justo</th><th class="l">Upside</th><th>TIR</th><th>DY</th><th></th>
+      </tr></thead>
+      <tbody>${trs}</tbody><tfoot>${foot}</tfoot>
+    </table></div></div>`;
+
+  /* ---- 4. extras: aporte inteligente + renda projetada ---- */
+  const topDivShare=a.annualDiv>0?Math.max(...a.priced.map(r=>r.dpa*r.qt))/a.annualDiv*100:0;
+  const topDiv=a.priced.slice().sort((x,y)=>(y.dpa*y.qt)-(x.dpa*x.qt))[0];
+  const extras=`<div class="cart-grid2b">
+    <div class="card card-pad">
+      <div class="card-title">Aporte inteligente <span class="hint">heurística: mais barata + reduz concentração</span></div>
+      <div class="cart-sug-in">Tenho para aportar <span class="num" style="color:var(--text-mute)">R$</span><input id="cartAporte" type="number" min="0" step="100" value="1000"></div>
+      <div class="cart-sug" id="cartSugList"></div>
+      <div class="cart-note">Sugestão para estudo — não é recomendação de compra.</div>
+    </div>
+    <div class="card card-pad">
+      <div class="card-title">Renda projetada <span class="hint">dividendos estimados (DPA × qtd)</span></div>
+      <div class="cart-income-hero"><span class="big num">${a.annualDiv>0?brl0(a.annualDiv/12):'R$ 0'}</span><span class="per">/ mês</span></div>
+      <div class="cart-income-sub">≈ <strong>${brl0(a.annualDiv)} / ano</strong> em proventos, ao payout atual de cada ação.${topDiv&&topDivShare>0?` ${topDiv.tk} responde por ~${dec(topDivShare,0)}% dessa renda.`:''}</div>
+    </div>
+  </div>`;
+
+  body.innerHTML=stats+conc+hhi+table+extras;
+  renderAporte();
+}
+/* ---- modal e CRUD da carteira ---- */
+const cartOverlay=$("cartOverlay");
+let cartEditTk=null;
+function fillCartTickers(){
+  $("cartTickers").innerHTML=STOCKS.slice().sort((x,y)=>x.ticker.localeCompare(y.ticker))
+    .map(s=>`<option value="${s.ticker}">${(s.nome||"").replace(/"/g,"&quot;")}</option>`).join("");
+}
+function openCartModal(tk){
+  fillCartTickers();
+  cartEditTk=tk||null;const editing=!!tk;
+  $("cartModalTitle").textContent=editing?"Editar posição":"Adicionar posição";
+  $("cartModalSub").textContent=editing?"Atualize a quantidade e o preço médio, ou remova a posição.":"Escolha o ativo e informe quantas cotas você tem e o preço médio pago.";
+  $("cartDelete").style.display=editing?"":"none";
+  const ti=$("cart-ticker");ti.readOnly=editing;ti.value=editing?tk:"";
+  const h=editing?PORTFOLIO[tk]:null;
+  $("cart-qt").value=h?h.quantidade:"";$("cart-pm").value=h?h.preco_medio:"";
+  cartOverlay.classList.add("open");(editing?$("cart-qt"):ti).focus();
+}
+function closeCartModal(){cartOverlay.classList.remove("open");}
+async function saveCartPos(){
+  const tk=($("cart-ticker").value||"").trim().toUpperCase();
+  const qt=parseFloat($("cart-qt").value), pm=parseFloat($("cart-pm").value);
+  if(!tk)return alert("Informe o ticker do ativo.");
+  if(!STOCKS.some(s=>s.ticker===tk))return alert("Ticker não encontrado no screener. Cadastre a ação antes de adicioná-la à carteira.");
+  if(!(qt>0))return alert("A quantidade deve ser maior que zero.");
+  if(!(pm>=0)||!isFinite(pm))return alert("Preço médio inválido.");
+  try{const r=await fetch(`/api/carteira/${tk}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({quantidade:qt,preco_medio:pm})});if(!r.ok)throw 0;}
+  catch(e){return alert("Não consegui salvar a posição.");}
+  PORTFOLIO[tk]={quantidade:qt,preco_medio:pm};closeCartModal();renderCarteira();
+}
+async function deleteCartPos(){
+  if(!cartEditTk)return;const tk=cartEditTk;
+  if(!confirm(`Remover ${tk} da carteira?`))return;
+  try{const r=await fetch(`/api/carteira/${tk}`,{method:"DELETE"});if(!r.ok)throw 0;}
+  catch(e){return alert("Não consegui remover a posição.");}
+  delete PORTFOLIO[tk];closeCartModal();renderCarteira();
+}
+$("cartAddBtn").addEventListener("click",()=>openCartModal());
+$("cartCancel").addEventListener("click",closeCartModal);
+$("cartDelete").addEventListener("click",deleteCartPos);
+$("cartSave").addEventListener("click",saveCartPos);
+cartOverlay.addEventListener("click",e=>{if(e.target===cartOverlay)closeCartModal();});
+$("cart-ticker").addEventListener("keydown",e=>{if(e.key==="Enter")$("cart-qt").focus();});
+$("cartBody").addEventListener("click",e=>{
+  const edit=e.target.closest(".cart-editbtn");if(edit){openCartModal(edit.dataset.tk);return;}
+  const el=e.target.closest("[data-cart-tk]");if(el)location.hash="#/acao/"+el.dataset.cartTk;
+});
+$("cartBody").addEventListener("input",e=>{if(e.target.id==="cartAporte")renderAporte();});
+async function loadPortfolio(){
+  try{const r=await fetch("/api/carteira");if(r.ok){const arr=await r.json();
+    if(Array.isArray(arr)){PORTFOLIO={};arr.forEach(h=>{PORTFOLIO[h.ticker]={quantidade:+h.quantidade,preco_medio:+h.preco_medio};});}}}
+  catch(e){}
+}
+
 /* ===== ROTEADOR ===== */
-function show(v){["screener","detail","modelo","config"].forEach(n=>$("view-"+n).hidden=n!==v);}
+function show(v){["screener","carteira","detail","modelo","config"].forEach(n=>$("view-"+n).hidden=n!==v);}
 /* "4,5" ou "4.5" → 4.5 (o usuário digita com vírgula) */
 const numv=(el,d=0)=>{const n=parseFloat(String(el.value).replace(",","."));return isFinite(n)?n:d;};
 /* Fisher composto: nominal = (1+IPCA)(1+real)(1+prêmio) − 1 */
@@ -2081,7 +2490,7 @@ function saveConfig(){
     roet:+$("cfgRoet").value/100,payoutt:+$("cfgPayoutt").value/100,fade:+$("cfgFade").value,
     ke_mode:mode,ipca:numv($("cfgIpca"))/100,ntnb:numv($("cfgNtnb"))/100,premio:numv($("cfgPremio"))/100};
   fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(globalCfg)})
-    .then(()=>fetchStocks()).then(()=>{if(!$("view-screener").hidden)renderScreener();}).catch(()=>{});
+    .then(()=>fetchStocks()).then(()=>{if(!$("view-screener").hidden)renderScreener();if(!$("view-carteira").hidden)renderCarteira();}).catch(()=>{});
 }
 $("cfgKeMode").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.mode===cfgKeMode())return;
   setKeMode(b.dataset.mode,true);saveConfig();});
@@ -2129,6 +2538,7 @@ function router(){
   const go=()=>{
     if(parts[0]==="acao"&&parts[1]){openStock(STOCKS.find(x=>x.ticker===parts[1])||EXAMPLE,"stock");}
     else if(parts[0]==="modelo"){showModelPage(window.__modelPage||M2);}
+    else if(parts[0]==="carteira"){setActiveNav("carteira");show("carteira");renderCarteira();closePop();}
     else if(parts[0]==="config"){setActiveNav("config");show("config");renderConfig();closePop();}
     else{scope=parts[0]==="monitoradas"?"monitoradas":"all";setActiveNav(scope==="monitoradas"?"monitoradas":"screener");show("screener");
       $("scrTitle").textContent=scope==="monitoradas"?"Monitoradas":"Screener";
@@ -2168,6 +2578,7 @@ async function fetchStocks(){
 }
 async function bootstrap(){
   try{const rc=await fetch("/api/config");if(rc.ok)globalCfg={...globalCfg,...await rc.json()};}catch(e){}
+  await loadPortfolio();   // posições da carteira (Supabase) — antes do 1º render
   router();   // mostra a amostra imediatamente
   // Dados reais: no edge (Cloudflare Pages) não há cold start, e as cotações vêm de uma vez
   // no /api/stocks (B3 via brapi). Um retry curto cobre só um soluço transitório de rede/API.

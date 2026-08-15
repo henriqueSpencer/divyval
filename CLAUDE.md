@@ -27,6 +27,7 @@ Classificação curada em `backend/stocks_meta.json`.
     api/config.js             ← GET/POST padrões globais
     api/premissas/[ticker].js ← GET / POST (hist + upsert atual)
     api/watchlist.js          ← GET;  api/watchlist/[ticker].js ← POST/DELETE
+    api/carteira.js           ← GET;  api/carteira/[ticker].js ← POST(upsert qtd+PM)/DELETE
   backend/                    ← FastAPI legado (NÃO deployado)
 ```
 As Functions são **buildless** (`fetch` puro, zero npm). A lógica de merge/CRUD é porta direta do
@@ -52,7 +53,9 @@ Não há mais `init_db`/seed no boot: a base já está semeada
 novo da CVM. O projeto Supabase `divyval` é administrável pelo **MCP** (`list_tables` /
 `execute_sql` / `apply_migration`).
 
-Dados do usuário vivem em `premissa_atual` / `premissa_hist` / `watchlist` / `config`.
+Dados do usuário vivem em `premissa_atual` / `premissa_hist` / `watchlist` / `carteira` / `config`.
+A tabela **`carteira`** (`ticker` PK, `quantidade`, `preco_medio`, `updated_at`; RLS ligado) guarda as
+posições do usuário — uma linha por ativo, upsert por ticker.
 `buildStocks()` (`_lib/db.js`) monta o screener: fundamentos de `stocks` + override da premissa
 salva + defaults globais (Ke/ROE_t/payout_t/fade da `config`) + preço ao vivo. **Preserva o que o
 usuário edita** (`modelo`, classificação, `tags`) porque nada é re-semeado em runtime.
@@ -178,9 +181,31 @@ brapi) → `cd_cvm` (match por nome) → fundamentos da CVM.
 - Preços da B3 usam sufixo `.SA`; símbolos que diferem no Yahoo vão ajustados no meta (ex.: Copel =
   CPLE3).
 
+## Carteira (aba `#/carteira`, ago/2026)
+Aba de acompanhamento da carteira do usuário. **Reusa os MESMOS cálculos do screener** (`fairResult`,
+`marginOf`, `mosOf`, `irrOf`, `oeD`) — nada é recalculado por fora; o front (`renderCarteira` em
+`index.html`) só junta `PORTFOLIO` (posições do Supabase) com os objetos de ação já carregados.
+Pesos e concentração vêm do **valor de mercado** (`qtd × preço ao vivo`). Convenções dos agregados:
+- **Patrimônio** = Σ qtd×preço; **Resultado** = patrimônio − custo (custo = Σ qtd×PM).
+- **DY / renda projetada:** `DPA = LPA × payout` (MESMA base do "dividendo de partida" do DDM/R1;
+  `payoutEff`→`dpaOf`/`dyOf`). Renda anual = Σ DPA×qtd; DY carteira = renda ÷ patrimônio.
+- **Margem seg. / Upside agregados:** nível de carteira, não média de %: `(Σqᵢjustoᵢ − Σqᵢpreçoᵢ)`
+  sobre `Σqᵢjustoᵢ` (margem, base justo) ou `Σqᵢpreçoᵢ` (upside) — só sobre posições com justo válido.
+- **TIR ponderada:** média das `irrOf` **ponderada pelo valor** da posição (renormalizada nas com TIR
+  definida); benchmark = **Ke efetivo ponderado** (Σ `oeD`×valor). É média ponderada, não uma TIR
+  agregada resolvida do zero — rotulada como tal.
+- **HHI** = Σ peso² (0..1; exibido ×10.000); **nº efetivo de ações** = 1/Σpeso² (faixas 1500/2500).
+- **Aporte inteligente** = HEURÍSTICA (`suggestAporte`, rotulada "não é recomendação"): só sugere o
+  que está **abaixo do preço justo E sub-alocado** (peso < alvo igualitário), p/ o aporte de fato
+  reduzir concentração; aloca ∝ score (0,65 desconto + 0,35 sub-alocação), floor em cotas inteiras.
+- Todos os agregados protegem divisão por 0; posições sem cotação/justo ficam fora dos respectivos
+  totais (nunca inventam valor) e são sinalizadas. Verificado: as funções reais batem 1:1 com
+  recálculo independente sobre dados ao vivo (12/12 checks).
+
 ## Endpoints e outros detalhes
 - `/api/stocks` (screener), `/api/history/{ticker}?range=5y` (fechamento diário p/ o gráfico),
-  `/api/config`, `/api/premissas/{ticker}`, `/api/watchlist[/{ticker}]`, `/api/stocks/{ticker}`
+  `/api/config`, `/api/premissas/{ticker}`, `/api/watchlist[/{ticker}]`, `/api/carteira[/{ticker}]`
+  (GET lista; POST upsert `{quantidade, preco_medio}`; DELETE), `/api/stocks/{ticker}`
   (PATCH/DELETE). Cache no edge (preços 15 min, histórico 30 min).
 - O gráfico de preços tem **seleção por clique-e-arrasto** (mostra a variação % entre dois pontos).
 - O frontend cai nos dados de exemplo embutidos se as Functions estiverem fora. O `bootstrap`
