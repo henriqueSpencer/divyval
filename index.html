@@ -488,11 +488,18 @@ button{font-family:inherit;}
 .cart-donut-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-align:center;}
 .cart-donut-mid .dn{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
 .cart-donut-mid .dl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);margin-top:2px;}
-.cart-legend{display:flex;flex-direction:column;gap:9px;flex:1;min-width:170px;}
-.cart-leg-row{display:grid;grid-template-columns:12px 1fr auto;align-items:center;gap:10px;font-size:13px;}
-.cart-leg-sw{width:12px;height:12px;border-radius:3px;}
-.cart-leg-nm{color:var(--text-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cart-leg-v{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px;}
+.cart-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:170px;}
+.cart-leg-row{display:flex;align-items:center;gap:10px;font-size:13px;}
+.cart-leg-row.drill{cursor:pointer;border-radius:8px;padding:3px 5px;margin:-3px -5px;}
+.cart-leg-row.drill:hover{background:var(--surface-2);}
+.cart-leg-sw{width:12px;height:12px;border-radius:3px;flex:none;}
+.cart-leg-nm{flex:1;color:var(--text-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cart-leg-v{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px;flex:none;}
+.cart-leg-brl{color:var(--text-mute);font-size:11px;}
+.cart-leg-chev{color:var(--text-mute);font-weight:700;font-size:15px;flex:none;}
+.cart-seccrumb a{cursor:pointer;color:var(--accent);}
+.cart-seccrumb a:hover{text-decoration:underline;}
+.cart-donut.drill{cursor:pointer;}
 .cart-hhi-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
 @media (max-width:640px){.cart-hhi-grid{grid-template-columns:1fr;}}
 .cart-hhi-big{font-family:'IBM Plex Mono',monospace;font-size:34px;font-weight:600;line-height:1;letter-spacing:-.02em;}
@@ -2377,6 +2384,46 @@ function bySector(priced,V){
   priced.forEach(r=>{const k=r.s.cl.setor||"—";m[k]=(m[k]||0)+r.val;});
   return Object.entries(m).map(([nm,v])=>({nm,v,w:V>0?v/V*100:0})).sort((a,b)=>b.w-a.w);
 }
+/* drill-down da rosca: Setor › Subsetor › Segmento (clicando na legenda) */
+let secDrill={setor:null,sub:null};          // null/null = nível setor; +setor = subsetores; +sub = segmentos
+let secData={priced:[],V:0};                  // priced + patrimônio, guardados p/ re-render parcial da rosca
+const escAttr=s=>String(s).replace(/"/g,"&quot;");
+function concByLevel(){
+  const {priced,V}=secData;
+  let level,items,keyFn,label;
+  if(secDrill.setor==null){level=0;label="setores";items=priced;keyFn=r=>r.s.cl.setor||"—";}
+  else if(secDrill.sub==null){level=1;label="subsetores";
+    items=priced.filter(r=>(r.s.cl.setor||"—")===secDrill.setor);keyFn=r=>r.s.cl.sub||"—";}
+  else{level=2;label="segmentos";
+    items=priced.filter(r=>(r.s.cl.setor||"—")===secDrill.setor&&(r.s.cl.sub||"—")===secDrill.sub);keyFn=r=>r.s.cl.seg||"—";}
+  const m={};items.forEach(r=>{const k=keyFn(r);m[k]=(m[k]||0)+r.val;});
+  // w = peso no patrimônio TOTAL (número real da carteira); wRel = peso no nível atual (arcos da rosca=360°)
+  const sub=Object.values(m).reduce((a,v)=>a+v,0);
+  const groups=Object.entries(m).map(([nm,v])=>({nm,v,w:V>0?v/V*100:0,wRel:sub>0?v/sub*100:0})).sort((x,y)=>y.w-x.w);
+  return {level,label,groups};
+}
+function sectorCardHtml(){
+  const {level,label,groups}=concByLevel();
+  let acc=0;const stops=groups.map((g,i)=>{const from=acc;acc+=g.wRel;return `${SEC_PAL[i%SEC_PAL.length]} ${from}% ${acc}%`;}).join(",");
+  const drill=level<2;
+  const legend=groups.map((g,i)=>{
+    const attr=level===0?`data-drill-setor="${escAttr(g.nm)}"`:level===1?`data-drill-sub="${escAttr(g.nm)}"`:"";
+    return `<div class="cart-leg-row${drill?' drill':''}" ${attr}>
+      <span class="cart-leg-sw" style="background:${SEC_PAL[i%SEC_PAL.length]}"></span>
+      <span class="cart-leg-nm">${g.nm}</span>
+      <span class="cart-leg-v"><span>${dec(g.w,1)}%</span><span class="cart-leg-brl">${brl0(g.v)}</span></span>${drill?'<span class="cart-leg-chev">›</span>':''}</div>`;}).join("");
+  let crumb,hint;
+  if(level===0){crumb="Concentração por setor B3";hint='<span class="hint">clique num setor para abrir</span>';}
+  else if(level===1){crumb=`<a data-drill-to="root">‹ Setores</a> › <b>${secDrill.setor}</b>`;hint='<span class="hint">clique num subsetor</span>';}
+  else{crumb=`<a data-drill-to="root">Setores</a> › <a data-drill-to="setor">${secDrill.setor}</a> › <b>${secDrill.sub}</b>`;hint='<span class="hint">segmentos</span>';}
+  const donutBack=level>0?`data-drill-to="${level===2?'setor':'root'}"`:"";
+  return `<div class="card-title cart-seccrumb">${crumb} ${hint}</div>
+    <div class="cart-donut-wrap">
+      <div class="cart-donut${level>0?' drill':''}" ${donutBack} title="${level>0?'voltar um nível':''}" style="background:conic-gradient(${stops||'var(--surface-2) 0 100%'})"><div class="cart-donut-mid"><div class="dn">${groups.length}</div><div class="dl">${label}</div></div></div>
+      <div class="cart-legend">${legend}</div>
+    </div>`;
+}
+function renderSectorCard(){const el=$("cartSecCard");if(el)el.innerHTML=sectorCardHtml();}
 /* posição do pino no medidor de concentração — faixas do HHI (padrão antitruste: 1500 / 2500) */
 function hhiPin(h10k){
   if(h10k<=1500)return h10k/1500*33;
@@ -2441,6 +2488,7 @@ function renderCarteira(){
     return;
   }
   const a=portfolioAgg(rows), sectors=bySector(a.priced,a.V);
+  secData={priced:a.priced,V:a.V};secDrill={setor:null,sub:null};   // rosca começa no nível de setor
   $("cartTag").textContent=`${a.priced.length} ${a.priced.length===1?'posição':'posições'}`+(a.unpriced?` · ${a.unpriced} sem cotação`:"");
 
   /* ---- 1. stat row ---- */
@@ -2465,20 +2513,12 @@ function renderCarteira(){
       <span class="bv">${dec(r.w,1)}%</span></div>`;}).join("");
   const overN=byW.filter(r=>r.w>CONC_ALERT);
   const threshNote=overN.length?`<div class="cart-thresh"><span class="dot"></span>${overN.map(r=>r.tk).join(", ")} ${overN.length>1?'passam':'passa'} de ${CONC_ALERT}% da carteira — candidata${overN.length>1?'s':''} a aparar no próximo rebalanceamento.</div>`:"";
-  let acc=0;const stops=sectors.map((s,i)=>{const from=acc;acc+=s.w;return `${SEC_PAL[i%SEC_PAL.length]} ${from}% ${acc}%`;}).join(",");
-  const legend=sectors.map((s,i)=>`<div class="cart-leg-row"><span class="cart-leg-sw" style="background:${SEC_PAL[i%SEC_PAL.length]}"></span><span class="cart-leg-nm">${s.nm}</span><span class="cart-leg-v">${dec(s.w,1)}%</span></div>`).join("");
   const conc=`<div class="cart-grid2">
     <div class="card card-pad">
       <div class="card-title">Concentração por ação <span class="hint">alerta acima de ${CONC_ALERT}%</span></div>
       <div class="cart-bars">${bars}</div>${threshNote}
     </div>
-    <div class="card card-pad">
-      <div class="card-title">Concentração por setor B3</div>
-      <div class="cart-donut-wrap">
-        <div class="cart-donut" style="background:conic-gradient(${stops||'var(--surface-2) 0 100%'})"><div class="cart-donut-mid"><div class="dn">${sectors.length}</div><div class="dl">${sectors.length===1?'setor':'setores'}</div></div></div>
-        <div class="cart-legend">${legend}</div>
-      </div>
-    </div>
+    <div class="card card-pad" id="cartSecCard"></div>
   </div>`;
 
   /* ---- HHI ---- */
@@ -2553,6 +2593,7 @@ function renderCarteira(){
   </div>`;
 
   body.innerHTML=stats+conc+hhi+table+extras;
+  renderSectorCard();
   renderAporte();
 }
 /* ---- modal e CRUD da carteira ---- */
@@ -2600,6 +2641,13 @@ cartOverlay.addEventListener("click",e=>{if(e.target===cartOverlay)closeCartModa
 $("cart-ticker").addEventListener("keydown",e=>{if(e.key==="Enter")$("cart-qt").focus();});
 $("cartBody").addEventListener("click",e=>{
   const edit=e.target.closest(".cart-editbtn");if(edit){openCartModal(edit.dataset.tk);return;}
+  // drill-down da rosca: setor → subsetor → segmento (e breadcrumb/rosca p/ voltar)
+  const toEl=e.target.closest("[data-drill-to]");
+  if(toEl){const to=toEl.dataset.drillTo;if(to==="root")secDrill={setor:null,sub:null};else if(to==="setor")secDrill.sub=null;renderSectorCard();return;}
+  const setEl=e.target.closest("[data-drill-setor]");
+  if(setEl){secDrill={setor:setEl.dataset.drillSetor,sub:null};renderSectorCard();return;}
+  const subEl=e.target.closest("[data-drill-sub]");
+  if(subEl){secDrill.sub=subEl.dataset.drillSub;renderSectorCard();return;}
   const el=e.target.closest("[data-cart-tk]");if(el)location.hash="#/acao/"+el.dataset.cartTk;
 });
 $("cartBody").addEventListener("input",e=>{if(e.target.id==="cartAporte")renderAporte();});
