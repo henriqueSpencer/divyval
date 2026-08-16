@@ -535,6 +535,128 @@ button{font-family:inherit;}
   .theme-toggle{padding:9px;}
 }
 @media (max-width:400px){.stats{grid-template-columns:1fr;}}
+
+/* ============ MOBILE (≤720px): layout dedicado, não só encolhido ============ */
+/* controles e cards ficam escondidos no desktop; a tabela é a visão padrão */
+.scr-mtools{display:none;}
+.scr-cards{display:none;}
+/* filter sheet: estrutura (visível só quando .overlay abre) */
+.fs-modal{background:var(--surface);border:1px solid var(--border);width:100%;max-width:560px;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;overflow:auto;box-shadow:var(--shadow-lg);}
+.fs-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;}
+.fs-head h3{font-size:18px;font-weight:700;letter-spacing:-.01em;}
+.fs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fs-field{display:flex;flex-direction:column;gap:5px;}
+.fs-field label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-mute);}
+.fs-field select,.fs-field input{font:inherit;font-size:14px;color:var(--text);background:var(--surface-2);
+  border:1px solid var(--border);border-radius:9px;padding:9px 10px;width:100%;-webkit-appearance:none;}
+.fs-field select:focus,.fs-field input:focus{outline:none;border-color:var(--accent);}
+.fs-foot{display:flex;gap:10px;margin-top:18px;}
+.fs-foot .btn{flex:1;justify-content:center;}
+
+@media (max-width:720px){
+  /* --- shell: navegação vira barra inferior (thumb-friendly) --- */
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:auto;align-self:auto;
+    flex-direction:row;align-items:stretch;flex-wrap:nowrap;gap:2px;
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+    border-right:none;border-bottom:none;border-top:1px solid var(--border);
+    box-shadow:0 -2px 14px rgba(30,28,20,.07);z-index:40;}
+  [data-theme=dark] .sidebar{box-shadow:0 -2px 14px rgba(0,0,0,.45);}
+  .brand{display:none;}
+  .nav{flex-direction:row;flex:1;gap:2px;overflow:visible;order:0;}
+  .nav a{flex:1;flex-direction:column;gap:3px;padding:7px 2px 5px;font-size:10px;border-radius:12px;white-space:nowrap;}
+  .nav a.active::before{display:none;}
+  .nav a svg{width:21px;height:21px;}
+  .side-foot{order:1;margin:0;padding:0;width:auto;border-top:none;flex:none;}
+  .theme-toggle{flex-direction:column;gap:3px;height:100%;width:auto;padding:7px 14px 5px;border-radius:12px;font-size:10px;}
+  .theme-toggle span{display:none;}
+  .main{padding:16px 14px calc(80px + env(safe-area-inset-bottom));}
+
+  /* --- topo da página --- */
+  .page-head{flex-direction:column;align-items:stretch;gap:12px;}
+  .page-head h1{font-size:22px;}
+  .page-head .btn{align-self:auto;}
+  .page-head>div:last-child{display:flex;gap:8px;}
+  .page-head>div:last-child .btn{flex:1;justify-content:center;}
+  #colsBtn{display:none;}   /* mostrar/ocultar colunas não se aplica aos cards */
+
+  /* --- controles mobile do screener --- */
+  .scr-mtools{display:flex;flex-direction:column;gap:9px;margin-bottom:14px;}
+  .scr-search{font:inherit;font-size:15px;color:var(--text);background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:11px 14px;width:100%;-webkit-appearance:none;}
+  .scr-search:focus{outline:none;border-color:var(--accent);}
+  .scr-mrow{display:flex;gap:8px;}
+  .scr-sort{display:flex;flex:1;gap:6px;}
+  .scr-sort select{flex:1;min-width:0;font:inherit;font-size:13px;font-weight:600;color:var(--text);
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px;-webkit-appearance:none;}
+  .scr-dir{padding:0 14px;font-size:16px;}
+  .scr-filtbtn{position:relative;white-space:nowrap;}
+  .fcount{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;
+    margin-left:5px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;}
+  [data-theme=dark] .fcount{color:#14140f;}
+
+  /* --- tabela → cards --- */
+  .table-scroll{display:none;}
+  #scrCard{background:transparent;border:none;box-shadow:none;}
+  .scr-cards{display:flex;flex-direction:column;gap:10px;}
+  .scard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 15px;
+    box-shadow:var(--shadow);cursor:pointer;transition:background .12s;}
+  .scard:active{background:var(--surface-2);}
+  .scard-child{margin:-4px 0 0 16px;border-left:2px solid var(--accent-soft);border-top-left-radius:0;border-bottom-left-radius:0;}
+  .scard-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .scard-tk{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;letter-spacing:-.01em;
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .scard-child .scard-tk{font-size:14px;}
+  .grp-toggle{font:inherit;font-size:11px;font-weight:600;color:var(--text-mute);background:var(--surface-2);
+    border:1px solid var(--border);border-radius:7px;padding:2px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+  .grp-toggle::after{content:"▸";font-size:9px;transition:transform .15s;}
+  .grp-toggle.open::after{transform:rotate(90deg);}
+  .scard-name{font-size:13px;color:var(--text-soft);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .scard-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+  .scard-metrics{display:grid;grid-template-columns:1fr 1fr;gap:11px 16px;margin-top:12px;}
+  .scm{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .scm-k{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mute);}
+  .scm-v{font-size:15px;font-weight:700;letter-spacing:-.01em;}
+  .scm-v.pos{color:var(--good);}.scm-v.neg{color:var(--bad);}
+  .scard-mos{display:flex;align-items:center;gap:11px;margin-top:13px;padding-top:12px;border-top:1px solid var(--border-2);}
+  .scard-mos .scm-k{flex:none;}
+  .scard-mos .mos{font-size:16px;}
+  .scard-mos .mos-bar{margin-left:auto;width:110px;flex:none;}
+
+  /* --- stats compactos --- */
+  .stats{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .stat{padding:12px 14px;}
+  .stat .v{font-size:21px;}
+
+  /* --- detalhe da ação --- */
+  .detail-actions{gap:6px;flex-wrap:wrap;}
+  .detail-actions .btn.sm{flex:1;justify-content:center;}
+  .stock-title{flex-wrap:wrap;gap:8px;}
+  .stock-title h1{font-size:22px;}
+  .hero{grid-template-columns:1fr;}
+  .fair-value{font-size:34px;}
+  .verdict{padding:16px 18px;}
+  .verdict .fair-value{font-size:30px;}
+  .prem-grid,.result,.grid-2,.form-grid{grid-template-columns:1fr;}
+  .card-pad{padding:16px;}
+  .steps-head{flex-direction:column;gap:6px;padding:16px 16px 4px;}
+  .steps-head h2{font-size:16px;}
+  .steps-head .now{white-space:normal;}
+  .step{grid-template-columns:26px 1fr;gap:12px;padding:16px;}
+  .formula{font-size:13px;padding:12px 13px;}
+  .proj{font-size:12px;}
+  .proj th,.proj td{padding:6px 3px;}
+  .modal{padding:22px 18px;}
+
+  /* --- filtros: bottom sheet colado embaixo --- */
+  #filterSheet{align-items:flex-end;padding:0;}
+  #filterSheet .fs-modal{border-radius:18px 18px 0 0;max-height:86vh;border-bottom:none;}
+}
+@media (max-width:380px){
+  .scard-metrics{grid-template-columns:1fr 1fr;gap:9px 12px;}
+  .fs-grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
@@ -572,14 +694,26 @@ button{font-family:inherit;}
           <button class="btn btn-primary" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span id="addBtnLabel">Adicionar ação</span></button>
         </div>
       </div>
+      <!-- controles mobile: busca + ordenação + filtros (a tabela e seus cabeçalhos somem no celular) -->
+      <div class="scr-mtools" id="scrMTools">
+        <input class="scr-search" id="scrSearch" type="search" inputmode="search" placeholder="Buscar ticker ou empresa…" autocomplete="off">
+        <div class="scr-mrow">
+          <div class="scr-sort">
+            <select id="scrSortSel" aria-label="Ordenar por"></select>
+            <button class="btn sm scr-dir" id="scrSortDir" aria-label="Inverter ordem" title="Inverter ordem">↓</button>
+          </div>
+          <button class="btn sm scr-filtbtn" id="scrFiltBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>Filtros<span class="fcount" id="scrFiltCount" hidden></span></button>
+        </div>
+      </div>
       <div class="stats" id="statsBar" hidden></div>
-      <div class="card">
+      <div class="card" id="scrCard">
         <div class="table-scroll">
         <table class="table">
           <thead><tr class="th-sort" id="thSort"></tr></thead>
           <tbody id="scrBody"></tbody>
         </table>
         </div>
+        <div class="scr-cards" id="scrCards"></div>
       </div>
     </section>
 
@@ -1008,6 +1142,15 @@ button{font-family:inherit;}
   </div>
 </div>
 
+<!-- painel de filtros (mobile) -->
+<div class="overlay" id="filterSheet">
+  <div class="fs-modal" role="dialog" aria-modal="true" aria-label="Filtros">
+    <div class="fs-head"><h3>Filtrar ações</h3><button class="btn btn-ghost sm" id="fsClose">Fechar</button></div>
+    <div id="filterSheetBody"></div>
+    <div class="fs-foot"><button class="btn" id="fsClear">Limpar filtros</button><button class="btn btn-primary" id="fsApply">Ver resultados</button></div>
+  </div>
+</div>
+
 <div class="col-pop" id="colPop" hidden></div>
 <div class="col-pop" id="colsMenu" hidden></div>
 <style id="colStyle"></style>
@@ -1295,6 +1438,7 @@ function renderHeader(){
 }
 function updateFilterButtons(){document.querySelectorAll(".th-filter-btn").forEach(b=>b.classList.toggle("on",!!filterState[b.dataset.fk]));}
 function passFilters(r){const s=r.s,f=filterState;
+  if(f._q){const q=f._q.toLowerCase();if(!(s.ticker.toLowerCase().includes(q)||(s.nome||"").toLowerCase().includes(q)))return false;}
   if(f.ticker&&!s.ticker.toLowerCase().includes(f.ticker.toLowerCase()))return false;
   if(f.nome&&!s.nome.toLowerCase().includes(f.nome.toLowerCase()))return false;
   if(f.setor&&s.cl.setor!==f.setor)return false;
@@ -1417,6 +1561,9 @@ function renderScreener(){
   const maxAbs=Math.max(1,...units.map(x=>x.margin!=null?Math.abs(x.margin):0));
   const at=(v,c)=>`<td class="l td-attr col-${c}" title="${(v||'').replace(/"/g,'&quot;')}">${v||"—"}</td>`;
   const pill=(m,v,c)=>`<td class="l col-${c}">${v?`<span class="tagc ${m[v]||'c-neutral'}">${v}</span>`:'—'}</td>`;
+  if(isMobile()){renderScreenerCards(units,maxAbs);$("scrBody").innerHTML="";}
+  else{
+  $("scrCards").innerHTML="";
   $("scrBody").innerHTML=units.map(u=>{
     const s=u.s,n=u.members.length,key=groupKey(s),exp=n>1;
     const situ=((s.tags||[]).map(x=>`<span class="tag situ">${x}</span>`).join("")+(isEstimated(s)?estTag:""))||'<span class="td-attr">—</span>';
@@ -1453,7 +1600,9 @@ function renderScreener(){
       </tr>`;}).join("");
     return parent+kids;
   }).join("");
+  }
   document.querySelectorAll(".th-sort th").forEach(th=>{th.classList.toggle("sorted",th.dataset.key===sort.key);const a=th.querySelector(".arrow");if(a)a.textContent=sort.dir<0?"▾":"▴";});
+  syncMTools();
 }
 $("thSort").addEventListener("click",e=>{
   const fb=e.target.closest(".th-filter-btn");
@@ -2590,6 +2739,91 @@ async function bootstrap(){
   if(!ok){ console.warn("API indisponível após retries — mantendo amostra."); return; }
   router();   // re-renderiza com dados reais: aplica o modelo/preço salvos de cada ação
 }
+/* ===== camada mobile: screener em cards + controles de busca/ordenação/filtros ===== */
+const mqMobile=window.matchMedia("(max-width:720px)");
+function isMobile(){return mqMobile.matches;}
+mqMobile.addEventListener("change",()=>{if(!$("view-screener").hidden)renderScreener();});
+
+/* card do screener: reaproveita os mesmos números já calculados em renderScreener */
+function screenerCardHtml(u,maxAbs,isChild){
+  const s=u.s,n=u.members.length,key=groupKey(s),exp=!isChild&&n>1;
+  const up=u.margin,hasUp=up!=null&&isFinite(up);
+  const w=hasUp?Math.min(50,Math.abs(up)/maxAbs*50):0;
+  const fill=hasUp?(up>=0?`right:50%;width:${w}%;background:var(--good)`:`left:50%;width:${w}%;background:var(--bad)`):"";
+  const ms=u.msafe,msOk=ms!=null&&isFinite(ms);
+  const tir=u.tir,ke=oeD(s);let tirTxt="—",tirCls="";
+  if(tir!=null&&isFinite(tir)){tirTxt=dec(tir*100,1)+"%";tirCls=(tir-ke)>=0?"pos":"neg";}
+  const situ=(s.tags||[]).slice(0,2).map(x=>`<span class="tag situ">${x}</span>`).join("");
+  return `<div class="scard${isChild?' scard-child':''}" data-ticker="${s.ticker}" data-grp="${key}"${isChild?' hidden':''}>
+    <div class="scard-head">
+      <span class="scard-tk">${s.ticker}${exp?`<button class="grp-toggle" data-grp="${key}">·${n} classes</button>`:(isChild?` <span class="child-ty">${typeLabel(s.ticker)}</span>`:"")}</span>
+      <span class="model-badge">${s.modelo||'DDM · 2 est.'}</span>
+    </div>
+    <div class="scard-name">${s.nome||"—"}</div>
+    ${situ?`<div class="scard-tags">${situ}</div>`:""}
+    <div class="scard-metrics">
+      <div class="scm"><span class="scm-k">Preço</span><span class="scm-v num">${s.price?brl(s.price):"—"}</span></div>
+      <div class="scm"><span class="scm-k">Preço justo</span><span class="scm-v num accent">${(u.fair!=null&&isFinite(u.fair))?brl(u.fair):"—"}</span></div>
+      <div class="scm"><span class="scm-k">Margem seg.</span><span class="scm-v num ${msOk?(ms>=0?"pos":"neg"):""}">${msOk?(ms>=0?"+":"")+dec(ms,1)+"%":"—"}</span></div>
+      <div class="scm"><span class="scm-k">TIR implícita</span><span class="scm-v num ${tirCls}">${tirTxt}</span></div>
+    </div>
+    <div class="scard-mos">
+      <span class="scm-k">Upside</span>
+      <span class="mos ${hasUp&&up>=0?'pos':'neg'}">${hasUp?(up>=0?"+":"")+dec(up,1)+"%":"—"}</span>
+      <span class="mos-bar"><i style="${fill}"></i></span>
+    </div>
+  </div>`;
+}
+function renderScreenerCards(units,maxAbs){
+  $("scrCards").innerHTML=units.map(u=>{
+    let html=screenerCardHtml(u,maxAbs,false);
+    if(u.members.length>1)html+=u.members.map(m=>screenerCardHtml({s:m.s,members:[m],fair:m.fair,margin:m.margin,msafe:m.msafe,tir:m.tir},maxAbs,true)).join("");
+    return html;
+  }).join("");
+}
+$("scrCards").addEventListener("click",e=>{
+  const tg=e.target.closest(".grp-toggle");
+  if(tg){e.stopPropagation();const open=tg.classList.toggle("open");
+    document.querySelectorAll('.scard-child[data-grp="'+tg.dataset.grp+'"]').forEach(c=>c.hidden=!open);return;}
+  if(e.target.closest(".model-badge")){e.stopPropagation();window.__modelPage=e.target.closest(".model-badge").textContent.trim();location.hash="#/modelo";return;}
+  const card=e.target.closest(".scard");if(!card)return;
+  location.hash="#/acao/"+card.dataset.ticker;
+});
+
+/* barra de controles mobile */
+const MSORT=[["msafe","Margem de segurança"],["margin","Upside"],["tir","TIR implícita"],["price","Preço"],["fair","Preço justo"],["liquidez","Liquidez"],["ticker","Ticker (A–Z)"],["nome","Empresa (A–Z)"]];
+function syncMTools(){
+  const sel=$("scrSortSel");
+  if(sel){if(!sel.options.length)sel.innerHTML=MSORT.map(([k,l])=>`<option value="${k}">${l}</option>`).join("");sel.value=sort.key;}
+  const dir=$("scrSortDir");if(dir)dir.textContent=sort.dir<0?"↓":"↑";
+  const q=$("scrSearch");if(q&&document.activeElement!==q&&q.value!==(filterState._q||""))q.value=filterState._q||"";
+  const nActive=Object.keys(filterState).filter(k=>k!=="_q"&&filterState[k]!=null&&filterState[k]!=="").length;
+  const badge=$("scrFiltCount");if(badge){badge.hidden=!nActive;badge.textContent=nActive;}
+  const fb=$("scrFiltBtn");if(fb)fb.classList.toggle("on",!!nActive);
+}
+$("scrSearch").addEventListener("input",e=>{const v=e.target.value.trim();if(v)filterState._q=v;else delete filterState._q;renderScreener();});
+$("scrSortSel").addEventListener("change",e=>{const k=e.target.value;sort={key:k,dir:TEXT_KEYS.includes(k)?1:-1};renderScreener();});
+$("scrSortDir").addEventListener("click",()=>{sort={key:sort.key,dir:-sort.dir};renderScreener();});
+
+/* bottom sheet de filtros: reflete todas as colunas categóricas/numéricas em filterState */
+function renderFilterSheet(){
+  const cat=COLUMNS.filter(c=>c.t==="cat").map(c=>{
+    const opts=[`<option value="">Todos</option>`].concat(distinct(c.g,c.k).map(v=>`<option value="${v}"${filterState[c.k]===v?" selected":""}>${v}</option>`));
+    return `<div class="fs-field"><label>${c.label}</label><select data-fk="${c.k}">${opts.join("")}</select></div>`;}).join("");
+  const num=COLUMNS.filter(c=>c.t==="num").map(c=>{
+    const ph=c.k==="liquidez"?"≥ R$ mi":(c.k==="tir"?"≥ % a.a.":"mínimo");
+    return `<div class="fs-field"><label>${c.label}</label><input type="number" inputmode="decimal" data-fk="${c.k}" placeholder="${ph}" value="${filterState[c.k]||""}"></div>`;}).join("");
+  $("filterSheetBody").innerHTML=`<div class="fs-grid">${cat}${num}</div>`;
+}
+function openFilterSheet(){renderFilterSheet();$("filterSheet").classList.add("open");}
+$("scrFiltBtn").addEventListener("click",openFilterSheet);
+$("fsClose").addEventListener("click",()=>$("filterSheet").classList.remove("open"));
+$("fsApply").addEventListener("click",()=>$("filterSheet").classList.remove("open"));
+$("filterSheet").addEventListener("click",e=>{if(e.target.id==="filterSheet")$("filterSheet").classList.remove("open");});
+$("fsClear").addEventListener("click",()=>{Object.keys(filterState).forEach(k=>{if(k!=="_q")delete filterState[k];});renderScreener();renderFilterSheet();});
+$("filterSheetBody").addEventListener("change",e=>{const el=e.target.closest("select[data-fk]");if(!el)return;const k=el.dataset.fk;if(el.value)filterState[k]=el.value;else delete filterState[k];renderScreener();});
+$("filterSheetBody").addEventListener("input",e=>{const el=e.target.closest("input[data-fk]");if(!el)return;const k=el.dataset.fk;if(el.value)filterState[k]=el.value;else delete filterState[k];renderScreener();});
+
 renderHeader();
 applyCols();
 updateGroupBtn();
