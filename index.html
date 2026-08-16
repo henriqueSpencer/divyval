@@ -576,7 +576,11 @@ button{font-family:inherit;}
     flex-direction:row;align-items:stretch;flex-wrap:nowrap;gap:2px;
     padding:6px 8px calc(6px + env(safe-area-inset-bottom));
     border-right:none;border-bottom:none;border-top:1px solid var(--border);
-    box-shadow:0 -2px 14px rgba(30,28,20,.07);z-index:40;}
+    box-shadow:0 -2px 14px rgba(30,28,20,.07);z-index:40;
+    /* mantém a barra numa camada de composição própria: evita o "sumiço" do position:fixed
+       durante o scroll por momentum no iOS Safari (e no Chrome Android antigo) */
+    transform:translateZ(0);-webkit-transform:translateZ(0);
+    -webkit-backface-visibility:hidden;backface-visibility:hidden;will-change:transform;}
   [data-theme=dark] .sidebar{box-shadow:0 -2px 14px rgba(0,0,0,.45);}
   .brand{display:none;}
   .nav{flex-direction:row;flex:1;gap:2px;overflow:visible;order:0;}
