@@ -467,6 +467,11 @@ button{font-family:inherit;}
 /* ===== Carteira ===== */
 .stat .sub{font-size:11.5px;color:var(--text-mute);margin-top:3px;}
 .stat .sub.good{color:var(--good);}.stat .sub.bad{color:var(--bad);}
+.cart-statinfo{position:absolute;top:10px;right:11px;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);color:var(--text-mute);font-size:11px;font-weight:700;font-style:italic;font-family:'Space Grotesk',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;}
+.cart-statinfo:hover{color:var(--accent);border-color:var(--accent);}
+.cart-statpop{position:absolute;top:34px;right:8px;z-index:30;width:min(300px,80vw);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:12px 14px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:400;line-height:1.5;color:var(--text-soft);text-align:left;text-transform:none;letter-spacing:normal;}
+.cart-statpop[hidden]{display:none;}
+.cart-statpop b{color:var(--text);font-weight:600;}
 .cart-grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-bottom:16px;}
 .cart-grid2b{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 @media (max-width:1080px){.cart-grid2,.cart-grid2b{grid-template-columns:1fr;}}
@@ -2517,13 +2522,16 @@ function renderCarteira(){
   const plCls=a.plPct==null?"":a.plPct>=0?"good":"bad";
   const tirCls=a.tirW==null?"":a.tirW>=a.keW?"good":"bad";
   const msCls=a.msAgg==null?"":a.msAgg>=0?"good":"bad";
+  const h10k=Math.round(a.hhi*10000);                          // HHI na escala 0–10.000
+  const topP=a.priced.reduce((mx,r)=>r.w>(mx?mx.w:-1)?r:mx,null);   // maior posição (p/ o exemplo do popover)
+  const concPop=`<b>Ações efetivas</b> = 1 ÷ Σ(peso²).<br>O <b>peso</b> de cada ação = valor da posição ÷ patrimônio. Cada peso entra <b>ao quadrado</b> (as maiores dominam) e a soma é o <b>HHI</b>; invertendo, dá "quantas ações de tamanho igual" equivaleriam.<br>${a.priced.length} iguais → ${dec(a.priced.length,1)} · tudo numa só → 1,0. A sua: HHI <b>${h10k.toLocaleString('pt-BR')}</b> ⇒ <b>${dec(a.eff,1)}</b>${topP?` — ${topP.tk} sozinha já é ${dec(topP.w,1)}% da carteira`:''}.`;
   const stats=`<div class="stats">
     <div class="stat"><div class="k">Patrimônio</div><div class="v num">${brl0(a.V)}</div><div class="sub">${a.priced.length} ${a.priced.length===1?'ativo':'ativos'}</div></div>
     <div class="stat"><div class="k">Resultado</div><div class="v ${plCls} num">${a.plAbs>=0?"+":"-"}${brl0(Math.abs(a.plAbs))}</div><div class="sub ${plCls}">${a.plPct==null?"—":spct(a.plPct)} vs. custo</div></div>
     <div class="stat" title="Dividendos projetados (Σ DPA×qtd) ÷ patrimônio · DPA = LPA × payout"><div class="k">DY da carteira</div><div class="v num">${a.dyCart==null?"—":dec(a.dyCart,1)+"%"}</div><div class="sub">≈ ${brl0(a.annualDiv/12)} / mês</div></div>
     <div class="stat" title="Média das TIRs ponderada pelo valor de cada posição · Ke efetivo ponderado ${pctv(a.keW*100)}"><div class="k">TIR ponderada</div><div class="v ${tirCls} num">${a.tirW==null?"—":dec(a.tirW*100,1)+"%"}</div><div class="sub">retorno impl. a.a.${a.tirN<a.priced.length?` · ${a.tirN}/${a.priced.length}`:""}</div></div>
     <div class="stat" title="(Σ justo − Σ preço) ÷ Σ justo, sobre as posições com preço justo · upside equivalente ${a.upAgg==null?"—":spct(a.upAgg)}"><div class="k">Margem seg.</div><div class="v ${msCls} num">${a.msAgg==null?"—":spct(a.msAgg)}</div><div class="sub">preço vs. justo${a.valuedN<a.priced.length?` · ${a.valuedN}/${a.priced.length}`:""}</div></div>
-    <div class="stat" title="Nº efetivo de ações = 1 ÷ Σ(peso²): quão diversificada é a carteira"><div class="k">Concentração</div><div class="v num">${dec(a.eff,1)}</div><div class="sub">ações efetivas (de ${a.priced.length})</div></div>
+    <div class="stat" style="position:relative"><button class="cart-statinfo" data-statpop="concPop" aria-label="Como é calculado">i</button><div class="k">Concentração</div><div class="v num">${dec(a.eff,1)}</div><div class="sub">ações efetivas (de ${a.priced.length})</div><div class="cart-statpop" id="concPop" hidden>${concPop}</div></div>
   </div>`;
 
   /* ---- 2. concentração: barras por ação + donut por setor ---- */
@@ -2544,7 +2552,7 @@ function renderCarteira(){
   </div>`;
 
   /* ---- HHI ---- */
-  const h10k=Math.round(a.hhi*10000), zone=h10k<1500?{t:"diluída",c:"var(--good)"}:h10k<=2500?{t:"moderada",c:"var(--worth)"}:{t:"concentrada",c:"var(--bad)"};
+  const zone=h10k<1500?{t:"diluída",c:"var(--good)"}:h10k<=2500?{t:"moderada",c:"var(--worth)"}:{t:"concentrada",c:"var(--bad)"};
   const topSec=sectors[0];
   const hhi=`<div class="card card-pad" style="margin-bottom:16px">
     <div class="card-title">Índice de concentração (HHI) <span class="hint">quanto o patrimônio depende de poucos nomes</span></div>
@@ -2662,6 +2670,11 @@ $("cartSave").addEventListener("click",saveCartPos);
 cartOverlay.addEventListener("click",e=>{if(e.target===cartOverlay)closeCartModal();});
 $("cart-ticker").addEventListener("keydown",e=>{if(e.key==="Enter")$("cart-qt").focus();});
 $("cartBody").addEventListener("click",e=>{
+  // popover explicativo dos stats (ⓘ): alterna o próprio, fecha os demais
+  const info=e.target.closest(".cart-statinfo");
+  const closeAllPops=exc=>document.querySelectorAll(".cart-statpop:not([hidden])").forEach(p=>{if(p!==exc)p.hidden=true;});
+  if(info){const pop=$(info.dataset.statpop);closeAllPops(pop);if(pop)pop.hidden=!pop.hidden;return;}
+  if(!e.target.closest(".cart-statpop"))closeAllPops(null);   // clique fora fecha
   const edit=e.target.closest(".cart-editbtn");if(edit){openCartModal(edit.dataset.tk);return;}
   // drill-down da rosca: setor → subsetor → segmento (e breadcrumb/rosca p/ voltar)
   const toEl=e.target.closest("[data-drill-to]");
