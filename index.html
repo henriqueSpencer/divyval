@@ -570,17 +570,18 @@ button{font-family:inherit;}
 .fs-foot .btn{flex:1;justify-content:center;}
 
 @media (max-width:720px){
-  /* --- shell: navegação vira barra inferior (thumb-friendly) --- */
-  .app{grid-template-columns:1fr;}
-  .sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:auto;align-self:auto;
+  /* --- shell mobile: o APP ocupa a viewport, o CONTEÚDO rola por dentro (.main) e a barra de
+     navegação é uma LINHA ESTÁTICA embaixo (não position:fixed). Assim a barra nunca é fixed →
+     acaba o "sumiço" do rodapé no scroll por momentum (iOS Safari), em TODAS as telas. --- */
+  html{height:100%;}
+  body{height:100vh;height:100dvh;overflow:hidden;}
+  .app{grid-template-columns:1fr;grid-template-rows:1fr auto;height:100vh;height:100dvh;min-height:0;}
+  .main{grid-row:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+  .sidebar{grid-row:2;position:static;left:auto;right:auto;bottom:auto;top:auto;width:auto;height:auto;align-self:auto;z-index:1;
     flex-direction:row;align-items:stretch;flex-wrap:nowrap;gap:2px;
     padding:6px 8px calc(6px + env(safe-area-inset-bottom));
     border-right:none;border-bottom:none;border-top:1px solid var(--border);
-    box-shadow:0 -2px 14px rgba(30,28,20,.07);z-index:40;
-    /* mantém a barra numa camada de composição própria: evita o "sumiço" do position:fixed
-       durante o scroll por momentum no iOS Safari (e no Chrome Android antigo) */
-    transform:translateZ(0);-webkit-transform:translateZ(0);
-    -webkit-backface-visibility:hidden;backface-visibility:hidden;will-change:transform;}
+    box-shadow:0 -2px 14px rgba(30,28,20,.07);}
   [data-theme=dark] .sidebar{box-shadow:0 -2px 14px rgba(0,0,0,.45);}
   .brand{display:none;}
   .nav{flex-direction:row;flex:1;gap:2px;overflow:visible;order:0;}
@@ -590,7 +591,7 @@ button{font-family:inherit;}
   .side-foot{order:1;margin:0;padding:0;width:auto;border-top:none;flex:none;}
   .theme-toggle{flex-direction:column;gap:3px;height:100%;width:auto;padding:7px 14px 5px;border-radius:12px;font-size:10px;}
   .theme-toggle span{display:none;}
-  .main{padding:16px 14px calc(80px + env(safe-area-inset-bottom));}
+  .main{padding:16px 14px 22px;}
 
   /* --- topo da página --- */
   .page-head{flex-direction:column;align-items:stretch;gap:12px;}
@@ -2781,7 +2782,7 @@ function router(){
       $("scrSub").textContent=scope==="monitoradas"?"Sua watchlist — as ações que você acompanha, ordenadas por margem de segurança.":"Ações ordenadas por margem de segurança — quanto o preço justo está acima do preço atual.";
       $("addBtnLabel").textContent=scope==="monitoradas"?"Adicionar às monitoradas":"Adicionar ação";
       renderScreener();updateFilterButtons();}
-    window.scrollTo(0,0);
+    window.scrollTo(0,0);const _m=document.querySelector(".main");if(_m)_m.scrollTop=0;   // no mobile o scroll é interno ao .main
   };
   if(document.startViewTransition)document.startViewTransition(go);else go();
 }
