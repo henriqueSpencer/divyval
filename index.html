@@ -483,9 +483,12 @@ button{font-family:inherit;}
 .cart-thresh{margin-top:16px;font-size:12px;color:var(--text-mute);display:flex;align-items:flex-start;gap:7px;}
 .cart-thresh .dot{width:9px;height:9px;border-radius:2px;background:var(--bad);flex:none;margin-top:4px;}
 .cart-donut-wrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap;}
-.cart-donut{width:158px;height:158px;border-radius:50%;flex:none;position:relative;}
-.cart-donut::after{content:"";position:absolute;inset:26px;border-radius:50%;background:var(--surface);}
-.cart-donut-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-align:center;}
+.cart-donut{width:158px;height:158px;flex:none;position:relative;}
+.cart-donut-svg{width:100%;height:100%;display:block;}
+.cart-donut-svg path{stroke:var(--surface);stroke-width:1.5;stroke-linejoin:round;}
+.cart-donut-svg .slice{cursor:pointer;transition:opacity .12s;}
+.cart-donut-svg .slice:hover{opacity:.82;}
+.cart-donut-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-align:center;pointer-events:none;}
 .cart-donut-mid .dn{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
 .cart-donut-mid .dl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);margin-top:2px;}
 .cart-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:170px;}
@@ -2402,9 +2405,29 @@ function concByLevel(){
   const groups=Object.entries(m).map(([nm,v])=>({nm,v,w:V>0?v/V*100:0,wRel:sub>0?v/sub*100:0})).sort((x,y)=>y.w-x.w);
   return {level,label,groups};
 }
+/* rosca em SVG: uma fatia <path> por grupo (clicável p/ drill). arcos ∝ wRel (fecham 360°). */
+function donutSvg(groups,level){
+  const cx=79,cy=79,R=79,r=53, drill=level<2;
+  const attrOf=g=>drill?(level===0?`data-drill-setor="${escAttr(g.nm)}"`:`data-drill-sub="${escAttr(g.nm)}"`):"";
+  const pt=(rad,deg)=>{const t=(deg-90)*Math.PI/180;return [(cx+rad*Math.cos(t)).toFixed(2),(cy+rad*Math.sin(t)).toFixed(2)];};
+  const total=groups.reduce((a,g)=>a+g.wRel,0)||1;
+  let inner="";
+  if(groups.length===1){                     // fatia única (100%) → anel cheio via stroke
+    const g=groups[0];
+    inner=`<circle cx="${cx}" cy="${cy}" r="${(R+r)/2}" fill="none" stroke="${SEC_PAL[0]}" stroke-width="${R-r}" class="${drill?'slice':''}" ${attrOf(g)}><title>${g.nm} · ${dec(g.w,1)}% · ${brl0(g.v)}</title></circle>`;
+  }else{
+    let acc=0;
+    inner=groups.map((g,i)=>{
+      const a0=acc/total*360; acc+=g.wRel; const a1=acc/total*360, large=(a1-a0)>180?1:0;
+      const [xo0,yo0]=pt(R,a0),[xo1,yo1]=pt(R,a1),[xi1,yi1]=pt(r,a1),[xi0,yi0]=pt(r,a0);
+      const d=`M${xo0} ${yo0} A${R} ${R} 0 ${large} 1 ${xo1} ${yo1} L${xi1} ${yi1} A${r} ${r} 0 ${large} 0 ${xi0} ${yi0} Z`;
+      return `<path d="${d}" fill="${SEC_PAL[i%SEC_PAL.length]}" class="${drill?'slice':''}" ${attrOf(g)}><title>${g.nm} · ${dec(g.w,1)}% · ${brl0(g.v)}</title></path>`;
+    }).join("");
+  }
+  return `<svg viewBox="0 0 158 158" class="cart-donut-svg">${inner}</svg>`;
+}
 function sectorCardHtml(){
   const {level,label,groups}=concByLevel();
-  let acc=0;const stops=groups.map((g,i)=>{const from=acc;acc+=g.wRel;return `${SEC_PAL[i%SEC_PAL.length]} ${from}% ${acc}%`;}).join(",");
   const drill=level<2;
   const legend=groups.map((g,i)=>{
     const attr=level===0?`data-drill-setor="${escAttr(g.nm)}"`:level===1?`data-drill-sub="${escAttr(g.nm)}"`:"";
@@ -2413,13 +2436,12 @@ function sectorCardHtml(){
       <span class="cart-leg-nm">${g.nm}</span>
       <span class="cart-leg-v"><span>${dec(g.w,1)}%</span><span class="cart-leg-brl">${brl0(g.v)}</span></span>${drill?'<span class="cart-leg-chev">›</span>':''}</div>`;}).join("");
   let crumb,hint;
-  if(level===0){crumb="Concentração por setor B3";hint='<span class="hint">clique num setor para abrir</span>';}
-  else if(level===1){crumb=`<a data-drill-to="root">‹ Setores</a> › <b>${secDrill.setor}</b>`;hint='<span class="hint">clique num subsetor</span>';}
+  if(level===0){crumb="Concentração por setor B3";hint='<span class="hint">clique numa fatia para abrir</span>';}
+  else if(level===1){crumb=`<a data-drill-to="root">‹ Setores</a> › <b>${secDrill.setor}</b>`;hint='<span class="hint">clique numa fatia</span>';}
   else{crumb=`<a data-drill-to="root">Setores</a> › <a data-drill-to="setor">${secDrill.setor}</a> › <b>${secDrill.sub}</b>`;hint='<span class="hint">segmentos</span>';}
-  const donutBack=level>0?`data-drill-to="${level===2?'setor':'root'}"`:"";
   return `<div class="card-title cart-seccrumb">${crumb} ${hint}</div>
     <div class="cart-donut-wrap">
-      <div class="cart-donut${level>0?' drill':''}" ${donutBack} title="${level>0?'voltar um nível':''}" style="background:conic-gradient(${stops||'var(--surface-2) 0 100%'})"><div class="cart-donut-mid"><div class="dn">${groups.length}</div><div class="dl">${label}</div></div></div>
+      <div class="cart-donut">${donutSvg(groups,level)}<div class="cart-donut-mid"><div class="dn">${groups.length}</div><div class="dl">${label}</div></div></div>
       <div class="cart-legend">${legend}</div>
     </div>`;
 }
