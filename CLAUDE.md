@@ -195,6 +195,16 @@ Pesos e concentração vêm do **valor de mercado** (`qtd × preço ao vivo`). C
   definida); benchmark = **Ke efetivo ponderado** (Σ `oeD`×valor). É média ponderada, não uma TIR
   agregada resolvida do zero — rotulada como tal.
 - **HHI** = Σ peso² (0..1; exibido ×10.000); **nº efetivo de ações** = 1/Σpeso² (faixas 1500/2500).
+  A caixinha "Concentração" tem um **ⓘ** (`.cart-statinfo` → popover `.cart-statpop`, toggle no click
+  handler do `#cartBody`) que explica a fórmula com os **números reais** (HHI, maior posição). Padrão
+  reaproveitável via `data-statpop` (dá p/ pôr o mesmo ⓘ nas outras caixinhas).
+- **Visualização da concentração:** barras por ação (`.cart-bar-fill` **precisa de `display:block`** —
+  span inline ignora `width`) + **rosca por setor B3 em SVG** (`donutSvg`: um `<path>` por fatia, arcos
+  ∝ `wRel` p/ fechar 360°; grupo único vira `<circle>` anel). **Drill-down clicável** Setor→Subsetor→
+  Segmento: as fatias e a legenda levam `data-drill-setor`/`data-drill-sub`; breadcrumb (`data-drill-to`)
+  volta. Estado em `secDrill`/`secData`; `renderSectorCard()` redesenha só o card (`#cartSecCard`) sem
+  re-render geral. `.cart-donut-mid` é `pointer-events:none` p/ não bloquear o clique nas fatias. A
+  legenda mostra **% (peso na carteira) e valor em R$** (`wRel` só desenha a rosca; o número é o peso real).
 - **Aporte inteligente** = HEURÍSTICA (`suggestAporte`, rotulada "não é recomendação"): só sugere o
   que está **abaixo do preço justo E sub-alocado** (peso < alvo igualitário), p/ o aporte de fato
   reduzir concentração; aloca ∝ score (0,65 desconto + 0,35 sub-alocação), floor em cotas inteiras.
@@ -225,7 +235,24 @@ variables no `<style>`, temas claro/escuro:
   É **aditivo** (ilustra números já calculados; não altera valuation). O passo a passo do
   DDM/OE/R1 e todas as explicações ficam intactos — mudou só a "roupa" (fonte/cor).
 
+## Mobile (camada responsiva, ago/2026)
+Layout mobile todo em CSS (media queries), sem JS de layout. **Dois breakpoints** mexem no shell:
+`@media (max-width:860px)` (tablet: sidebar vira topbar sticky + grids do detalhe/config viram 1 coluna)
+e `@media (max-width:720px)` (celular). No celular:
+- **Screener/Monitoradas viram cards** (`renderScreenerCards` → `.scr-cards`; a tabela some) + barra de
+  controles `.scr-mtools` (busca `#scrSearch`, ordenação `#scrSortSel`, botão de filtros → bottom-sheet
+  `#filterSheet`).
+- **Navegação = barra inferior** (`.sidebar` vira `position:fixed;bottom:0;z-index:40`, `.nav` em linha
+  com `flex:1` por item — a aba Carteira entra automática). `.main` reserva `padding-bottom` p/ a barra.
+- **GOTCHA da barra fixa:** em telas longas (screener, 379 cards) a barra `position:fixed` pode
+  **piscar/sumir no scroll** (repaint no Android / momentum no iOS). Fix atual: `transform:translateZ(0)`
+  (camada de composição própria) **sem `will-change`** (que no iOS faz o oposto e some com o elemento).
+  ⚠️ **NÃO** trocar por "shell de scroll interno" (`body{overflow:hidden}` + `.main` rolando + `100dvh`):
+  foi tentado e **escondeu a barra** (o `100dvh` empurrou o rodapé pra baixo da área visível, sem scroll
+  pra alcançar). `position:fixed;bottom:0` é o que garante a barra sempre visível.
+
 ## Git
 Conta **henriqueSpencer** (`gh auth switch --user henriqueSpencer`), autor
 `Henrique Spencer <henriquespencer11@gmail.com>`. Commits/PRs **sem nenhuma menção a IA/Claude/
-Anthropic** (nada de `Co-Authored-By` nem "Generated with"). Push em `main` = deploy.
+Anthropic** (nada de `Co-Authored-By` nem "Generated with"). **Deploy é MANUAL** (`wrangler pages deploy`,
+ver seção Deploy) — **push no `main` NÃO redeploya sozinho** (sem git-integration).
