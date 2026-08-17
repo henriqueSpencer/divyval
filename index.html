@@ -51,7 +51,8 @@ button{font-family:inherit;}
 .sidebar{position:sticky;top:0;align-self:start;height:100vh;background:var(--surface);border-right:1px solid var(--border);
   display:flex;flex-direction:column;align-items:center;padding:16px 8px;transition:background .35s,border-color .35s;}
 .brand{padding:2px 0 16px;}
-.brand .logo{display:flex;width:36px;height:36px;border-radius:10px;background:var(--accent);color:#fff;align-items:center;justify-content:center;font-size:19px;font-weight:800;letter-spacing:-.02em;}
+.brand .logo{display:flex;width:36px;height:36px;align-items:center;justify-content:center;}
+.brand .logo svg{display:block;width:36px;height:36px;}
 .nav{display:flex;flex-direction:column;gap:4px;width:100%;}
 .nav-label{display:none;}
 .nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:9px 2px;border-radius:10px;font-size:10px;font-weight:500;color:var(--text-soft);text-align:center;transition:background .15s,color .15s;}
@@ -695,7 +696,7 @@ button{font-family:inherit;}
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><b class="logo" title="DIVYVAL">D</b></div>
+    <div class="brand"><span class="logo" title="DIVYVAL"><svg viewBox="0 0 32 32" width="36" height="36" aria-label="DIVYVAL"><rect width="32" height="32" rx="7" fill="#2c3e6e"/><rect x="6" y="14.4" width="20" height="3.4" rx="1.7" fill="#55649a"/><rect x="6" y="14.4" width="10.2" height="3.4" rx="1.7" fill="#35b184"/><rect x="15.1" y="10.3" width="1.8" height="11.6" rx=".9" fill="#cba85a"/></svg></span></div>
     <nav class="nav" id="nav">
       <div class="nav-label">Análise</div>
       <a href="#/monitoradas" data-route="monitoradas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .8-5 4.9 1.3 7-6.3-3.4L5.7 21l1.3-7-5-4.9 7-.8z"/></svg>Monitoradas</a>
