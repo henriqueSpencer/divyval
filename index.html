@@ -75,7 +75,8 @@ button{font-family:inherit;}
 .page-head h1{font-size:22px;font-weight:700;letter-spacing:-.02em;}
 .page-head p{margin-top:5px;font-size:14px;color:var(--text-soft);max-width:60ch;}
 .sample-tag{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:var(--text-mute);
-  background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 10px;}
+  background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 10px;
+  max-width:100%;flex-wrap:wrap;}   /* inline-flex encolhe-pro-conteúdo: sem isto o texto longo estoura a viewport */
 .sample-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--text-mute);}
 
 .btn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:600;
@@ -601,8 +602,8 @@ button{font-family:inherit;}
   .page-head{flex-direction:column;align-items:stretch;gap:12px;}
   .page-head h1{font-size:22px;}
   .page-head .btn{align-self:auto;}
-  .page-head>div:last-child{display:flex;gap:8px;}
-  .page-head>div:last-child .btn{flex:1;justify-content:center;}
+  .page-head>div:last-child{display:flex;gap:8px;flex-wrap:wrap;}
+  .page-head>div:last-child .btn{flex:1 1 auto;min-width:0;justify-content:center;}
   #colsBtn{display:none;}   /* mostrar/ocultar colunas não se aplica aos cards */
 
   /* --- controles mobile do screener --- */
