@@ -577,7 +577,10 @@ button{font-family:inherit;}
      com a largura da VIEWPORT (e não do documento), então não some parte dela pro lado. Conteúdo
      legitimamente largo deve rolar no próprio container (ex.: .table-scroll), não na página. */
   html,body{overflow-x:hidden;}
-  .app{grid-template-columns:1fr;}
+  /* minmax(0,1fr): sem isto a track 1fr EXPANDE pro min-content de algum filho e fica mais larga
+     que a tela — arrastando todo o conteúdo pra fora da direita. min-width:0 no .main reforça. */
+  .app{grid-template-columns:minmax(0,1fr);}
+  .main{min-width:0;max-width:100%;}
   .sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:auto;align-self:auto;z-index:40;
     flex-direction:row;align-items:stretch;flex-wrap:nowrap;gap:2px;
     padding:6px 8px calc(6px + env(safe-area-inset-bottom));
@@ -652,8 +655,9 @@ button{font-family:inherit;}
   .scard-mos .mos-bar{margin-left:auto;width:110px;flex:none;}
 
   /* --- stats compactos --- */
-  .stats{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-  .stat{padding:12px 14px;}
+  .stats{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:16px;}
+  .stat{padding:12px 14px;min-width:0;overflow:hidden;}
+  .stat .v{overflow:hidden;text-overflow:ellipsis;}
   .stat .v{font-size:21px;}
 
   /* --- detalhe da ação --- */
