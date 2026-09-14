@@ -21,7 +21,9 @@ Classificação curada em `backend/stocks_meta.json`.
     _lib/http.js              ← helper de resposta JSON
     _lib/db.js                ← PostgREST (Supabase) via fetch + buildStocks() (porta do app.py)
     _lib/quotes.js            ← preços (brapi list) + histórico (Yahoo chart), com cache de edge
+    _lib/macro.js             ← Selic + IPCA-12m do Banco Central (SGS), cache de edge 12h
     api/stocks.js             ← GET screener / POST add
+    api/macro.js              ← GET Selic/IPCA-12m (BCB)
     api/stocks/[ticker].js    ← PATCH editar / DELETE remover
     api/history/[ticker].js   ← GET série do gráfico
     api/config.js             ← GET/POST padrões globais
@@ -123,6 +125,20 @@ segue lendo só `globalCfg.ke`** — o modo apenas registra como o número foi o
 expostas por `api/config.js` (`ke_mode` vai como string `"nom"`/`"real"` na API). Motivo de usar o
 nominal: LPA e dividendos projetados nos modelos são nominais.
 
+**Referência de mercado do BCB (set/2026) — no modo IPCA + NTN-B.** Uma Function `/api/macro`
+(`_lib/macro.js`) busca no **Banco Central (API do SGS, `api.bcb.gov.br`, grátis, sem token)** a
+**Selic meta** (série 432) e o **IPCA acumulado 12 meses** (série 13522), as duas em paralelo,
+tolerando uma falhar, com **cache de 12h no edge**. Devolve `{selic, ipca12m, selic_data, ipca_data,
+fonte:"BCB"}` (valores em % — ex.: `selic:14`, `ipca12m:4.22`). Degrada gracioso: BCB fora ⇒ nulos.
+No front (`index.html`): `loadMacro()` cacheia 1 dia no **localStorage** (chave `divyval.macro.v1`,
+por `macroDay()` UTC; offline cai no último conhecido) e o bloco `#cfgKeReal` ganhou a **strip
+"Referência de mercado · BCB"** (`#mktRef`: Selic + IPCA-12m + mês de ref.) e um **toggle auto ⇄
+manual no campo IPCA** (`#ipcaAuto`, `ipcaAutoOn()`/`applyIpcaAuto()`; flag em `divyval.ipcaAuto.v1`,
+**default auto**). Em *auto* o IPCA acompanha o BCB (preenche `#cfgIpca` e salva se mudou — o
+set é programático, **não** dispara `input`); **digitar** no campo vira manual sozinho; clicar
+"auto" religa e repõe o BCB. Nada de schema novo — o valor continua indo pra `ipca_global`; a
+Selic é só **referência** (não entra em cálculo). A UI só aparece no modo IPCA + NTN-B.
+
 **Upside × Margem de segurança (jul/2026) — duas colunas, duas bases.** A distância preço↔justo
 aparece nas duas leituras, com nomes agora distintos:
 - **`Upside`** (coluna `margin`, `marginOf`) = `(justo − preço)/preço` — "quanto pode subir".
@@ -216,7 +232,8 @@ Pesos e concentração vêm do **valor de mercado** (`qtd × preço ao vivo`). C
 - `/api/stocks` (screener), `/api/history/{ticker}?range=5y` (fechamento diário p/ o gráfico),
   `/api/config`, `/api/premissas/{ticker}`, `/api/watchlist[/{ticker}]`, `/api/carteira[/{ticker}]`
   (GET lista; POST upsert `{quantidade, preco_medio}`; DELETE), `/api/stocks/{ticker}`
-  (PATCH/DELETE). Cache no edge (preços 15 min, histórico 30 min).
+  (PATCH/DELETE), `/api/macro` (Selic + IPCA-12m do BCB). Cache no edge (preços 15 min,
+  histórico 30 min, macro 12h).
 - O gráfico de preços tem **seleção por clique-e-arrasto** (mostra a variação % entre dois pontos).
 - O frontend cai nos dados de exemplo embutidos se as Functions estiverem fora. O `bootstrap`
   faz só um retry curto (não há mais cold start pra cobrir).
