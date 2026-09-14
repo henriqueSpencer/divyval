@@ -104,8 +104,8 @@ Agora (`_lib/session.js` + `_middleware.js`):
 - **Renovação deslizante:** o middleware reemite o cookie em qualquer request quando faltam menos
   de 90 dias — quem usa o app nunca cai. Comparações são em tempo constante (`safeEqual`).
 - **Sem credencial:** `/api/*` → **401 JSON sem `WWW-Authenticate`** (o browser não abre o diálogo
-  nativo); páginas → **303 p/ `/login.html`**; `/login.html` já logado → 303 p/ `/`.
-  Rotas públicas: `/login.html`, `/api/login`, favicons.
+  nativo); páginas → **303 p/ `/login`**; `/login` já logado → 303 p/ `/`. Rotas públicas: `/login` **e**
+  `/login.html` (o Pages faz 308 de `.html` → clean URL em prod; sem as duas dava loop), `/api/login`, favicons.
 - **`Authorization: Basic`** segue aceito (curl/scripts). `APP_PASSWORD` vazio = app aberto (dev).
 - No front (`index.html`), um wrapper de `window.fetch` manda pro login se qualquer `/api/*` devolver
   401 (sessão limpa/expirada); `POST /api/logout` limpa o cookie (botão "Sair" no card **Sessão** da

@@ -4,10 +4,11 @@
 //      emitido por /api/login a partir de /login.html. É o caminho normal do navegador.
 //   2. `Authorization: Basic` (compatibilidade com scripts/curl).
 // Sem credencial: /api/* recebe 401 JSON (sem WWW-Authenticate, p/ o browser NÃO abrir o
-// diálogo nativo — era isso que parecia "pedir para relogar"); páginas vão p/ /login.html.
+// diálogo nativo — era isso que parecia "pedir para relogar"); páginas vão p/ /login.
 import { COOKIE, readCookie, verifyToken, needsRenew, issueToken, cookieHeader, safeEqual } from "./_lib/session.js";
 
-const PUBLIC = new Set(["/login.html", "/api/login", "/favicon.svg", "/favicon-32.png", "/apple-touch-icon.png"]);
+// O Pages faz 308 de /login.html → /login (clean URLs): as duas grafias precisam ser públicas.
+const PUBLIC = new Set(["/login", "/login.html", "/api/login", "/favicon.svg", "/favicon-32.png", "/apple-touch-icon.png"]);
 
 function basicOk(request, pw) {
   const hdr = request.headers.get("authorization") || "";
@@ -27,7 +28,8 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   let renewCookie = null;
 
-  if (pw && url.pathname === "/login.html" && await verifyToken(pw, readCookie(request, COOKIE))) {
+  const isLogin = url.pathname === "/login" || url.pathname === "/login.html";
+  if (pw && isLogin && await verifyToken(pw, readCookie(request, COOKIE))) {
     return Response.redirect(`${url.origin}/`, 303); // já logado: pula o login
   }
   if (pw && !PUBLIC.has(url.pathname)) {
@@ -40,7 +42,7 @@ export async function onRequest(context) {
           status: 401, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
         });
       }
-      return Response.redirect(`${url.origin}/login.html`, 303);
+      return Response.redirect(`${url.origin}/login`, 303);
     }
   }
 

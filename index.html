@@ -1216,9 +1216,9 @@ button{font-family:inherit;}
    voltar 401 (sessão expirada/limpa), manda pro login em vez de quebrar silenciosamente. */
 (()=>{const _f=window.fetch.bind(window);
 window.fetch=async(url,opt)=>{const r=await _f(url,opt);
-  if(r.status===401&&String(typeof url==="string"?url:url.url).startsWith("/api/")&&!location.pathname.startsWith("/login")){location.replace("/login.html");}
+  if(r.status===401&&String(typeof url==="string"?url:url.url).startsWith("/api/")&&!location.pathname.startsWith("/login")){location.replace("/login");}
   return r;};})();
-async function logout(){try{await fetch("/api/logout",{method:"POST"});}catch(e){}location.replace("/login.html");}
+async function logout(){try{await fetch("/api/logout",{method:"POST"});}catch(e){}location.replace("/login");}
 
 /* ===== formatação ===== */
 const brl=n=>(n==null||!isFinite(n))?"—":"R$ "+n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
