@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DIVYVAL · Entrar</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{--bg:#f1f0ec;--surface:#fbfbf9;--surface-2:#f4f3ef;--border:#e4e2db;--text:#1b1d1a;--text-soft:#5a5c54;--text-mute:#93948a;--accent:#2c3e6e;--accent-2:#3853a8;--bad:#a8432f;--shadow:0 1px 2px rgba(30,28,20,.04),0 8px 24px rgba(30,28,20,.06);}
+[data-theme="dark"]{--bg:#131311;--surface:#1b1a17;--surface-2:#201f1b;--border:#2d2b26;--text:#eae7de;--text-soft:#a8a498;--text-mute:#726e63;--accent:#8ea3e0;--accent-2:#a4b6ec;--bad:#e0765c;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.35);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg);color:var(--text);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+.card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:28px 26px 24px;}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.brand svg{display:block;width:36px;height:36px;flex:none;}
+.brand b{font-family:'Space Grotesk','Inter',sans-serif;font-size:17px;font-weight:700;letter-spacing:.02em;display:block;line-height:1.2;}
+.brand span{font-size:12.5px;color:var(--text-soft);}
+label{display:block;font-family:'Space Grotesk','Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text-soft);margin-bottom:6px;letter-spacing:.02em;}
+input{width:100%;font:inherit;font-size:15px;color:var(--text);background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
+input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);}
+.btn{display:flex;width:100%;justify-content:center;margin-top:14px;cursor:pointer;font:inherit;font-family:'Space Grotesk','Inter',sans-serif;font-size:14px;font-weight:600;
+  border-radius:10px;padding:11px 15px;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:all .15s;}
+.btn:hover{background:var(--accent-2);border-color:var(--accent-2);}
+.btn[disabled]{opacity:.6;cursor:default;}
+.err{min-height:20px;margin-top:10px;font-size:13px;color:var(--bad);}
+.hint{margin-top:14px;font-size:12px;color:var(--text-mute);}
+</style>
+</head>
+<body>
+<form class="card" id="f" autocomplete="on">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#2c3e6e"/><rect x="6" y="14.4" width="20" height="3.4" rx="1.7" fill="#55649a"/><rect x="6" y="14.4" width="10.2" height="3.4" rx="1.7" fill="#35b184"/><rect x="15.1" y="10.3" width="1.8" height="11.6" rx=".9" fill="#cba85a"/></svg>
+    <div><b>DIVYVAL</b><span>Mesa de análise · valuation B3</span></div>
+  </div>
+  <label for="pw">Senha</label>
+  <input id="pw" name="password" type="password" autocomplete="current-password" autofocus required>
+  <button class="btn" id="go" type="submit">Entrar</button>
+  <div class="err" id="err" role="alert"></div>
+  <div class="hint">A sessão fica salva neste navegador por 180 dias e se renova sozinha com o uso.</div>
+</form>
+<script>
+try{const t=localStorage.getItem("ddm-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}
+const f=document.getElementById("f"),pw=document.getElementById("pw"),err=document.getElementById("err"),go=document.getElementById("go");
+f.addEventListener("submit",async ev=>{
+  ev.preventDefault();err.textContent="";go.disabled=true;
+  try{
+    const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:pw.value})});
+    const j=await r.json().catch(()=>({}));
+    if(r.ok&&j.ok){location.replace("/");return;}
+    err.textContent=j.error||"Senha incorreta";pw.select();
+  }catch(e){err.textContent="Sem conexão com o servidor. Tente de novo.";}
+  go.disabled=false;
+});
+</script>
+</body>
+</html>

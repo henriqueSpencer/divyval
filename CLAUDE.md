@@ -15,10 +15,13 @@ Classificação curada em `backend/stocks_meta.json`.
 ```
 ./                            ← raiz do repo = Pages "root directory"
   index.html, ddm.html        ← estáticos (servidos grátis, ilimitado)
+  login.html                  ← tela de senha (única rota pública além de /api/login e ícones)
   wrangler.toml               ← config do Pages (buildless)
   functions/                  ← rotas /api/* (edge)
-    _middleware.js            ← Basic Auth (APP_PASSWORD) + Cache-Control no-cache no HTML
+    _middleware.js            ← auth (cookie de sessão assinado; Basic como fallback) + no-cache no HTML
     _lib/http.js              ← helper de resposta JSON
+    _lib/session.js           ← token HMAC do cookie `dv_session` (emitir/verificar/renovar)
+    api/login.js, api/logout.js ← POST: cria / apaga o cookie de sessão (login.html é a tela)
     _lib/db.js                ← PostgREST (Supabase) via fetch + buildStocks() (porta do app.py)
     _lib/quotes.js            ← preços (brapi list) + histórico (Yahoo chart), com cache de edge
     _lib/macro.js             ← Selic + IPCA-12m do Banco Central (SGS), cache de edge 12h
@@ -86,8 +89,29 @@ npx wrangler pages deploy . --project-name=divyval --branch=main --commit-dirty=
 > propagar já serviu dado errado). Secrets: `wrangler pages secret put NOME --project-name=divyval`.
 
 Secrets do projeto: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (**service key `sb_secret_…`**),
-`APP_PASSWORD` (Basic Auth — só a senha é validada, o usuário é ignorado). `_middleware.js` protege
-tudo (inclusive o HTML) e mantém `Cache-Control: no-cache` no HTML.
+`APP_PASSWORD` (senha única do app). `_middleware.js` protege tudo (inclusive o HTML) e mantém
+`Cache-Control: no-cache` no HTML.
+
+## Autenticação (sessão em cookie, set/2026)
+Antes era **HTTP Basic Auth** puro: o browser guardava a senha só na memória da aba e descartava
+quando queria (fechar o app no celular, reiniciar o Safari, PWA na tela inicial) → 401 +
+`WWW-Authenticate` → diálogo nativo de novo. Era isso que parecia "ficar pedindo para relogar".
+Agora (`_lib/session.js` + `_middleware.js`):
+- **`/login.html`** (senha) → `POST /api/login` → cookie **`dv_session`** = `v1.<exp_ms>.<HMAC>`,
+  **HttpOnly, SameSite=Lax, Secure (só em https), Max-Age 180 dias**. A chave HMAC deriva de
+  `APP_PASSWORD` (SHA-256) — **trocar a senha invalida todas as sessões** (é a forma de "deslogar
+  todo mundo"). Nenhum secret novo.
+- **Renovação deslizante:** o middleware reemite o cookie em qualquer request quando faltam menos
+  de 90 dias — quem usa o app nunca cai. Comparações são em tempo constante (`safeEqual`).
+- **Sem credencial:** `/api/*` → **401 JSON sem `WWW-Authenticate`** (o browser não abre o diálogo
+  nativo); páginas → **303 p/ `/login.html`**; `/login.html` já logado → 303 p/ `/`.
+  Rotas públicas: `/login.html`, `/api/login`, favicons.
+- **`Authorization: Basic`** segue aceito (curl/scripts). `APP_PASSWORD` vazio = app aberto (dev).
+- No front (`index.html`), um wrapper de `window.fetch` manda pro login se qualquer `/api/*` devolver
+  401 (sessão limpa/expirada); `POST /api/logout` limpa o cookie (botão "Sair" no card **Sessão** da
+  aba Config). Não há Supabase Auth nem token em localStorage: é uso pessoal com senha única, e o
+  cookie HttpOnly no servidor (Pages Function) é mais simples e mais seguro que token no client.
+- Testar local com senha: `npx wrangler pages dev . --binding APP_PASSWORD=teste`.
 > Migrado do **Render** (que dormia → cold start) em jul/2026; o Render segue dormindo (inofensivo,
 > desligar exige painel/API do Render). `render.yaml` e `backend/` ficam no repo como legado.
 
