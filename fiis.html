@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DIVYVAL · FIIs (preview)</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{
+  --bg:#f1f0ec;--surface:#fbfbf9;--surface-2:#f4f3ef;--border:#e4e2db;--border-2:#eceae4;
+  --text:#1b1d1a;--text-soft:#5a5c54;--text-mute:#93948a;
+  --accent:#2c3e6e;--accent-2:#3853a8;--accent-soft:#eaecf4;
+  --good:#1b6b4c;--bad:#a8432f;--worth:#9a7b34;--worth-soft:rgba(154,123,52,.14);
+  --shadow:0 1px 2px rgba(20,20,15,.04);
+}
+[data-theme="dark"]{
+  --bg:#131311;--surface:#1b1a17;--surface-2:#201f1b;--border:#2d2b26;--border-2:#232219;
+  --text:#eae7de;--text-soft:#a8a498;--text-mute:#726e63;
+  --accent:#8ea3e0;--accent-2:#a4b6ec;--accent-soft:#20222b;
+  --good:#4bbf8a;--bad:#e0765c;--worth:#cba85a;--worth-soft:rgba(203,168,90,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.2);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;-webkit-font-smoothing:antialiased;}
+.num,.mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+.disp{font-family:'Space Grotesk',sans-serif;}
+a{color:inherit;}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 80px;}
+/* header */
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+.brand{display:flex;align-items:center;gap:11px;}
+.brand svg{display:block;width:38px;height:38px;}
+.brand h1{font-family:'Space Grotesk';font-size:20px;margin:0;letter-spacing:-.01em;}
+.brand .sub{font-size:11.5px;color:var(--text-mute);}
+.badge-prev{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--worth);background:var(--worth-soft);border:1px solid transparent;padding:4px 9px;border-radius:7px;}
+.spacer{flex:1;}
+.icobtn{cursor:pointer;background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font:inherit;font-size:13px;transition:all .15s;}
+.icobtn:hover{color:var(--text);border-color:var(--accent);}
+.datanote{font-size:12px;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;margin:10px 0 16px;line-height:1.5;}
+.datanote b{color:var(--text);}
+/* tabs */
+.tabs{display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--border);}
+.tab{font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;padding:9px 14px;border:none;background:none;color:var(--text-mute);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;margin-bottom:16px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 16px;box-shadow:var(--shadow);}
+.stat .k{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--text-mute);}
+.stat .v{font-family:'IBM Plex Mono';font-size:21px;font-weight:600;margin-top:4px;}
+.stat .v small{font-size:12px;color:var(--text-mute);font-weight:400;}
+/* controls */
+.ctrls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+.inp{font:inherit;font-size:13.5px;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);}
+.inp:focus{outline:2px solid var(--accent);border-color:var(--accent);}
+select.inp{cursor:pointer;}
+/* table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:13px;background:var(--surface);box-shadow:var(--shadow);}
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th,td{padding:10px 12px;text-align:right;white-space:nowrap;}
+th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mute);font-weight:600;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;position:sticky;top:0;background:var(--surface);}
+th:first-child,td:first-child{text-align:left;}
+th.arrow::after{content:" ▾";color:var(--accent);}
+th.arrow.asc::after{content:" ▴";}
+tbody tr{border-bottom:1px solid var(--border-2);cursor:pointer;transition:background .12s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface-2);}
+.tk{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
+.nm{font-size:11.5px;color:var(--text-mute);margin-top:1px;max-width:210px;overflow:hidden;text-overflow:ellipsis;}
+.seg{font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border);}
+.pos{color:var(--good);} .neg{color:var(--bad);}
+.est{color:var(--text-mute);border-bottom:1px dashed var(--text-mute);cursor:help;}
+.star{cursor:pointer;font-size:16px;color:var(--text-mute);background:none;border:none;padding:2px 4px;}
+.star.on{color:var(--worth);}
+.mos-bar{position:relative;width:74px;height:7px;border-radius:4px;background:var(--surface-2);border:1px solid var(--border);display:inline-block;vertical-align:middle;overflow:hidden;}
+.mos-bar i{position:absolute;top:0;bottom:0;display:block;}
+.mos-bar .tick{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--worth);}
+/* detail */
+.back{cursor:pointer;background:none;border:none;color:var(--accent);font:inherit;font-size:13.5px;font-weight:600;padding:6px 0;margin-bottom:6px;}
+.det-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px;}
+.det-head .tk{font-size:26px;}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 18px;}
+.hcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);}
+.hcard .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);}
+.hcard .big{font-family:'IBM Plex Mono';font-size:30px;font-weight:600;margin-top:4px;}
+.hcard.just .big{color:var(--worth);}
+.hcard .sm{font-size:12px;color:var(--text-soft);margin-top:5px;}
+.gauge{height:9px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);position:relative;margin:12px 0 4px;overflow:hidden;}
+.gauge i{position:absolute;top:0;bottom:0;}
+.gauge .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--worth);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:820px){.hero,.grid2{grid-template-columns:1fr;}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:14px;}
+.card h3{font-family:'Space Grotesk';font-size:14px;margin:0 0 12px;}
+.prem{display:flex;flex-direction:column;gap:13px;}
+.prow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;}
+.prow label{font-size:13px;font-weight:500;color:var(--text-soft);}
+.prow label small{display:block;font-size:11px;color:var(--text-mute);font-weight:400;margin-top:1px;}
+.prow .rng{display:flex;align-items:center;gap:9px;}
+input[type=range]{width:150px;accent-color:var(--accent);}
+.pval{font-family:'IBM Plex Mono';font-size:13.5px;font-weight:600;min-width:58px;text-align:right;}
+.pin{width:82px;font:inherit;font-family:'IBM Plex Mono';font-size:13px;font-weight:600;text-align:right;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text);}
+.impl{font-size:13px;}
+.impl div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border);}
+.impl div:last-child{border-bottom:none;}
+.impl b{font-family:'IBM Plex Mono';}
+.steps{font-size:12.5px;color:var(--text-soft);line-height:1.7;background:var(--surface-2);border-radius:10px;padding:12px 14px;}
+.steps .mono{color:var(--text);}
+.act{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px;}
+.btn{font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;border-radius:10px;padding:10px 16px;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;}
+.btn:hover{border-color:var(--accent);}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn.on{color:var(--worth);border-color:var(--worth);background:var(--worth-soft);}
+/* dividend chart */
+.dvchart{display:flex;align-items:flex-end;gap:3px;height:90px;padding-top:8px;}
+.dvbar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;opacity:.85;}
+.dvlabels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-mute);margin-top:5px;}
+.empty{padding:40px 20px;text-align:center;color:var(--text-mute);font-size:14px;}
+.hint{font-size:11px;color:var(--text-mute);cursor:help;border-bottom:1px dotted var(--text-mute);}
+.srcpill{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.04em;}
+.srcpill.yahoo{color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent);}
+.srcpill.estimado{color:var(--worth);background:var(--worth-soft);}
+.srcpill.manual{color:var(--accent);background:var(--accent-soft);}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:13px;font-weight:600;padding:11px 18px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;}
+.toast.show{opacity:.96;}
+.segbars{display:flex;flex-direction:column;gap:8px;}
+.segbar{display:grid;grid-template-columns:130px 1fr auto;align-items:center;gap:10px;font-size:12.5px;}
+.segbar .track{height:9px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;overflow:hidden;}
+.segbar .fill{display:block;height:100%;background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-label="DIVYVAL"><rect width="32" height="32" rx="7" fill="#2c3e6e"/><rect x="6" y="14.4" width="20" height="3.4" rx="1.7" fill="#55649a"/><rect x="6" y="14.4" width="10.2" height="3.4" rx="1.7" fill="#35b184"/><rect x="15.1" y="10.3" width="1.8" height="11.6" rx=".9" fill="#cba85a"/></svg>
+      <div><h1>DIVYVAL · FIIs</h1><div class="sub">valuation de fundos imobiliários</div></div>
+    </div>
+    <span class="badge-prev">preview</span>
+    <div class="spacer"></div>
+    <a class="icobtn" href="/">← Ações</a>
+    <button class="icobtn" id="themeBtn" title="tema">◐</button>
+  </div>
+
+  <div class="datanote" id="dataNote">
+    <b>Preview local.</b> Preço ao vivo (brapi). <b>DY/DPU</b> real vem do Yahoo por fundo (abrir o
+    detalhe carrega o valor real; onde o Yahoo não responder, uso uma <b>estimativa por DY típico do
+    segmento</b>, marcada <span class="srcpill estimado">estimado</span>). <b>VP/cota</b> é premissa
+    sua (não há fonte grátis) — necessária pra P/VP. Suas premissas, monitoradas e carteira ficam
+    só no <b>seu navegador</b> (localStorage); nada é gravado no servidor.
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="screener">Screener</button>
+    <button class="tab" data-tab="watch">Monitoradas</button>
+    <button class="tab" data-tab="cart">Carteira</button>
+  </div>
+
+  <div id="viewScreener"></div>
+  <div id="viewWatch" hidden></div>
+  <div id="viewCart" hidden></div>
+  <div id="viewDetail" hidden></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ helpers ============ */
+const $=id=>document.getElementById(id);
+const dec=(n,d=2)=>(n==null||!isFinite(n))?"—":n.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const brl=(n,d=2)=>(n==null||!isFinite(n))?"—":"R$ "+dec(n,d);
+const pct=(n,d=1)=>(n==null||!isFinite(n))?"—":dec(n*100,d)+"%";
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800);}
+/* tema */
+(function(){try{const s=localStorage.getItem("fii.theme");if(s)document.documentElement.dataset.theme=s;}catch(e){}})();
+$("themeBtn").onclick=()=>{const d=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=d;try{localStorage.setItem("fii.theme",d);}catch(e){}};
+
+/* ============ estado ============ */
+let FIIS=[];                 // [{ticker,name,segment,price,dpu_est,seg_dy}]
+const FDIV={};               // cache detalhe por ticker: {price,dpu12m,source,divs,n12}
+let G={ke:0.11,g:0.04,N:10,gvp:0.04,pvp:1.0,mos:0.15}; // padrões globais (ke vem do /api/config)
+const LS={prem:"fii.prem.v1",watch:"fii.watch.v1",cart:"fii.cart.v1"};
+let PREM=load(LS.prem,{});   // {ticker:{dpu,g,N,ke,vp,gvp,pvp,mos}}
+let WATCH=new Set(load(LS.watch,[]));
+let CART=load(LS.cart,{});   // {ticker:{qtd,pm}}
+function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d;}catch(e){return d;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+/* ============ modelo: Regra nº1 — FII (proventos + saída por P/VP) ============ */
+let DRAFT={}; // rascunho ao vivo do detalhe (sobrepõe o salvo até "Salvar"); descartado ao sair
+// Premissa efetiva: rascunho (só do ticker aberto) → override salvo → padrão global.
+function prem(f){
+  const base=PREM[f.ticker]||{};
+  const p=(curTk===f.ticker)?{...base,...DRAFT}:base;
+  const dpuBase=(FDIV[f.ticker]&&FDIV[f.ticker].dpu12m)||f.dpu_est||0;
+  return {
+    dpu: p.dpu!=null?+p.dpu:dpuBase,           // R$/ano (~12m)
+    dpuSource: p.dpu!=null?"manual":(FDIV[f.ticker]?FDIV[f.ticker].source:"estimado"),
+    g:  p.g!=null?+p.g:G.g,
+    N:  p.N!=null?+p.N:G.N,
+    ke: p.ke!=null?+p.ke:G.ke,
+    vp: p.vp!=null?+p.vp:null,
+    gvp:p.gvp!=null?+p.gvp:G.gvp,
+    pvp:p.pvp!=null?+p.pvp:G.pvp,
+    mos:p.mos!=null?+p.mos:G.mos,
+  };
+}
+// valor presente do fluxo (proventos N anos + saída), a uma taxa de desconto r
+function fiiValueAt(pr,r){
+  let div=0;
+  for(let t=1;t<=pr.N;t++) div+=pr.dpu*Math.pow(1+pr.g,t)/Math.pow(1+r,t);
+  const exit=exitValue(pr);
+  return div+exit/Math.pow(1+r,pr.N);
+}
+// valor de saída no ano N: por P/VP se houver VP/cota; senão por DY de saída (=ke)
+function exitValue(pr){
+  if(pr.vp>0) return pr.vp*Math.pow(1+pr.gvp,pr.N)*pr.pvp;
+  const dySaida=pr.ke; // sem VP/cota, sai pelo DY exigido
+  return pr.dpu*Math.pow(1+pr.g,pr.N)/dySaida;
+}
+function fiiResult(f){
+  const pr=prem(f), price=f.price;
+  const fair=fiiValueAt(pr,pr.ke);
+  const teto=fair*(1-pr.mos);
+  const dy=price>0?pr.dpu/price:null;
+  const pvp=(pr.vp>0&&price>0)?price/pr.vp:null;
+  const upside=(price>0&&fair>0)?(fair-price)/price:null;
+  const msafe=(fair>0)?(fair-price)/fair:null;
+  return {pr,price,fair,teto,dy,pvp,upside,msafe,exitMode:pr.vp>0?"pvp":"dy",
+          divPV:(function(){let d=0;for(let t=1;t<=pr.N;t++)d+=pr.dpu*Math.pow(1+pr.g,t)/Math.pow(1+pr.ke,t);return d;})(),
+          exitN:exitValue(pr)};
+}
+// TIR implícita: taxa r que iguala VP(proventos+saída fixa) ao preço. Saída fixa (não varia com r).
+function fiiIRR(f){
+  const pr=prem(f), price=f.price;
+  if(!(price>0)||!(pr.dpu>0)) return null;
+  const exitFixed=exitValue(pr);
+  const val=r=>{let d=0;for(let t=1;t<=pr.N;t++)d+=pr.dpu*Math.pow(1+pr.g,t)/Math.pow(1+r,t);return d+exitFixed/Math.pow(1+r,pr.N);};
+  let lo=-0.5, hi=1.5;
+  if(val(lo)<price) return null;         // nem a -50% alcança o preço
+  if(val(hi)>price) return hi;           // satura (>150%)
+  for(let i=0;i<64;i++){const mid=(lo+hi)/2; if(val(mid)>price) lo=mid; else hi=mid;}
+  return (lo+hi)/2;
+}
+
+/* ============ screener ============ */
+let sortKey="upside", sortAsc=false, query="";
+const COLS=[
+  ["ticker","Fundo",f=>f.ticker],
+  ["segment","Segmento",f=>f.segment],
+  ["price","Preço",f=>f.price],
+  ["dy","DY",f=>fiiResult(f).dy],
+  ["pvp","P/VP",f=>fiiResult(f).pvp],
+  ["fair","Justo",f=>fiiResult(f).fair],
+  ["upside","Upside",f=>fiiResult(f).upside],
+  ["msafe","Margem",f=>fiiResult(f).msafe],
+  ["tir","TIR",f=>fiiIRR(f)],
+];
+function renderScreener(host,list){
+  const maxAbs=Math.max(0.01,...list.map(f=>{const u=fiiResult(f).upside;return u!=null&&isFinite(u)?Math.abs(u):0;}));
+  const rows=list.map(f=>{
+    const r=fiiResult(f), tir=fiiIRR(f), ke=r.pr.ke;
+    const on=WATCH.has(f.ticker)?"on":"";
+    const upC=r.upside>=0?"pos":"neg";
+    const w=r.upside!=null&&isFinite(r.upside)?clamp(Math.abs(r.upside)/maxAbs*50,0,50):0;
+    const fill=r.upside!=null?(r.upside>=0?`right:50%;width:${w}%;background:var(--good)`:`left:50%;width:${w}%;background:var(--bad)`):"";
+    const dyEst=r.pr.dpuSource!=="yahoo";
+    const tirC=tir!=null?(tir>=ke?"pos":"neg"):"";
+    return `<tr data-tk="${f.ticker}">
+      <td><div class="tk">${f.ticker}</div><div class="nm">${f.name}</div></td>
+      <td style="text-align:left"><span class="seg">${f.segment}</span></td>
+      <td class="num">${brl(f.price)}</td>
+      <td class="num ${dyEst?'est':''}" ${dyEst?'title="DY estimado (abra o detalhe p/ o valor real do Yahoo)"':''}>${pct(r.dy)}</td>
+      <td class="num">${r.pvp!=null?dec(r.pvp,2):'<span class="hint" title="informe o VP/cota no detalhe">—</span>'}</td>
+      <td class="num" style="color:var(--worth)">${brl(r.fair)}</td>
+      <td class="num ${upC}">${r.upside!=null?(r.upside>=0?'+':'')+pct(r.upside):'—'} <span class="mos-bar"><span class="tick"></span><i style="${fill}"></i></span></td>
+      <td class="num">${r.msafe!=null?pct(r.msafe):'—'}</td>
+      <td class="num ${tirC}">${tir!=null?pct(tir):'—'}</td>
+      <td><button class="star ${on}" data-star="${f.ticker}" title="monitorar">${on?'★':'☆'}</button></td>
+    </tr>`;
+  }).join("");
+  const head=COLS.map(c=>`<th data-k="${c[0]}" class="${sortKey===c[0]?'arrow '+(sortAsc?'asc':''):''}">${c[1]}</th>`).join("")+"<th></th>";
+  host.innerHTML=`<div class="tbl-wrap"><table><thead><tr>${head}</tr></thead><tbody>${rows||`<tr><td colspan="10" class="empty">nenhum fundo</td></tr>`}</tbody></table></div>`;
+  host.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortKey===k)sortAsc=!sortAsc;else{sortKey=k;sortAsc=false;}renderCurrent();});
+  host.querySelectorAll("[data-star]").forEach(b=>b.onclick=e=>{e.stopPropagation();toggleWatch(b.dataset.star);});
+  host.querySelectorAll("tr[data-tk]").forEach(tr=>tr.onclick=()=>openDetail(tr.dataset.tk));
+}
+function sortList(list){
+  const col=COLS.find(c=>c[0]===sortKey);const val=col?col[2]:(f=>f.ticker);
+  return list.slice().sort((a,a2)=>{
+    let x=val(a),y=val(a2);
+    if(typeof x==="string"){x=x||"";y=y||"";return sortAsc?x.localeCompare(y):y.localeCompare(x);}
+    x=(x==null||!isFinite(x))?-1e18:x; y=(y==null||!isFinite(y))?-1e18:y;
+    return sortAsc?x-y:y-x;
+  });
+}
+function filtered(){
+  const q=query.trim().toUpperCase();
+  return FIIS.filter(f=>!q||f.ticker.includes(q)||f.name.toUpperCase().includes(q)||f.segment.toUpperCase().includes(q));
+}
+
+/* ============ abas ============ */
+let TAB="screener";
+function renderCurrent(){
+  if(TAB==="screener")drawScreenerTab();
+  else if(TAB==="watch")drawWatchTab();
+  else if(TAB==="cart")drawCartTab();
+}
+function drawScreenerTab(){
+  const host=$("viewScreener");
+  const list=sortList(filtered());
+  const med=medianUpside(FIIS);
+  host.innerHTML=`
+    <div class="stats">
+      <div class="stat"><div class="k">Fundos</div><div class="v">${FIIS.length}</div></div>
+      <div class="stat"><div class="k">Upside mediano</div><div class="v ${med>=0?'pos':'neg'}">${med!=null?(med>=0?'+':'')+pct(med):'—'}</div></div>
+      <div class="stat"><div class="k">DY mediano</div><div class="v">${pct(medianDY(FIIS))}</div></div>
+      <div class="stat"><div class="k">Monitoradas</div><div class="v">${WATCH.size}</div></div>
+    </div>
+    <div class="ctrls">
+      <input class="inp" id="scrQ" placeholder="buscar ticker, nome ou segmento…" value="${query}" style="flex:1;min-width:200px">
+    </div>
+    <div id="scrTbl"></div>`;
+  renderScreener($("scrTbl"),list);
+  $("scrQ").oninput=e=>{query=e.target.value;const l=sortList(filtered());renderScreener($("scrTbl"),l);};
+}
+function drawWatchTab(){
+  const host=$("viewWatch");
+  const list=sortList(filtered().filter(f=>WATCH.has(f.ticker)));
+  if(!WATCH.size){host.innerHTML=`<div class="empty">Nenhum fundo monitorado ainda.<br>Toque na ★ no screener para monitorar.</div>`;return;}
+  host.innerHTML=`<div class="ctrls"><input class="inp" id="wQ" placeholder="buscar…" value="${query}" style="flex:1;min-width:200px"></div><div id="wTbl"></div>`;
+  renderScreener($("wTbl"),list);
+  $("wQ").oninput=e=>{query=e.target.value;renderScreener($("wTbl"),sortList(filtered().filter(f=>WATCH.has(f.ticker))));};
+}
+function medianUpside(list){const xs=list.map(f=>fiiResult(f).upside).filter(x=>x!=null&&isFinite(x)).sort((a,b)=>a-b);return xs.length?xs[Math.floor(xs.length/2)]:null;}
+function medianDY(list){const xs=list.map(f=>fiiResult(f).dy).filter(x=>x!=null&&isFinite(x)).sort((a,b)=>a-b);return xs.length?xs[Math.floor(xs.length/2)]:null;}
+
+function toggleWatch(tk){if(WATCH.has(tk))WATCH.delete(tk);else WATCH.add(tk);save(LS.watch,[...WATCH]);renderCurrent();}
+
+/* ============ detalhe ============ */
+let curTk=null;
+async function openDetail(tk){
+  curTk=tk;switchView("detail");
+  const f=FIIS.find(x=>x.ticker===tk);
+  drawDetail(f,true);                       // render imediato (estimado)
+  if(!FDIV[tk]){                            // busca DPU real (Yahoo) + série
+    try{const r=await fetch("/api/fii/"+tk);if(r.ok){FDIV[tk]=await r.json();}}catch(e){}
+    if(curTk===tk)drawDetail(f,false);
+  }
+}
+function drawDetail(f,loading){
+  const r=fiiResult(f), pr=r.pr;
+  const gaugePos=(function(){ // posição do preço entre 0 e justo (tick no justo=100%)
+    if(!(r.fair>0))return 50;return clamp(f.price/r.fair*100,2,140);})();
+  const dd=FDIV[f.ticker];
+  const srcPill=`<span class="srcpill ${pr.dpuSource}">${pr.dpuSource}</span>`;
+  const host=$("viewDetail");
+  host.innerHTML=`
+    <button class="back" onclick="switchView('${TAB}')">← voltar</button>
+    <div class="det-head"><span class="tk">${f.ticker}</span><span class="seg">${f.segment}</span><span style="color:var(--text-soft)">${f.name}</span></div>
+    <div class="hero">
+      <div class="hcard">
+        <div class="k">Preço de mercado</div><div class="big num">${brl(f.price)}</div>
+        <div class="sm">DY ${pct(r.dy)} ${srcPill} · ${dd&&dd.n12?dd.n12+" pagamentos/12m":"—"}${r.pvp!=null?" · P/VP "+dec(r.pvp,2):""}</div>
+        <div class="gauge"><div class="tick" style="left:calc(100% - 1px)"></div><i style="left:0;width:${gaugePos>100?100:gaugePos}%;background:${f.price<=r.fair?'var(--good)':'var(--bad)'}"></i></div>
+        <div class="sm">tick = preço justo (${brl(r.fair)})</div>
+      </div>
+      <div class="hcard just">
+        <div class="k">Preço justo · Regra nº1 FII</div><div class="big num">${brl(r.fair)}</div>
+        <div class="sm">${r.upside!=null?`<b class="${r.upside>=0?'pos':'neg'}">${r.upside>=0?'+':''}${pct(r.upside)}</b> de upside`:'—'} · teto de compra ${brl(r.teto)} <span class="hint" title="justo × (1 − margem de segurança)">ⓘ</span></div>
+        <div class="sm">TIR implícita <b class="num">${(function(){const t=fiiIRR(f);return t!=null?pct(t):'—';})()}</b> a.a. ${loading?'<span style="color:var(--text-mute)">· carregando DPU real…</span>':''}</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Premissas</h3>
+        <div class="prem" id="premBox"></div>
+        <div class="act" style="margin-top:14px">
+          <button class="btn primary" id="saveBtn">Salvar premissas</button>
+          <button class="btn ${WATCH.has(f.ticker)?'on':''}" id="wBtn">${WATCH.has(f.ticker)?'★ Monitorando':'☆ Monitorar'}</button>
+          <button class="btn" id="cartBtn">Adicionar à carteira</button>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3>Implicações</h3>
+          <div class="impl">
+            <div><span>DY corrente (DPU ÷ preço)</span><b>${pct(r.dy)}</b></div>
+            <div><span>P/VP ${pr.vp>0?'(preço ÷ VP)':'(informe VP/cota)'}</span><b>${r.pvp!=null?dec(r.pvp,2):'—'}</b></div>
+            <div><span>Upside (justo ÷ preço − 1)</span><b class="${r.upside>=0?'pos':'neg'}">${r.upside!=null?(r.upside>=0?'+':'')+pct(r.upside):'—'}</b></div>
+            <div><span>Margem de segurança (1 − preço÷justo)</span><b>${pct(r.msafe)}</b></div>
+            <div><span>VP dos proventos (${pr.N} anos)</span><b>${brl(r.divPV)}</b></div>
+            <div><span>Valor de saída no ano ${pr.N} (${r.exitMode==='pvp'?'P/VP':'DY'})</span><b>${brl(r.exitN)}</b></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Como o justo é formado</h3>
+          <div class="steps" id="stepBox"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Proventos ${dd&&dd.divs&&dd.divs.length?`<span style="font-weight:400;color:var(--text-mute);font-size:12px">— últimos pagamentos (Yahoo)</span>`:''}</h3>
+      <div id="dvBox"></div>
+    </div>`;
+  buildPrem(f);
+  buildSteps(f);
+  buildDivChart(f);
+  $("saveBtn").onclick=()=>savePrem(f);
+  $("wBtn").onclick=()=>{toggleWatch(f.ticker);drawDetail(f,loading);};
+  $("cartBtn").onclick=()=>addCartPrompt(f);
+}
+// controles de premissa
+const PREM_CTRLS=[
+  ["dpu","DPU anual (~12m)","R$/cota ao ano","num",0,50,0.01],
+  ["g","Crescimento do DPU","a.a.","rng",-2,15,0.5,true],
+  ["N","Anos até a venda","horizonte","rng",1,30,1],
+  ["ke","Retorno exigido (Ke)","desconto a.a.","rng",4,20,0.25,true],
+  ["vp","VP/cota (patrimonial)","p/ P/VP — do relatório do fundo","num",0,10000,0.01],
+  ["gvp","Cresc. do VP/cota","a.a.","rng",-2,15,0.5,true],
+  ["pvp","P/VP de saída","múltiplo na venda","rng",0.4,2,0.05],
+  ["mos","Margem de segurança","desconto p/ o teto","rng",0,50,1,true],
+];
+function buildPrem(f){
+  const pr=prem(f);const box=$("premBox");
+  box.innerHTML=PREM_CTRLS.map(c=>{
+    const[key,lbl,sub,type,min,max,step,isPct]=c;
+    let v=pr[key];
+    const disp=v==null?"—":(isPct?dec(v*100,key==="mos"?0:1)+"%":(key==="pvp"?dec(v,2):(key==="N"?Math.round(v):dec(v,2))));
+    if(type==="rng"){
+      const rv=isPct?(v*100):v;
+      return `<div class="prow"><label>${lbl}<small>${sub}</small></label>
+        <div class="rng"><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step}" value="${rv}"><span class="pval" id="pv_${key}">${disp}</span></div></div>`;
+    }
+    return `<div class="prow"><label>${lbl}<small>${sub}</small></label>
+      <input class="pin" data-k="${key}" data-num="1" inputmode="decimal" value="${v!=null?dec(v,2):''}" placeholder="—"></div>`;
+  }).join("");
+  box.querySelectorAll("input[type=range]").forEach(inp=>inp.oninput=()=>{
+    const k=inp.dataset.k;const c=PREM_CTRLS.find(x=>x[0]===k);const isPct=c[7];
+    let val=+inp.value;if(isPct)val/=100;
+    setDraft(f,k,val);$("pv_"+k).textContent=isPct?dec(val*100,k==="mos"?0:1)+"%":(k==="pvp"?dec(val,2):(k==="N"?Math.round(val):dec(val,2)));
+  });
+  box.querySelectorAll("input[data-num]").forEach(inp=>inp.oninput=()=>{
+    const k=inp.dataset.k;const raw=inp.value.replace(",",".").trim();
+    setDraft(f,k,raw===""?null:+raw);
+  });
+}
+// rascunho ao vivo (não salva até "Salvar") — DRAFT é sobreposto em prem() para o ticker aberto
+function setDraft(f,k,v){DRAFT[k]=v;refreshDetailLive(f);}
+function refreshDetailLive(f){ // atualiza só os números derivados, sem re-render pesado
+  const r=fiiResult(f);
+  const upEl=document.querySelector(".hcard.just .sm b");if(upEl){upEl.className=r.upside>=0?"pos":"neg";upEl.textContent=(r.upside>=0?'+':'')+pct(r.upside);}
+  buildSteps(f);
+  // implicações
+  const box=document.querySelector(".impl");const b=box?box.querySelectorAll("b"):[];
+  if(b.length>=6){
+    b[0].textContent=pct(r.dy);b[1].textContent=r.pvp!=null?dec(r.pvp,2):'—';
+    b[2].textContent=r.upside!=null?(r.upside>=0?'+':'')+pct(r.upside):'—';b[2].className=r.upside>=0?'pos':'neg';
+    b[3].textContent=pct(r.msafe);b[4].textContent=brl(r.divPV);b[5].textContent=brl(r.exitN);}
+  // hero justo/teto/tir
+  const big=document.querySelector(".hcard.just .big");if(big)big.textContent=brl(r.fair);
+  const tirEl=document.querySelectorAll(".hcard.just .sm")[1];const tb=tirEl?tirEl.querySelector("b"):null;
+  if(tb){const t=fiiIRR(f);tb.textContent=t!=null?pct(t):'—';}
+}
+function savePrem(f){
+  const merged={...(PREM[f.ticker]||{}),...DRAFT};
+  // remove chaves nulas/vazias (voltam ao padrão global)
+  Object.keys(merged).forEach(k=>{if(merged[k]==null||merged[k]==="")delete merged[k];});
+  if(Object.keys(merged).length)PREM[f.ticker]=merged;else delete PREM[f.ticker];
+  save(LS.prem,PREM);DRAFT={};toast("Premissas salvas");drawDetail(f,false);
+}
+function buildSteps(f){
+  const r=fiiResult(f),pr=r.pr;const box=$("stepBox");if(!box)return;
+  const dpu1=pr.dpu*(1+pr.g);
+  box.innerHTML=`
+    1. Provento de partida (DPU anual): <span class="mono">${brl(pr.dpu)}</span> → DY <span class="mono">${pct(r.dy)}</span><br>
+    2. Projeta ${pr.N} anos crescendo <span class="mono">${pct(pr.g)}</span> a.a. e desconta ao Ke <span class="mono">${pct(pr.ke)}</span> →
+       VP dos proventos = <span class="mono">${brl(r.divPV)}</span><br>
+    3. Saída no ano ${pr.N}: ${r.exitMode==='pvp'
+        ? `VP/cota <span class="mono">${brl(pr.vp)}</span> cresce <span class="mono">${pct(pr.gvp)}</span>/ano e vende a <span class="mono">P/VP ${dec(pr.pvp,2)}</span>`
+        : `sem VP/cota, sai pelo DY exigido <span class="mono">${pct(pr.ke)}</span>`}
+       = <span class="mono">${brl(r.exitN)}</span> → a valor presente <span class="mono">${brl(r.exitN/Math.pow(1+pr.ke,pr.N))}</span><br>
+    4. <b>Justo = ${brl(r.divPV)} + ${brl(r.exitN/Math.pow(1+pr.ke,pr.N))} = <span style="color:var(--worth)">${brl(r.fair)}</span></b><br>
+    5. Teto de compra = justo × (1 − ${pct(pr.mos)}) = <span class="mono">${brl(r.teto)}</span>`;
+}
+function buildDivChart(f){
+  const box=$("dvBox");const dd=FDIV[f.ticker];
+  if(!dd||!dd.divs||!dd.divs.length){box.innerHTML=`<div class="empty" style="padding:22px">Sem série de proventos ${dd?'(Yahoo não retornou)':'(carregando…)'}.<br><span style="font-size:12px">O DY em uso está marcado como <b>${prem(f).dpuSource}</b>.</span></div>`;return;}
+  const last=dd.divs.slice(-18);const max=Math.max(...last.map(d=>d.amount));
+  const bars=last.map(d=>`<div class="dvbar" style="height:${clamp(d.amount/max*100,4,100)}%" title="${new Date(d.date).toLocaleDateString('pt-BR')}: ${brl(d.amount)}"></div>`).join("");
+  const f0=new Date(last[0].date),f1=new Date(last[last.length-1].date);
+  const mm=d=>d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
+  const soma12=dd.dpu12m;
+  box.innerHTML=`<div class="dvchart">${bars}</div><div class="dvlabels"><span>${mm(f0)}</span><span>${mm(f1)}</span></div>
+    <div class="sm" style="margin-top:8px;color:var(--text-soft);font-size:12.5px">Soma 12m: <b class="num">${brl(soma12)}</b> · DY ${pct(f.price>0?soma12/f.price:null)} <span class="srcpill yahoo">yahoo</span></div>`;
+}
+
+/* ============ carteira ============ */
+function addCartPrompt(f){
+  const cur=CART[f.ticker]||{qtd:0,pm:f.price};
+  const qtd=prompt(`Quantas cotas de ${f.ticker}?`,cur.qtd||"");if(qtd==null)return;
+  const pm=prompt(`Preço médio (R$) de ${f.ticker}?`,cur.pm||f.price);if(pm==null)return;
+  const q=+String(qtd).replace(",",".");const p=+String(pm).replace(",",".");
+  if(!(q>0)||!(p>=0)){toast("valores inválidos");return;}
+  CART[f.ticker]={qtd:q,pm:p};save(LS.cart,CART);toast(`${f.ticker} na carteira`);
+}
+function drawCartTab(){
+  const host=$("viewCart");const tks=Object.keys(CART);
+  if(!tks.length){host.innerHTML=`<div class="empty">Carteira vazia.<br>Abra um fundo e use "Adicionar à carteira".</div>`;return;}
+  const rows=tks.map(tk=>{const f=FIIS.find(x=>x.ticker===tk);if(!f)return null;
+    const pos=CART[tk],r=fiiResult(f);
+    const val=pos.qtd*f.price, custo=pos.qtd*pos.pm, res=val-custo;
+    const renda=r.pr.dpu*pos.qtd; // renda anual estimada
+    return {f,pos,r,val,custo,res,renda};
+  }).filter(Boolean);
+  const patr=rows.reduce((s,x)=>s+x.val,0);
+  const custoT=rows.reduce((s,x)=>s+x.custo,0);
+  const rendaT=rows.reduce((s,x)=>s+x.renda,0);
+  // concentração por segmento
+  const bySeg={};rows.forEach(x=>{bySeg[x.f.segment]=(bySeg[x.f.segment]||0)+x.val;});
+  const segRows=Object.entries(bySeg).sort((a,b)=>b[1]-a[1]).map(([s,v])=>
+    `<div class="segbar"><span>${s}</span><span class="track"><span class="fill" style="width:${patr>0?v/patr*100:0}%"></span></span><span class="num">${pct(patr>0?v/patr:0)}</span></div>`).join("");
+  const hhi=rows.reduce((s,x)=>{const w=patr>0?x.val/patr:0;return s+w*w;},0);
+  const nef=hhi>0?1/hhi:0;
+  const trs=rows.sort((a,b)=>b.val-a.val).map(x=>{
+    const w=patr>0?x.val/patr:0;const resC=x.res>=0?"pos":"neg";
+    return `<tr data-tk="${x.f.ticker}">
+      <td><div class="tk">${x.f.ticker}</div><div class="nm">${x.f.segment}</div></td>
+      <td class="num">${dec(x.pos.qtd,0)}</td>
+      <td class="num">${brl(x.pos.pm)}</td>
+      <td class="num">${brl(x.f.price)}</td>
+      <td class="num">${brl(x.val)}</td>
+      <td class="num">${pct(w)}</td>
+      <td class="num ${resC}">${x.res>=0?'+':''}${brl(x.res)}</td>
+      <td class="num">${pct(x.r.dy)}</td>
+      <td class="num">${brl(x.renda/12)}</td>
+      <td><button class="star" data-del="${x.f.ticker}" title="remover">✕</button></td>
+    </tr>`;
+  }).join("");
+  host.innerHTML=`
+    <div class="stats">
+      <div class="stat"><div class="k">Patrimônio</div><div class="v">${brl(patr,0)}</div></div>
+      <div class="stat"><div class="k">Resultado</div><div class="v ${patr-custoT>=0?'pos':'neg'}">${(patr-custoT>=0?'+':'')+brl(patr-custoT,0)}</div></div>
+      <div class="stat"><div class="k">Renda mensal est.</div><div class="v">${brl(rendaT/12,0)} <small>${pct(patr>0?rendaT/patr:null)} DY</small></div></div>
+      <div class="stat"><div class="k">Concentração</div><div class="v">${dec(nef,1)} <small>fundos efetivos (de ${rows.length})</small></div></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Fundo</th><th>Cotas</th><th>PM</th><th>Preço</th><th>Valor</th><th>Peso</th><th>Resultado</th><th>DY</th><th>Renda/mês</th><th></th></tr></thead>
+      <tbody>${trs}</tbody></table></div>
+    <div class="card" style="margin-top:16px"><h3>Concentração por segmento</h3><div class="segbars">${segRows}</div></div>
+    <div class="datanote">Renda estimada usa <b>DPU × cotas</b> (mesma base do modelo). Onde o DPU é <b>estimado</b>, a renda também é. Abra cada fundo para puxar o DPU real do Yahoo.</div>`;
+  host.querySelectorAll("[data-del]").forEach(b=>b.onclick=e=>{e.stopPropagation();delete CART[b.dataset.del];save(LS.cart,CART);drawCartTab();});
+  host.querySelectorAll("tr[data-tk]").forEach(tr=>tr.onclick=()=>openDetail(tr.dataset.tk));
+}
+
+/* ============ navegação ============ */
+function switchView(v){
+  ["Screener","Watch","Cart","Detail"].forEach(n=>$("view"+n).hidden=true);
+  document.querySelector(".tabs").style.display=v==="detail"?"none":"flex";
+  if(v==="detail"){$("viewDetail").hidden=false;return;}
+  DRAFT={};curTk=null;
+  TAB=v;$("view"+v.charAt(0).toUpperCase()+v.slice(1)).hidden=false;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===v));
+  DRAFT={};renderCurrent();
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchView(t.dataset.tab));
+
+/* ============ boot ============ */
+async function boot(){
+  try{const rc=await fetch("/api/config");if(rc.ok){const c=await rc.json();if(c.ke)G.ke=+c.ke;}}catch(e){}
+  try{const r=await fetch("/api/fiis");if(r.ok){const j=await r.json();FIIS=j.fiis||[];}}catch(e){}
+  renderCurrent();
+  // upgrade gentil: puxa DPU real (Yahoo) das monitoradas + carteira em background
+  const pri=[...new Set([...WATCH,...Object.keys(CART)])].filter(tk=>FIIS.some(f=>f.ticker===tk));
+  for(const tk of pri){if(FDIV[tk])continue;try{const r=await fetch("/api/fii/"+tk);if(r.ok)FDIV[tk]=await r.json();}catch(e){}}
+  if(pri.length)renderCurrent();
+}
+boot();
+</script>
+</body>
+</html>

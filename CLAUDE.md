@@ -11,6 +11,29 @@ Classificação curada em `backend/stocks_meta.json`.
 > brutos** — use `cvm_base/cvm.duckdb`. O **FastAPI legado** (`backend/app.py`) fica no repo como
 > referência mas **não é mais deployado**.
 
+## FIIs — valuation (PREVIEW, branch `fii-valuation`, **NÃO em prod**)
+Feature nova, ainda **em revisão do usuário** (só local via `wrangler pages dev`; nada deployado). Página
+autocontida **`fiis.html`** (servida em `/fiis`; `.html`→clean URL por 308 do Pages), separada do
+`index.html` pra não arriscar o app de ações. Abas internas: **Screener / Monitoradas / Carteira / detalhe**.
+- **Dados**: preço ao vivo pela **brapi** (`subType:fii`, ~334 fundos; universo curado em `_lib/fii.js`
+  → 41 líquidos). **DPU/DY real** vem do **Yahoo** por ticker (`/api/fii/{ticker}`, events=div, soma 12m,
+  cache 6h); onde o Yahoo não responde, cai numa **estimativa por DY típico do segmento** (rótulo
+  `estimado`). **NÃO usa a CVM p/ FII**: informe anual defasado + estrutura de classes corrompe DPU/segmento
+  (verificado — DPU derivado bate errado por fatores grandes; segmento classifica MXRF como "Logística").
+  **P/VP** exige **VP/cota** = premissa manual do usuário (sem fonte grátis confiável — statusinvest está
+  atrás do Cloudflare; brapi per-ticker exige token). **Persistência 100% em localStorage** (`fii.prem.v1`
+  / `fii.watch.v1` / `fii.cart.v1`) — o preview **não escreve no Supabase**. Ao aprovar, migrar p/ tabelas.
+- **Modelo — "Regra nº1 FII (adaptada)"** (`fiiResult`/`fiiValueAt`/`exitValue`/`fiiIRR` em `fiis.html`):
+  justo = **VP dos proventos** (DPU projetado N anos a `g`, descontado ao **Ke global**) **+ valor de saída
+  no ano N**. Saída por **P/VP** (`VP/cota×(1+g_vp)^N × P/VP_alvo`) se houver VP/cota; senão por **DY de
+  saída** (=Ke). Teto de compra = justo×(1−margem). Reads: DY=DPU/preço, P/VP=preço/VP, upside, margem seg.,
+  **TIR implícita** (bissecção: taxa que iguala VP dos fluxos ao preço; saída fixa). Ke global vem do
+  `/api/config` (reusa o trabalho de Ke/BCB das ações). Matemática conferida (15/15 vs. cálculo manual) e
+  runtime (8/8 via shim de DOM).
+- **Backend read-only** (sem banco): `functions/_lib/fii.js`, `functions/api/fiis.js` (screener),
+  `functions/api/fii/[ticker].js` (detalhe: DPU real + série). Yahoo dá 429 de curl direto local, mas
+  **funciona via Function** (confirmado local e no edge).
+
 ## Arquitetura (Cloudflare Pages + Functions)
 ```
 ./                            ← raiz do repo = Pages "root directory"
