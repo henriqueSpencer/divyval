@@ -1411,20 +1411,23 @@ function buildSteps(f){
       `<div class="formula num" style="font-size:15px;">justo ${brl(r.fair)} × (1 − ${pct(pr.mos)}) = <span class="accent">${brl(r.teto)}</span></div>`):"";
     box.innerHTML=s1+s2+s3;return;
   }
-  // R1: projeção mensal por ano
-  const Nshow=Math.min(pr.N,12);
+  // R1: projeção MÊS A MÊS (1º ano detalhado; anos seguintes somados numa linha)
+  const totalMonths=12*pr.N, mShow=Math.min(totalMonths,12), dpuM0=pr.dpu/12;
   let rows="";
-  for(let t=1;t<=Nshow;t++){
-    const dpuAno=pr.dpu*Math.pow(1+pr.g,t);
-    const vpAno=divPVmonthly(pr.dpu,pr.g,t,pr.ke)-divPVmonthly(pr.dpu,pr.g,t-1,pr.ke);
-    rows+=`<tr><td>ano ${t}</td><td>${brl(dpuAno)}</td><td class="pv">${brl(vpAno)}</td></tr>`;
+  for(let m=1;m<=mShow;m++){
+    const dpuMes=dpuM0*Math.pow(1+pr.g,m/12);      // provento daquele mês
+    const fator=1/Math.pow(1+pr.ke,m/12);          // fator de desconto do mês m
+    rows+=`<tr><td>mês ${m}</td><td>${brl(dpuMes)}</td><td>× ${dec(fator,4)}</td><td class="pv">${brl(dpuMes*fator)}</td></tr>`;
   }
-  if(pr.N>Nshow)rows+=`<tr class="base"><td colspan="3">… +${pr.N-Nshow} anos (somados no total)</td></tr>`;
+  if(totalMonths>mShow){
+    const restVP=r.divPV-divPVmonthly(pr.dpu,pr.g,mShow/12,pr.ke); // VP dos meses restantes
+    rows+=`<tr class="base"><td>meses ${mShow+1}–${totalMonths}</td><td>…</td><td>…</td><td class="pv">${brl(restVP)}</td></tr>`;
+  }
   const exitPV=r.exitN/Math.pow(1+pr.ke,pr.N);
   const s2=step(2,"Projetar mensal e descontar ao Ke mensal",
-    `O FII paga <b>mensal</b>: ${12*pr.N} parcelas crescendo <b>${pct(pr.g)}</b> a.a., cada uma trazida a hoje por <span class="mono">(1+Ke_m)^mês</span>, com Ke mensal <span class="mono">${pct(keM,2)}</span> (= ${pct(pr.ke)} a.a.). Render um pouco mais que descontar anual, pois cada parcela chega antes.`,
-    `<table class="proj num"><thead><tr><th>Período</th><th>DPU anual</th><th>= VP</th></tr></thead><tbody>${rows}</tbody>`
-    +`<tfoot><tr class="sum"><td colspan="2">VP dos proventos (mensal)</td><td class="pv">${brl(r.divPV)}</td></tr></tfoot></table>`);
+    `O FII paga <b>mensal</b>: <b>${totalMonths} parcelas</b> de ~<b>${brl(dpuM0)}</b>${pr.g!==0?` (crescendo <b>${pct(pr.g)}</b> a.a.)`:''}, cada uma trazida a hoje por <span class="mono">1 ÷ (1+Ke_mês)^mês</span>, com Ke mensal <span class="mono">${pct(keM,2)}</span> (= ${pct(pr.ke)} a.a.). O <b>fator de desconto</b> encolhe a cada mês — o aluguel do mês 1 vale mais que o do mês 12 — e é por isso que rende um pouco mais que descontar tudo no fim do ano.`,
+    `<table class="proj num"><thead><tr><th>Mês</th><th>Provento</th><th>fator VP</th><th>= VP a hoje</th></tr></thead><tbody>${rows}</tbody>`
+    +`<tfoot><tr class="sum"><td colspan="3">VP dos proventos (${totalMonths} meses)</td><td class="pv">${brl(r.divPV)}</td></tr></tfoot></table>`);
   const s3=step(3,`Valor de saída no ano ${pr.N}`,
     r.exitMode==="pvp"
       ? `Do <b>P/VP de entrada ${dec(pr.pvpIn,2)}×</b> sai o VP/cota = preço ÷ P/VP = <b>${brl(pr.vp)}</b>. Ele cresce <b>${pct(pr.gvp)}</b>/ano e você vende a <b>P/VP de saída ${dec(pr.pvp,2)}×</b> no ano ${pr.N}.`
