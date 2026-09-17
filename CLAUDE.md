@@ -23,11 +23,21 @@ autocontida **`fiis.html`** (servida em `/fiis`; `.html`→clean URL por 308 do 
   **P/VP** exige **VP/cota** = premissa manual do usuário (sem fonte grátis confiável — statusinvest está
   atrás do Cloudflare; brapi per-ticker exige token). **Persistência 100% em localStorage** (`fii.prem.v1`
   / `fii.watch.v1` / `fii.cart.v1`) — o preview **não escreve no Supabase**. Ao aprovar, migrar p/ tabelas.
-- **Modelo — "Regra nº1 FII (adaptada)"** (`fiiResult`/`fiiValueAt`/`divPVmonthly`/`exitValue`/`fiiIRR`):
-  justo = **VP dos proventos** + **valor de saída no ano N**. **Proventos são MENSAIS** (`divPVmonthly`):
-  12N parcelas = DPU/12 crescendo `g` a.a., descontadas ao **Ke mensal** `(1+ke)^(1/12)−1` (soma
-  geométrica fechada, conferida contra loop explícito). Rende ~3% a mais que descontar anual (cada
-  parcela chega antes) — foi correção pedida pelo usuário. Ke anual vem do `/api/config`. Saída por **P/VP** (`VP/cota×(1+g_vp)^N × P/VP_alvo`) se houver VP/cota; senão por **DY de
+- **Dois modelos escolhíveis** (seletor no detalhe, igual às ações; `prem().modelo`, default `r1`):
+  **`r1` Regra nº1 · FII** (`fiiValueAt`) = **VP dos proventos + saída no ano N** (por P/VP se houver
+  VP/cota, senão por DY exigido); **`dy` DY-alvo · perpetuidade** (`gordonMonthly`) = Gordon do provento
+  mensal, `DPU_m·x/(1−x)`, exige Ke>g. **Proventos MENSAIS** (`divPVmonthly`): 12N parcelas = DPU/12
+  crescendo `g`, descontadas ao **Ke mensal** `(1+ke)^(1/12)−1` (soma geométrica fechada, conferida vs.
+  loop). Rende ~3% a mais que anual. **TIR implícita** por bissecção (piso `−50%` no r1, `g` no dy).
+  Ke anual vem do `/api/config`. Math conferida: r1 15/15, mensal 10/10, dy 7/7.
+- **UI/UX = mesma das ações** (pedido do usuário): `fiis.html` **reusa o `<style>` inteiro do
+  `index.html`** (classes de shell renomeadas p/ evitar colisão: `.fbrand`/`.fstat`/`.fcard`, screener
+  escopado em `.tbl-wrap`). Detalhe traz **hero+verdict com o medidor** (`updateHeroGauge`, classes
+  `.hg-*`), **seletor de Modelo** (`.mode-toggle`), **gráfico Preço · fechamento diário** (porte do
+  `renderChart` do index — Yahoo `/api/history/{ticker}` serve FII, com seleção clique-arraste e linha do
+  justo), **Premissas em `.field`/slider** (model-scoped: campos de saída só no r1), **Implicações**
+  (`refreshImpl`, ids fixos) e **"A conta, passo a passo"** numerada (`.step`/`.formula`/`.proj`, com
+  projeção mensal por ano). Edição ao vivo via `refreshDetailLive` (sem re-render pesado). Saída por **P/VP** (`VP/cota×(1+g_vp)^N × P/VP_alvo`) se houver VP/cota; senão por **DY de
   saída** (=Ke). Teto de compra = justo×(1−margem). Reads: DY=DPU/preço, P/VP=preço/VP, upside, margem seg.,
   **TIR implícita** (bissecção: taxa que iguala VP dos fluxos ao preço; saída fixa). Ke global vem do
   `/api/config` (reusa o trabalho de Ke/BCB das ações). Matemática conferida (15/15 vs. cálculo manual) e
