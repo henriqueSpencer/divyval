@@ -1259,7 +1259,8 @@ function drawDetail(f,loading){
         <div class="card card-pad impl-box">
           <div class="box-head"><h3>Implicações</h3><span class="box-sub">o que elas produzem</span></div>
           <p class="box-lead">Os números que saem das premissas ao lado. Tudo recalcula ao vivo com os sliders.</p>
-          <div class="impl-row"><span class="lbl">DY corrente <small>DPU ÷ preço</small></span><span class="v num" id="impl-dy">—</span></div>
+          <div class="impl-row"><span class="lbl">DY corrente <small>12 × DPU_mês ÷ preço · soma dos proventos</small></span><span class="v num" id="impl-dy">—</span></div>
+          <div class="impl-row"><span class="lbl">DY efetivo · reinvestido <small>(1 + DPU_mês÷preço)¹² − 1</small></span><span class="v num" id="impl-dyeff">—</span></div>
           <div class="impl-row"><span class="lbl">P/VP <small>preço ÷ VP/cota</small></span><span class="v num" id="impl-pvp">—</span></div>
           <div class="impl-sep">de onde vem o valor justo</div>
           <div class="impl-row" id="row-divpv"><span class="lbl"><span class="dot" style="background:var(--accent);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP dos proventos · mensal</span><span class="v num" id="impl-divpv">—</span></div>
@@ -1304,6 +1305,8 @@ function refreshImpl(f){
   const r=fiiResult(f),pr=r.pr,isDy=pr.modelo==="dy";
   const set=(id,txt,cls)=>{const e=$(id);if(!e)return;e.textContent=txt;if(cls!=null)e.className="v num "+cls;};
   set("impl-dy",pct(r.dy));
+  const dyEff=(f.price>0)?Math.pow(1+pr.dpuM/f.price,12)-1:null;
+  set("impl-dyeff",dyEff!=null?pct(dyEff):"—");
   set("impl-pvp",r.pvp!=null?dec(r.pvp,2):"—");
   set("impl-divpv",brl(r.divPV));
   set("impl-exit",isDy?"—":brl(r.exitN/Math.pow(1+pr.ke,pr.N)));
@@ -1371,7 +1374,14 @@ function refreshDetailLive(f){
   const fl=$("fairLabel");if(fl)fl.textContent="Preço justo · "+FII_MODELS[pr.modelo].label;
   updateHeroGauge(f.price,r.fair);updateHeroTir(tir,pr.ke);
   refreshImpl(f);buildSteps(f);
-  chartState.fair=r.fair;   // o gráfico pega no próximo render (não re-renderiza a cada tecla)
+  chartState.fair=r.fair;scheduleChart();   // a linha do "justo" no gráfico se move ao vivo
+}
+// re-render do gráfico coalescido por frame (evita rebuild do SVG a cada tecla do slider)
+let _chartRAF=null;
+function scheduleChart(){
+  if(_chartRAF)return;
+  const raf=(typeof requestAnimationFrame==="function")?requestAnimationFrame:(fn=>setTimeout(fn,16));
+  _chartRAF=raf(()=>{_chartRAF=null;renderChart();});
 }
 function savePrem(f){
   const merged={...(PREM[f.ticker]||{}),...DRAFT};
