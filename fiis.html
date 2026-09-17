@@ -903,7 +903,9 @@ function prem(f){
     g:  p.g!=null?+p.g:G.g,
     N:  p.N!=null?+p.N:G.N,
     ke: p.ke!=null?+p.ke:G.ke,
-    vp: p.vp!=null?+p.vp:null,
+    // premissa é o P/VP DE ENTRADA (múltiplo atual); o VP/cota vira derivado = preço ÷ P/VP
+    pvpIn: p.pvpIn!=null?+p.pvpIn:null,
+    vp: (p.pvpIn!=null&&+p.pvpIn>0&&f.price>0)?f.price/(+p.pvpIn):null,
     gvp:p.gvp!=null?+p.gvp:G.gvp,
     pvp:p.pvp!=null?+p.pvp:G.pvp,
     mos:p.mos!=null?+p.mos:G.mos,
@@ -1252,7 +1254,7 @@ function drawDetail(f,loading){
       <div class="prem-grid">
         <div class="card card-pad" id="premCard">
           <div class="box-head"><h3>Premissas</h3><span class="box-sub">o que você assume · ${model==='r1'?'saída por P/VP':'perpetuidade'}</span></div>
-          <p class="box-lead">DPU <b>mensal</b> (média dos 12m do Yahoo) <b id="dpuSrc">${srcPillHtml(pr.dpuSource)}</b> — editável; digitar torna manual. VP/cota (para P/VP) você informa do relatório do fundo. Ke, se vazio, herda o padrão global.</p>
+          <p class="box-lead">DPU <b>mensal</b> (média dos 12m do Yahoo) <b id="dpuSrc">${srcPillHtml(pr.dpuSource)}</b> — editável; digitar torna manual. <b>P/VP de entrada</b> (atual, do StatusInvest/relatório) você informa; o VP/cota sai daí. Ke, se vazio, herda o padrão global.</p>
           <div class="assumptions" id="premBox"></div>
           <div class="save-row"><button class="btn sm btn-primary" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
         </div>
@@ -1261,7 +1263,7 @@ function drawDetail(f,loading){
           <p class="box-lead">Os números que saem das premissas ao lado. Tudo recalcula ao vivo com os sliders.</p>
           <div class="impl-row"><span class="lbl">DY corrente <small>12 × DPU_mês ÷ preço · soma dos proventos</small></span><span class="v num" id="impl-dy">—</span></div>
           <div class="impl-row"><span class="lbl">DY efetivo · reinvestido <small>(1 + DPU_mês÷preço)¹² − 1</small></span><span class="v num" id="impl-dyeff">—</span></div>
-          <div class="impl-row"><span class="lbl">P/VP <small>preço ÷ VP/cota</small></span><span class="v num" id="impl-pvp">—</span></div>
+          <div class="impl-row"><span class="lbl">P/VP de entrada <small>informado · VP/cota = preço ÷ P/VP</small></span><span class="v num" id="impl-pvp">—</span></div>
           <div class="impl-sep">de onde vem o valor justo</div>
           <div class="impl-row" id="row-divpv"><span class="lbl"><span class="dot" style="background:var(--accent);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP dos proventos · mensal</span><span class="v num" id="impl-divpv">—</span></div>
           <div class="impl-row" id="row-exit"><span class="lbl"><span class="dot" style="background:var(--text-mute);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP da saída no ano N</span><span class="v num" id="impl-exit">—</span></div>
@@ -1327,7 +1329,7 @@ const PREM_CTRLS=[
   ["g","Crescimento do DPU (g)","rng",-2,15,0.5,true,"all"],
   ["mos","Margem de segurança","rng",0,50,1,true,"all"],
   ["N","Anos até a venda","rng",1,30,1,false,"r1"],
-  ["vp","VP/cota (patrimonial)","num",0,0,0.01,false,"r1"],
+  ["pvpIn","P/VP de entrada","num",0,0,0.01,false,"r1"],
   ["gvp","Cresc. do VP/cota","rng",-2,15,0.5,true,"r1"],
   ["pvp","P/VP de saída","rng",0.4,2,0.05,false,"r1"],
 ];
@@ -1424,9 +1426,9 @@ function buildSteps(f){
     `<table class="proj num"><thead><tr><th>Período</th><th>DPU anual</th><th>= VP</th></tr></thead><tbody>${rows}</tbody>`
     +`<tfoot><tr class="sum"><td colspan="2">VP dos proventos (mensal)</td><td class="pv">${brl(r.divPV)}</td></tr></tfoot></table>`);
   const s3=step(3,`Valor de saída no ano ${pr.N}`,
-    pr.exitMode==="pvp"
-      ? `Vende a cota no ano ${pr.N}: o VP/cota <b>${brl(pr.vp)}</b> cresce <b>${pct(pr.gvp)}</b>/ano e é vendido a <b>P/VP ${dec(pr.pvp,2)}×</b>.`
-      : `Sem VP/cota informado, a saída sai pelo <b>DY exigido</b> (${pct(pr.ke)}) sobre o provento do ano ${pr.N}.`,
+    r.exitMode==="pvp"
+      ? `Do <b>P/VP de entrada ${dec(pr.pvpIn,2)}×</b> sai o VP/cota = preço ÷ P/VP = <b>${brl(pr.vp)}</b>. Ele cresce <b>${pct(pr.gvp)}</b>/ano e você vende a <b>P/VP de saída ${dec(pr.pvp,2)}×</b> no ano ${pr.N}.`
+      : `Sem P/VP de entrada informado, a saída sai pelo <b>DY exigido</b> (${pct(pr.ke)}) sobre o provento do ano ${pr.N}.`,
     `<div class="formula num"><span class="lead">Saída</span> = ${brl(r.exitN)} <span style="color:var(--text-mute)">→ a hoje</span> ÷ (1+${pct(pr.ke)})^${pr.N} = <span class="accent">${brl(exitPV)}</span></div>`);
   const s4=step(4,"Somar = preço justo",`O valor da cota é o VP dos proventos mais a saída trazida a hoje.`,
     `<div class="formula num" style="font-size:15px;">${brl(r.divPV)} + ${brl(exitPV)} = <span class="accent">${brl(r.fair)}</span></div>`);
