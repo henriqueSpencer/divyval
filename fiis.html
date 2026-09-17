@@ -208,12 +208,22 @@ function prem(f){
     mos:p.mos!=null?+p.mos:G.mos,
   };
 }
-// valor presente do fluxo (proventos N anos + saída), a uma taxa de desconto r
+// VP dos proventos — FII paga MENSAL: 12N parcelas (dpu/12 crescendo a g a.a.), descontadas ao Ke
+// mensal equivalente (1+ke)^(1/12)−1. Soma geométrica fechada. Rende um pouco mais que o anual,
+// porque cada parcela chega mais cedo dentro do ano.
+function divPVmonthly(dpuAnnual,g,N,r){
+  if(!(dpuAnnual>0)||!(N>0)) return 0;
+  const dpuM0=dpuAnnual/12;
+  const ratio=(1+g)/(1+r);
+  if(ratio<=0) return 0;
+  const x=Math.pow(ratio,1/12);          // fator por mês = ((1+g)/(1+r))^(1/12)
+  const months=Math.round(12*N);
+  const sum=Math.abs(x-1)<1e-9 ? months : x*(1-Math.pow(x,months))/(1-x); // Σ_{m=1..12N} x^m
+  return dpuM0*sum;
+}
+// valor presente do fluxo (proventos mensais N anos + saída no ano N), a uma taxa de desconto r
 function fiiValueAt(pr,r){
-  let div=0;
-  for(let t=1;t<=pr.N;t++) div+=pr.dpu*Math.pow(1+pr.g,t)/Math.pow(1+r,t);
-  const exit=exitValue(pr);
-  return div+exit/Math.pow(1+r,pr.N);
+  return divPVmonthly(pr.dpu,pr.g,pr.N,r)+exitValue(pr)/Math.pow(1+r,pr.N);
 }
 // valor de saída no ano N: por P/VP se houver VP/cota; senão por DY de saída (=ke)
 function exitValue(pr){
@@ -230,7 +240,7 @@ function fiiResult(f){
   const upside=(price>0&&fair>0)?(fair-price)/price:null;
   const msafe=(fair>0)?(fair-price)/fair:null;
   return {pr,price,fair,teto,dy,pvp,upside,msafe,exitMode:pr.vp>0?"pvp":"dy",
-          divPV:(function(){let d=0;for(let t=1;t<=pr.N;t++)d+=pr.dpu*Math.pow(1+pr.g,t)/Math.pow(1+pr.ke,t);return d;})(),
+          divPV:divPVmonthly(pr.dpu,pr.g,pr.N,pr.ke),
           exitN:exitValue(pr)};
 }
 // TIR implícita: taxa r que iguala VP(proventos+saída fixa) ao preço. Saída fixa (não varia com r).
@@ -238,7 +248,7 @@ function fiiIRR(f){
   const pr=prem(f), price=f.price;
   if(!(price>0)||!(pr.dpu>0)) return null;
   const exitFixed=exitValue(pr);
-  const val=r=>{let d=0;for(let t=1;t<=pr.N;t++)d+=pr.dpu*Math.pow(1+pr.g,t)/Math.pow(1+r,t);return d+exitFixed/Math.pow(1+r,pr.N);};
+  const val=r=>divPVmonthly(pr.dpu,pr.g,pr.N,r)+exitFixed/Math.pow(1+r,pr.N);
   let lo=-0.5, hi=1.5;
   if(val(lo)<price) return null;         // nem a -50% alcança o preço
   if(val(hi)>price) return hi;           // satura (>150%)
@@ -476,11 +486,11 @@ function savePrem(f){
 }
 function buildSteps(f){
   const r=fiiResult(f),pr=r.pr;const box=$("stepBox");if(!box)return;
-  const dpu1=pr.dpu*(1+pr.g);
+  const keM=Math.pow(1+pr.ke,1/12)-1;
   box.innerHTML=`
-    1. Provento de partida (DPU anual): <span class="mono">${brl(pr.dpu)}</span> → DY <span class="mono">${pct(r.dy)}</span><br>
-    2. Projeta ${pr.N} anos crescendo <span class="mono">${pct(pr.g)}</span> a.a. e desconta ao Ke <span class="mono">${pct(pr.ke)}</span> →
-       VP dos proventos = <span class="mono">${brl(r.divPV)}</span><br>
+    1. Provento de partida: DPU anual <span class="mono">${brl(pr.dpu)}</span> = <span class="mono">${brl(pr.dpu/12)}</span>/mês → DY <span class="mono">${pct(r.dy)}</span><br>
+    2. FII paga <b>mensal</b>: projeta ${pr.N} anos (${12*pr.N} parcelas) crescendo <span class="mono">${pct(pr.g)}</span> a.a., descontando ao <b>Ke mensal</b> <span class="mono">${pct(keM,2)}</span> (= ${pct(pr.ke)} a.a.) →
+       VP dos proventos = <span class="mono">${brl(r.divPV)}</span> <span style="color:var(--text-mute)">(um pouco maior que no anual, pois cada parcela chega antes)</span><br>
     3. Saída no ano ${pr.N}: ${r.exitMode==='pvp'
         ? `VP/cota <span class="mono">${brl(pr.vp)}</span> cresce <span class="mono">${pct(pr.gvp)}</span>/ano e vende a <span class="mono">P/VP ${dec(pr.pvp,2)}</span>`
         : `sem VP/cota, sai pelo DY exigido <span class="mono">${pct(pr.ke)}</span>`}

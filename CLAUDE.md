@@ -23,9 +23,11 @@ autocontida **`fiis.html`** (servida em `/fiis`; `.html`→clean URL por 308 do 
   **P/VP** exige **VP/cota** = premissa manual do usuário (sem fonte grátis confiável — statusinvest está
   atrás do Cloudflare; brapi per-ticker exige token). **Persistência 100% em localStorage** (`fii.prem.v1`
   / `fii.watch.v1` / `fii.cart.v1`) — o preview **não escreve no Supabase**. Ao aprovar, migrar p/ tabelas.
-- **Modelo — "Regra nº1 FII (adaptada)"** (`fiiResult`/`fiiValueAt`/`exitValue`/`fiiIRR` em `fiis.html`):
-  justo = **VP dos proventos** (DPU projetado N anos a `g`, descontado ao **Ke global**) **+ valor de saída
-  no ano N**. Saída por **P/VP** (`VP/cota×(1+g_vp)^N × P/VP_alvo`) se houver VP/cota; senão por **DY de
+- **Modelo — "Regra nº1 FII (adaptada)"** (`fiiResult`/`fiiValueAt`/`divPVmonthly`/`exitValue`/`fiiIRR`):
+  justo = **VP dos proventos** + **valor de saída no ano N**. **Proventos são MENSAIS** (`divPVmonthly`):
+  12N parcelas = DPU/12 crescendo `g` a.a., descontadas ao **Ke mensal** `(1+ke)^(1/12)−1` (soma
+  geométrica fechada, conferida contra loop explícito). Rende ~3% a mais que descontar anual (cada
+  parcela chega antes) — foi correção pedida pelo usuário. Ke anual vem do `/api/config`. Saída por **P/VP** (`VP/cota×(1+g_vp)^N × P/VP_alvo`) se houver VP/cota; senão por **DY de
   saída** (=Ke). Teto de compra = justo×(1−margem). Reads: DY=DPU/preço, P/VP=preço/VP, upside, margem seg.,
   **TIR implícita** (bissecção: taxa que iguala VP dos fluxos ao preço; saída fixa). Ke global vem do
   `/api/config` (reusa o trabalho de Ke/BCB das ações). Matemática conferida (15/15 vs. cálculo manual) e
