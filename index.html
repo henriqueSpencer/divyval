@@ -3134,6 +3134,9 @@ const FII_MODELS={
   dy:{label:"DY-alvo · perpetuidade",desc:"Perpetuidade de Gordon: o provento mensal cresce g e é descontado ao Ke, para sempre. Justo = DPU ÷ (Ke − g) — sem horizonte nem saída. Exige Ke > g."},
 };
 let FDRAFT={}, curFii=null, fiiScope="all", fiiSortKey="upside", fiiSortAsc=false, fiiQuery="";
+// "pendente" = o DPU automático (Yahoo) ainda não chegou. Se o fundo tem DPU MANUAL salvo, o número é seu e
+// não depende do Yahoo → nunca fica pendente.
+const fiiPending=f=>!!f.dpu_pending&&!(FII_PREM[f.ticker]&&FII_PREM[f.ticker].dpu!=null);
 
 async function ensureFiis(){
   if(FIIS_LOADED)return FIIS;
@@ -3224,8 +3227,8 @@ function fiiIRR(f){
 /* ---------- screener / monitoradas ---------- */
 const FII_COLS=[
   ["ticker","Fundo",f=>f.ticker],["segment","Segmento",f=>f.segment],["price","Preço",f=>f.price],
-  ["dy","DY",f=>f.dpu_pending?null:fiiResult(f).dy],["pvp","P/VP",f=>fiiResult(f).pvp],["fair","Justo",f=>f.dpu_pending?null:fiiResult(f).fair],
-  ["upside","Upside",f=>f.dpu_pending?null:fiiResult(f).upside],["msafe","Margem seg.",f=>f.dpu_pending?null:fiiResult(f).msafe],["tir","TIR",f=>f.dpu_pending?null:fiiIRR(f)],
+  ["dy","DY",f=>fiiPending(f)?null:fiiResult(f).dy],["pvp","P/VP",f=>fiiResult(f).pvp],["fair","Justo",f=>fiiPending(f)?null:fiiResult(f).fair],
+  ["upside","Upside",f=>fiiPending(f)?null:fiiResult(f).upside],["msafe","Margem seg.",f=>fiiPending(f)?null:fiiResult(f).msafe],["tir","TIR",f=>fiiPending(f)?null:fiiIRR(f)],
 ];
 function fiiSorted(list){
   const col=FII_COLS.find(c=>c[0]===fiiSortKey), val=col?col[2]:(f=>f.ticker);
@@ -3241,7 +3244,7 @@ function renderFiiTable(host,list){
   const rows=list.map(f=>{const r=fiiResult(f),tir=fiiIRR(f),ke=r.pr.ke,on=FII_WATCH.has(f.ticker)?"on":"";
     const w=r.upside!=null&&isFinite(r.upside)?fclamp(Math.abs(r.upside)/maxAbs*50,0,50):0;
     const fill=r.upside!=null?(r.upside>=0?`right:50%;width:${w}%;background:var(--good)`:`left:50%;width:${w}%;background:var(--bad)`):"";
-    const est=r.pr.dpuSource!=="yahoo", pend=!!f.dpu_pending;
+    const est=r.pr.dpuSource!=="yahoo", pend=fiiPending(f);
     if(pend)return `<tr data-fii="${f.ticker}">
       <td><div class="ftk">${f.ticker}</div><div class="fnm">${f.name}</div></td>
       <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
@@ -3275,7 +3278,7 @@ function renderFiiView(){
   const host=$("fiiBody");
   if(!FIIS_LOADED){host.innerHTML=`<div style="padding:40px;text-align:center;color:var(--text-mute)">Carregando fundos…</div>`;ensureFiis().then(()=>{if(!$("view-fiis").hidden)renderFiiView();});return;}
   const list=fiiSorted(fiiFiltered());
-  const loaded=FIIS.filter(f=>!f.dpu_pending), med=fiiMedian(loaded,f=>fiiResult(f).upside);
+  const loaded=FIIS.filter(f=>!fiiPending(f)), med=fiiMedian(loaded,f=>fiiResult(f).upside);
   host.innerHTML=`
     <div class="fstats">
       <div class="fstat"><div class="k">Fundos</div><div class="v">${mon?list.length:FIIS.length}</div></div>
@@ -3460,7 +3463,7 @@ function drawFiiDetail(f,loading){
     </div>`;
   buildFiiPrem(f);buildFiiSteps(f);buildFiiDivChart(f);renderFiiHistory(f);fiiRenderPeriods();fiiRenderChart();
   fiiHeroGauge(f.price,r.fair);fiiHeroTir(tir,pr.ke);refreshFiiImpl(f);
-  if(f.dpu_pending){ // proventos reais ainda a caminho: não mostrar número que vai mudar
+  if(fiiPending(f)){ // proventos automáticos ainda a caminho: não mostrar número que vai mudar
     $("fiiFairValue").textContent="…";$("fiiMosText").textContent="buscando proventos reais…";$("fiiHeroGauge").innerHTML="";$("fiiHeroTir").innerHTML="";
     ["fii-impl-dy","fii-impl-dyeff","fii-impl-divpv","fii-impl-exit","fii-impl-fair","fii-impl-upside","fii-impl-msafe","fii-impl-tir"].forEach(id=>{const e=$(id);if(e){e.textContent="…";e.className="v num";}});
   }
