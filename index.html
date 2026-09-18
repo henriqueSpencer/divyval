@@ -834,7 +834,7 @@ button{font-family:inherit;}
           <p id="fiiSub">Fundos imobiliários ordenados por upside — quanto o preço justo está acima do preço atual.</p>
         </div>
       </div>
-      <div class="fnote">Preço ao vivo (brapi). <b>DY/DPU real</b> vem do Yahoo por fundo — abrir o detalhe carrega; onde o Yahoo não responder, uso uma <b>estimativa por DY típico do segmento</b> (<span class="srcpill estimado">estimado</span>). <b>P/VP de entrada</b> é premissa sua. Premissas, monitoradas e carteira de FII ficam no seu navegador por enquanto (preview).</div>
+      <div class="fnote">Preço ao vivo (brapi). <b>DY/DPU real</b> vem do Yahoo por fundo — abrir o detalhe carrega; onde o Yahoo não responder, uso uma <b>estimativa por DY típico do segmento</b> (<span class="srcpill estimado">estimado</span>). <b>P/VP</b> usa o VP/cota do <b>Informe Mensal da CVM</b> (mês de referência no detalhe; você pode sobrescrever por fundo). Premissas, monitoradas e carteira de FII ficam no seu navegador por enquanto (preview).</div>
       <div id="fiiBody"></div>
     </section>
     <section class="view" id="view-fii-detail" hidden><div id="fiiDetailBody"></div></section>
@@ -3144,14 +3144,21 @@ async function ensureFiis(){
 function fiiPrem(f){
   const G=fiiG(), base=FII_PREM[f.ticker]||{};
   const p=(curFii===f.ticker)?{...base,...FDRAFT}:base;
-  const dpuBaseM=((FDIV[f.ticker]&&FDIV[f.ticker].dpu12m)||f.dpu_est||0)/12;   // DPU MENSAL
+  // DPU MENSAL: mesma fonte no screener e no detalhe (/api/fiis já traz o DPU real do Yahoo em lote)
+  const dd=FDIV[f.ticker];
+  const dpuBaseM=((dd&&dd.dpu12m)||f.dpu12m||f.dpu_est||0)/12;
   const dpuM=p.dpu!=null?+p.dpu:dpuBaseM;
+  // P/VP de entrada: manual (digitado) ou AUTOMÁTICO = preço ÷ VP/cota do Informe Mensal da CVM
+  const vpCvm=(dd&&dd.vp_cota)||f.vp_cota||null, vpRef=(dd&&dd.vp_ref)||f.vp_ref||null;
+  const manualPvp=p.pvpIn!=null&&+p.pvpIn>0;
+  const vp=manualPvp?(f.price>0?f.price/(+p.pvpIn):null):(vpCvm>0?vpCvm:null);
   return {
     dpuM, dpu:dpuM*12,                                   // mensal (campo) / anual (cálculo)
-    dpuSource:p.dpu!=null?"manual":(FDIV[f.ticker]?FDIV[f.ticker].source:"estimado"),
+    dpuSource:p.dpu!=null?"manual":((dd&&dd.source)||f.dpu_src||"estimado"),
     g:p.g!=null?+p.g:G.g, N:p.N!=null?+p.N:G.N, ke:p.ke!=null?+p.ke:G.ke,
-    pvpIn:p.pvpIn!=null?+p.pvpIn:null,                     // P/VP de entrada (múltiplo atual)
-    vp:(p.pvpIn!=null&&+p.pvpIn>0&&f.price>0)?f.price/(+p.pvpIn):null,   // VP/cota derivado
+    pvpIn:manualPvp?+p.pvpIn:((vpCvm>0&&f.price>0)?f.price/vpCvm:null),   // P/VP de entrada efetivo
+    pvpSource:manualPvp?"manual":(vpCvm>0?"cvm":null), vpRef,
+    vp,                                                    // VP/cota (manual derivado ou CVM)
     gvp:p.gvp!=null?+p.gvp:G.gvp, pvp:p.pvp!=null?+p.pvp:G.pvp,
     modelo:p.modelo||G.modelo,
   };
@@ -3389,7 +3396,7 @@ function drawFiiDetail(f,loading){
       <div class="prem-grid">
         <div class="card card-pad">
           <div class="box-head"><h3>Premissas</h3><span class="box-sub">o que você assume · ${model==='r1'?'saída por P/VP':'perpetuidade'}</span></div>
-          <p class="box-lead">DPU <b>mensal</b> (média dos 12m do Yahoo) ${fiiSrcPill(pr.dpuSource)} — editável; digitar torna manual. <b>P/VP de entrada</b> (atual) você informa; o VP/cota sai daí. <b>Ke e horizonte</b> vêm da Config global (compartilhados com as ações); g e P/VP de saída do card FIIs da Config.</p>
+          <p class="box-lead">DPU <b>mensal</b> (média dos 12m do Yahoo) ${fiiSrcPill(pr.dpuSource)} — editável; digitar torna manual. <b>P/VP de entrada</b> vem automático do <b>VP/cota do Informe Mensal da CVM</b> (digite para sobrescrever; apague para voltar). <b>Ke e horizonte</b> vêm da Config global (compartilhados com as ações); g e P/VP de saída do card FIIs da Config.</p>
           <div class="assumptions" id="fiiPremBox"></div>
           <div class="save-row"><button class="btn sm btn-primary" id="fiiSaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
         </div>
@@ -3398,7 +3405,7 @@ function drawFiiDetail(f,loading){
           <p class="box-lead">Os números que saem das premissas ao lado. Tudo recalcula ao vivo com os sliders.</p>
           <div class="impl-row"><span class="lbl">DY corrente <small>12 × DPU_mês ÷ preço · soma dos proventos</small></span><span class="v num" id="fii-impl-dy">—</span></div>
           <div class="impl-row"><span class="lbl">DY efetivo · reinvestido <small>(1 + DPU_mês÷preço)¹² − 1</small></span><span class="v num" id="fii-impl-dyeff">—</span></div>
-          <div class="impl-row"><span class="lbl">P/VP de entrada <small>informado · VP/cota = preço ÷ P/VP</small></span><span class="v num" id="fii-impl-pvp">—</span></div>
+          <div class="impl-row"><span class="lbl">P/VP de entrada <small id="fii-impl-pvp-lbl">preço ÷ VP/cota</small></span><span class="v num" id="fii-impl-pvp">—</span></div>
           <div class="impl-sep">de onde vem o valor justo</div>
           <div class="impl-row" id="fii-row-divpv"><span class="lbl"><span class="dot" style="background:var(--accent);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span><span id="fii-divpv-lbl">VP dos proventos · mensal</span></span><span class="v num" id="fii-impl-divpv">—</span></div>
           <div class="impl-row" id="fii-row-exit"><span class="lbl"><span class="dot" style="background:var(--text-mute);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP da saída no ano N</span><span class="v num" id="fii-impl-exit">—</span></div>
@@ -3428,6 +3435,7 @@ function refreshFiiImpl(f){
   set("fii-impl-dy",fpct(r.dy));
   set("fii-impl-dyeff",f.price>0?fpct(Math.pow(1+pr.dpuM/f.price,12)-1):"—");
   set("fii-impl-pvp",r.pvp!=null?fdec(r.pvp,2):"—");
+  const pl=$("fii-impl-pvp-lbl");if(pl)pl.textContent=pr.pvpSource==="cvm"?`preço ÷ VP/cota ${brl(pr.vp)} (CVM ${pr.vpRef||""})`:pr.pvpSource==="manual"?`informado por você · VP/cota = preço ÷ P/VP = ${brl(pr.vp)}`:"sem VP/cota — informe o P/VP";
   set("fii-impl-divpv",brl(r.divPV));
   set("fii-impl-exit",isDy?"—":brl(r.exitN/Math.pow(1+pr.ke,pr.N)));
   set("fii-impl-fair",r.fair!=null?brl(r.fair):"—");
@@ -3463,7 +3471,8 @@ function buildFiiPrem(f){
       const rv=(v==null?min:(isPct?v*100:v));
       const chk=linked?` <label class="chk"><input type="checkbox" data-fdef="${key}" ${locked?'checked':''}><span id="fdl_${key}">padrão (${fmtFiiPrem(key,fiiGlobalOf(key),isPct)})</span></label>`:"";
       return `<div class="field${locked?' locked':''}" data-scope="${scope}"${hide}><label>${lbl}${chk}</label><span class="val num" id="fpv_${key}">${fmtFiiPrem(key,v,isPct)}</span><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step}" value="${rv}" ${locked?'disabled':''}></div>`;}
-    return `<div class="field wide" data-scope="${scope}"${hide}><label>${lbl}</label><input type="number" data-k="${key}" data-num="1" inputmode="decimal" value="${v!=null?dec(v,2).replace(",","."):''}" step="${step}" placeholder="—"></div>`;};
+    const pill=key==="pvpIn"&&pr.pvpSource?` <label class="chk" style="cursor:default">${pr.pvpSource==="cvm"?`<span class="srcpill estimado" style="text-transform:none">CVM ${pr.vpRef||""}</span>`:`<span class="srcpill manual">manual</span>`}</label>`:"";
+    return `<div class="field wide" data-scope="${scope}"${hide}><label>${lbl}${pill}</label><input type="number" data-k="${key}" data-num="1" inputmode="decimal" value="${v!=null?dec(v,2).replace(",","."):''}" step="${step}" placeholder="${key==='pvpIn'?'preço ÷ VP/cota':'—'}"></div>`;};
   let html="";FII_PREM_CTRLS.forEach(c=>{if(c[0]==="N")html+=`<div class="asm-group" data-scope="r1"${model!=="r1"?' style="display:none"':''}>saída no ano N · vira preço pelo P/VP</div>`;html+=field(c);});
   box.innerHTML=html;
   box.querySelectorAll("input[type=range]").forEach(inp=>inp.oninput=()=>{if(inp.disabled)return;const k=inp.dataset.k,c=FII_PREM_CTRLS.find(x=>x[0]===k),isPct=c[6];let val=+inp.value;if(isPct)val/=100;$("fpv_"+k).textContent=fmtFiiPrem(k,val,isPct);setFiiDraft(f,k,val);});
@@ -3537,7 +3546,7 @@ function buildFiiSteps(f){
     `O FII paga <b>mensal</b>: <b>${totalMonths} parcelas</b> de ~<b>${brl(dpuM0)}</b>${pr.g!==0?` (crescendo <b>${fpct(pr.g)}</b> a.a.)`:''}, cada uma trazida a hoje por <span class="mono">1 ÷ (1+Ke_mês)^mês</span>, com Ke mensal <span class="mono">${fpct(keM,2)}</span> (= ${fpct(pr.ke)} a.a.). O <b>fator de desconto</b> encolhe a cada mês — o aluguel do mês 1 vale mais que o do mês 12.`,
     `<table class="proj num"><thead><tr><th>Mês</th><th>Provento</th><th>fator VP</th><th>= VP a hoje</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="sum"><td colspan="3">VP dos proventos (${totalMonths} meses)</td><td class="pv">${brl(r.divPV)}</td></tr></tfoot></table>`);
   const s3=fiiStep(3,`Valor de saída no ano ${pr.N}`,
-    r.exitMode==="pvp"?`Do <b>P/VP de entrada ${dec(pr.pvpIn,2)}×</b> sai o VP/cota = preço ÷ P/VP = <b>${brl(pr.vp)}</b>. Ele cresce <b>${fpct(pr.gvp)}</b>/ano e você vende a <b>P/VP de saída ${dec(pr.pvp,2)}×</b> no ano ${pr.N}.`
+    r.exitMode==="pvp"?`${pr.pvpSource==="cvm"?`VP/cota <b>${brl(pr.vp)}</b> (Informe Mensal CVM ${pr.vpRef||""}) → P/VP de entrada <b>${dec(pr.pvpIn,2)}×</b>.`:`Do <b>P/VP de entrada ${dec(pr.pvpIn,2)}×</b> (informado) sai o VP/cota = preço ÷ P/VP = <b>${brl(pr.vp)}</b>.`} Ele cresce <b>${fpct(pr.gvp)}</b>/ano e você vende a <b>P/VP de saída ${dec(pr.pvp,2)}×</b> no ano ${pr.N}.`
       :`Sem P/VP de entrada informado, a saída sai pelo <b>DY exigido</b> (${fpct(pr.ke)}) sobre o provento do ano ${pr.N}.`,
     `<div class="formula num"><span class="lead">Saída</span> = ${brl(r.exitN)} <span style="color:var(--text-mute)">→ a hoje</span> ÷ (1+${fpct(pr.ke)})^${pr.N} = <span class="accent">${brl(exitPV)}</span></div>`);
   const s4=fiiStep(4,"Somar = preço justo",`O valor da cota é o VP dos proventos mais a saída trazida a hoje.`,`<div class="formula num" style="font-size:15px;">${brl(r.divPV)} + ${brl(exitPV)} = <span class="accent">${brl(r.fair)}</span></div>`);

@@ -32,13 +32,23 @@ CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`,
   chamada no `saveConfig`). O card **"Premissas de FIIs"** na Config (`renderFiiConfig`/`saveFiiConfig`)
   guarda só o específico: modelo padrão, g do DPU, cresc. do VP/cota, P/VP de saída — em
   **localStorage `fii.cfg.v1`** (preview; ao aprovar, viram chaves k/v na tabela `config`, sem schema).
-- **Dados**: preço ao vivo pela **brapi** (`subType:fii`, universo curado em `_lib/fii.js` → 41 líquidos).
-  **DPU/DY real** vem do **Yahoo** por ticker (`/api/fii/{ticker}`, events=div, soma 12m, cache 6h); sem
-  Yahoo, cai numa **estimativa por DY típico do segmento** (rótulo `estimado`). **NÃO usa a CVM p/ FII**
-  (informe anual defasado + classes corrompem DPU/segmento — verificado). **P/VP de entrada** é premissa
-  manual (sem fonte grátis confiável); o **VP/cota é derivado** = preço ÷ P/VP. Histórico do gráfico:
-  `/api/history/{ticker}` (Yahoo serve FII). Premissas/monitoradas/carteira de FII em **localStorage**
-  (`fii.prem.v1`/`fii.watch.v1`/`fii.cart.v1`) — o preview **não escreve no Supabase**; ao aprovar, migrar.
+- **Dados**: preço ao vivo pela **brapi** (`subType:fii`; universo curado em `_lib/fii.js` → **34 líquidos**,
+  cada um com **ISIN fixado**). **DPU/DY real** vem do **Yahoo** (events=div, soma 12m, cache 6h) e é buscado
+  **em lote no `/api/fiis`** (`getAllFiiDividends`, 6 por vez) — screener e detalhe usam o **mesmo** número
+  (antes o screener usava estimativa e o detalhe o real → números "mudavam" ao abrir, ex. TRXF). Sem
+  Yahoo, estimativa por DY típico do segmento (`dpu_src:"estimado"`). **VP/cota (p/ P/VP) vem do Informe
+  MENSAL de FII da CVM** (`dados.cvm.gov.br/dados/FII/DOC/INF_MENSAL/`, coluna `Valor_Patrimonial_Cotas`,
+  oficial, mês a mês) via **`backend/build_fii_vp.py` → `functions/_lib/fii_vp.js`** (rodar mensalmente;
+  só precisa do CLI `duckdb`). Armadilhas tratadas no script: CVM não tem ticker (casa por **ISIN fixado**
+  no universo — a raiz do ISIN sozinha erra, ex. TRXF); um ISIN pode ter **várias classes/CNPJs** (XPML:
+  110 vs 22.548) → escolhe a linha cujo **P/VP contra o preço real é plausível (0,4–1,8)**, desempate por
+  maior PL. Resultado set/2026: 34/34 com VP, 0 anomalias. O informe **ANUAL** da base DuckDB continua
+  inútil p/ isto. **P/VP de entrada** no detalhe é **automático** (preço ÷ VP/cota CVM, pill `CVM aaaa-mm`)
+  e o usuário sobrescreve digitando (pill `manual`; apagar volta à CVM). Histórico do gráfico:
+  `/api/history/{ticker}`. Premissas/monitoradas/carteira de FII em **localStorage** (preview).
+  Fundos removidos do universo por não terem preço/VP confiável: PATL11, BCFF11 (incorporado pelo
+  BTHF11), RBRF11, VGIA11, RURA11, MALL11, IRDM11. **O mercado tem ~330 FIIs com cotação na brapi**; o
+  universo é curado, expansível com o mesmo pipeline (ISIN + plausibilidade).
 - **Dois modelos** (seletor no detalhe; `fiiPrem().modelo`, default do card FII): **`r1` Regra nº1 · FII**
   (`fiiValueAt`) = VP dos proventos + saída no ano N (por P/VP se houver P/VP de entrada, senão por DY
   exigido); **`dy` DY-alvo · perpetuidade** (`gordonMonthly`), exige Ke>g. **Proventos MENSAIS**
