@@ -6,8 +6,8 @@
 //   DY típico do segmento (rotulada "estimado").
 // - VP/cota (p/ P/VP): Informe MENSAL de FII da CVM via backend/build_fii_vp.py → fii_vp.js
 //   (oficial, mês a mês; o informe ANUAL da base DuckDB não serve — classes corrompem DPU/segmento).
-import { FII_VP } from "./fii_vp.js";
-export { FII_VP };
+import { FII_UNIVERSE, FII_VP } from "./fii_data.js";   // gerado por backend/build_fii_universe.py
+export { FII_UNIVERSE, FII_VP };
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
@@ -28,9 +28,10 @@ export const SEG_DY = {
   "Desenvolvimento": 0.10,
 };
 
-// Universo curado de FIIs líquidos (classificação própria — a da CVM é inconfiável).
-// { ticker: [nome curto, segmento] }
-export const FII_UNIVERSE = {
+// CURADORIA (nome curto, segmento próprio e ISIN fixado) dos fundos mais líquidos — sobrepõe o que o
+// build_fii_universe.py tira da CVM (cujo segmento é pobre: quase tudo "Multicategoria"/"Outros").
+// { ticker: [nome curto, segmento, ISIN] }. O universo completo (brapi ∩ CVM) está em fii_data.js.
+export const FII_CURATED = {
   // Logística / galpões
   HGLG11: ["Pátria Log (ex-CSHG Logística)", "Logística", "BRHGLGCTF004"],
   XPLG11: ["XP Log", "Logística", "BRXPLGCTF002"],
@@ -102,7 +103,7 @@ export async function getFiiPrices(context) {
 
 // Proventos (Yahoo chart, events=div) de UM fundo: soma 12m (dpu12m), série e preço.
 // Cache de 6h. Yahoo pode dar 429 de IP de datacenter/local → devolve null (o front estima).
-export async function getFiiDividends(ticker, context) {
+export async function getFiiDividends(ticker, context, cacheOnly = false) {
   const sym = ticker.toUpperCase() + ".SA";
   let cache = null;
   const cacheKey = new Request("https://divyval.internal/fii-div/" + sym);
@@ -111,6 +112,7 @@ export async function getFiiDividends(ticker, context) {
     const hit = await cache.match(cacheKey);
     if (hit) return hit.json();
   } catch (_) {}
+  if (cacheOnly) return null;   // sem cache: o front busca progressivamente via /api/fii-dpu
   let out = null;
   try {
     const u = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?range=2y&interval=1d&events=div`;
@@ -145,13 +147,13 @@ export async function getFiiDividends(ticker, context) {
 
 // DPU 12m de vários fundos, em lotes de 6 (rate-limit do Yahoo), reaproveitando o cache por ticker.
 // Devolve {ticker: {dpu12m, n12}} só p/ os que responderam.
-export async function getAllFiiDividends(tickers, context) {
+export async function getAllFiiDividends(tickers, context, cacheOnly = false) {
   const out = {};
-  for (let i = 0; i < tickers.length; i += 6) {
+  for (let i = 0; i < tickers.length; i += 8) {
     await Promise.all(
-      tickers.slice(i, i + 6).map(async (t) => {
+      tickers.slice(i, i + 8).map(async (t) => {
         try {
-          const d = await getFiiDividends(t, context);
+          const d = await getFiiDividends(t, context, cacheOnly);
           if (d && d.dpu12m > 0) out[t] = { dpu12m: d.dpu12m, n12: d.n12 };
         } catch (_) {}
       })

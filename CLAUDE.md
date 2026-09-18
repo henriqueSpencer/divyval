@@ -11,9 +11,8 @@ Classificação curada em `backend/stocks_meta.json`.
 > brutos** — use `cvm_base/cvm.duckdb`. O **FastAPI legado** (`backend/app.py`) fica no repo como
 > referência mas **não é mais deployado**.
 
-## FIIs — valuation (PREVIEW, branch `fii-valuation`, **NÃO em prod**)
-Feature em **revisão do usuário** (só local via `wrangler pages dev`; nada deployado). **Integrada ao
-`index.html`** (set/2026): a navegação continua com os 4 itens (Monitoradas · Carteira · Screener ·
+## FIIs — valuation (EM PROD desde set/2026)
+Feature **integrada ao `index.html`** (mesclada da branch `fii-valuation` em 18/set/2026): a navegação continua com os 4 itens (Monitoradas · Carteira · Screener ·
 Config) e cada tela ganhou um **toggle "Ações | FIIs"** (`assetToggleHtml`, classe `.asset-toggle`) no
 topo. Rotas: `#/screener/fiis`, `#/monitoradas/fiis`, `#/carteira/fiis`, `#/fii/{ticker}` (as rotas de
 ações ficaram como estavam). Views próprias: `#view-fiis` (screener/monitoradas, `renderFiiView`),
@@ -32,23 +31,26 @@ CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`,
   chamada no `saveConfig`). O card **"Premissas de FIIs"** na Config (`renderFiiConfig`/`saveFiiConfig`)
   guarda só o específico: modelo padrão, g do DPU, cresc. do VP/cota, P/VP de saída — em
   **localStorage `fii.cfg.v1`** (preview; ao aprovar, viram chaves k/v na tabela `config`, sem schema).
-- **Dados**: preço ao vivo pela **brapi** (`subType:fii`; universo curado em `_lib/fii.js` → **34 líquidos**,
-  cada um com **ISIN fixado**). **DPU/DY real** vem do **Yahoo** (events=div, soma 12m, cache 6h) e é buscado
-  **em lote no `/api/fiis`** (`getAllFiiDividends`, 6 por vez) — screener e detalhe usam o **mesmo** número
-  (antes o screener usava estimativa e o detalhe o real → números "mudavam" ao abrir, ex. TRXF). Sem
-  Yahoo, estimativa por DY típico do segmento (`dpu_src:"estimado"`). **VP/cota (p/ P/VP) vem do Informe
-  MENSAL de FII da CVM** (`dados.cvm.gov.br/dados/FII/DOC/INF_MENSAL/`, coluna `Valor_Patrimonial_Cotas`,
-  oficial, mês a mês) via **`backend/build_fii_vp.py` → `functions/_lib/fii_vp.js`** (rodar mensalmente;
-  só precisa do CLI `duckdb`). Armadilhas tratadas no script: CVM não tem ticker (casa por **ISIN fixado**
-  no universo — a raiz do ISIN sozinha erra, ex. TRXF); um ISIN pode ter **várias classes/CNPJs** (XPML:
-  110 vs 22.548) → escolhe a linha cujo **P/VP contra o preço real é plausível (0,4–1,8)**, desempate por
-  maior PL. Resultado set/2026: 34/34 com VP, 0 anomalias. O informe **ANUAL** da base DuckDB continua
-  inútil p/ isto. **P/VP de entrada** no detalhe é **automático** (preço ÷ VP/cota CVM, pill `CVM aaaa-mm`)
-  e o usuário sobrescreve digitando (pill `manual`; apagar volta à CVM). Histórico do gráfico:
-  `/api/history/{ticker}`. Premissas/monitoradas/carteira de FII em **localStorage** (preview).
-  Fundos removidos do universo por não terem preço/VP confiável: PATL11, BCFF11 (incorporado pelo
-  BTHF11), RBRF11, VGIA11, RURA11, MALL11, IRDM11. **O mercado tem ~330 FIIs com cotação na brapi**; o
-  universo é curado, expansível com o mesmo pipeline (ISIN + plausibilidade).
+- **Dados**: **universo = todos os FIIs com cotação na brapi** (~328), gerado por
+  **`backend/build_fii_universe.py` → `functions/_lib/fii_data.js`** (`FII_UNIVERSE` + `FII_VP`; rodar
+  mensalmente). `FII_CURATED` em `_lib/fii.js` (34 líquidos com nome/segmento curados e **ISIN fixado**)
+  sobrepõe o gerado. **VP/cota (p/ P/VP)** vem do **Informe MENSAL de FII da CVM** (`Valor_Patrimonial_
+  Cotas`, oficial, mês a mês; o informe ANUAL da base DuckDB não serve). Casamento ticker↔fundo: ISIN
+  fixado ou candidatos por raiz `BR+4 letras` → escolhe a linha do mês mais recente com **P/VP plausível
+  (0,4–1,8) contra o preço real**, desempate por maior PL (resolve classes múltiplas, ex. XPML 110 vs
+  22.548, e colisão de raiz, ex. TRXF). Set/2026: 269/328 com VP; os demais entram sem P/VP (modelo sai
+  pelo DY exigido). Segmento: curado nos 34; nos outros vem do `Segmento_Atuacao` da CVM mapeado
+  (`SEG_MAP`), e "Multicategoria/Outros" (a maioria) vira `—`. **DPU/DY real** vem do **Yahoo** (events=div,
+  soma 12m, cache 6h por ticker): `/api/fiis` responde rápido (DPU **só do cache**, `cacheOnly`) e o front
+  completa **progressivamente** via **`/api/fii-dpu?t=…`** (lotes de 24, 8 em paralelo; monitoradas e
+  carteira primeiro; ~35 s p/ cobrir tudo a frio, depois cache). Screener e detalhe usam o **mesmo cache**
+  → mesmos números (antes o screener usava estimativa e o detalhe o real → "mudava" ao abrir, ex. TRXF).
+  Sem DPU real, estimativa por DY típico do segmento (`dpu_src:"estimado"`, pill). **P/VP de entrada** no
+  detalhe é **automático** (preço ÷ VP/cota CVM, pill `CVM aaaa-mm`); digitar sobrescreve (pill `manual`),
+  apagar volta. Histórico do gráfico: `/api/history/{ticker}`.
+  ⚠️ **Persistência de FII ainda é localStorage** (`fii.prem.v1`/`fii.watch.v1`/`fii.cart.v1`/`fii.cfg.v1`/
+  `fii.hist.v1`) — por navegador, **não sincroniza entre dispositivos** (ações usam Supabase). Migrar p/
+  tabelas no Supabase é o próximo passo natural.
 - **Dois modelos** (seletor no detalhe; `fiiPrem().modelo`, default do card FII): **`r1` Regra nº1 · FII**
   (`fiiValueAt`) = VP dos proventos + saída no ano N (por P/VP se houver P/VP de entrada, senão por DY
   exigido); **`dy` DY-alvo · perpetuidade** (`gordonMonthly`), exige Ke>g. **Proventos MENSAIS**

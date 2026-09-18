@@ -834,7 +834,7 @@ button{font-family:inherit;}
           <p id="fiiSub">Fundos imobiliários ordenados por upside — quanto o preço justo está acima do preço atual.</p>
         </div>
       </div>
-      <div class="fnote">Preço ao vivo (brapi). <b>DY/DPU real</b> vem do Yahoo por fundo — abrir o detalhe carrega; onde o Yahoo não responder, uso uma <b>estimativa por DY típico do segmento</b> (<span class="srcpill estimado">estimado</span>). <b>P/VP</b> usa o VP/cota do <b>Informe Mensal da CVM</b> (mês de referência no detalhe; você pode sobrescrever por fundo). Premissas, monitoradas e carteira de FII ficam no seu navegador por enquanto (preview).</div>
+      <div class="fnote"><b>Todos os FIIs com cotação</b> (brapi, ~330). <b>DY/DPU real</b> vem do Yahoo e carrega <b>progressivamente</b> (as linhas trocam de <span class="srcpill estimado">estimado</span> para real em segundos; monitoradas e carteira primeiro). <b>P/VP</b> usa o VP/cota do <b>Informe Mensal da CVM</b> (mês de referência no detalhe; você pode sobrescrever por fundo). Premissas, monitoradas e carteira de FII ficam no seu navegador por enquanto (preview).</div>
       <div id="fiiBody"></div>
     </section>
     <section class="view" id="view-fii-detail" hidden><div id="fiiDetailBody"></div></section>
@@ -3135,8 +3135,26 @@ let FDRAFT={}, curFii=null, fiiScope="all", fiiSortKey="upside", fiiSortAsc=fals
 
 async function ensureFiis(){
   if(FIIS_LOADED)return FIIS;
-  if(!FIIS_LOADING)FIIS_LOADING=(async()=>{try{const r=await fetch("/api/fiis");if(r.ok){const j=await r.json();FIIS=j.fiis||[];}}catch(e){}FIIS_LOADED=true;return FIIS;})();
+  if(!FIIS_LOADING)FIIS_LOADING=(async()=>{try{const r=await fetch("/api/fiis");if(r.ok){const j=await r.json();FIIS=j.fiis||[];}}catch(e){}FIIS_LOADED=true;fiiLoadDpuProgressive();return FIIS;})();
   return FIIS_LOADING;
+}
+// DPU real (Yahoo) dos fundos que vieram "estimado": em lotes de 24 via /api/fii-dpu, monitoradas e carteira
+// primeiro; re-renderiza a tela de FII visível a cada lote (as linhas vão trocando estimado → real).
+let _fiiDpuRunning=false;
+async function fiiLoadDpuProgressive(){
+  if(_fiiDpuRunning)return;_fiiDpuRunning=true;
+  try{
+    const pri=new Set([...FII_WATCH,...Object.keys(FII_CART)]);
+    const pending=FIIS.filter(f=>f.dpu_src!=="yahoo").map(f=>f.ticker).sort((a,b)=>(pri.has(b)?1:0)-(pri.has(a)?1:0));
+    for(let i=0;i<pending.length;i+=24){
+      const chunk=pending.slice(i,i+24);
+      try{const r=await fetch("/api/fii-dpu?t="+chunk.join(","));if(!r.ok)continue;const j=await r.json();const d=j.dpu||{};
+        let changed=false;
+        for(const f of FIIS){const x=d[f.ticker];if(x&&x.dpu12m>0){f.dpu12m=x.dpu12m;f.n12=x.n12;f.dpu_src="yahoo";changed=true;}}
+        if(changed){if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-carteira").hidden)renderFiiCart();}
+      }catch(e){}
+    }
+  }finally{_fiiDpuRunning=false;}
 }
 
 /* ---------- modelo ---------- */
