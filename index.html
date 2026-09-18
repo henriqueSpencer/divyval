@@ -3139,7 +3139,7 @@ async function ensureFiis(){
   if(FIIS_LOADED)return FIIS;
   if(!FIIS_LOADING)FIIS_LOADING=(async()=>{
     const [a,b]=await Promise.all([fetch("/api/fiis").catch(()=>null),fetch("/api/fii-state").catch(()=>null)]);
-    try{if(a&&a.ok){const j=await a.json();FIIS=j.fiis||[];}}catch(e){}
+    try{if(a&&a.ok){const j=await a.json();FIIS=(j.fiis||[]).map(f=>({...f,dpu_pending:f.dpu_src!=="yahoo"}));}}catch(e){}
     try{if(b&&b.ok){const st=await b.json();FII_PREM=st.prem||{};FII_WATCH=new Set(st.watch||[]);FII_CART=st.cart||{};FII_HIST=st.hist||{};}}catch(e){}
     FIIS_LOADED=true;fiiLoadDpuProgressive();return FIIS;})();
   return FIIS_LOADING;
@@ -3155,10 +3155,10 @@ async function fiiLoadDpuProgressive(){
     for(let i=0;i<pending.length;i+=24){
       const chunk=pending.slice(i,i+24);
       try{const r=await fetch("/api/fii-dpu?t="+chunk.join(","));if(!r.ok)continue;const j=await r.json();const d=j.dpu||{};
-        let changed=false;
-        for(const f of FIIS){const x=d[f.ticker];if(x&&x.dpu12m>0){f.dpu12m=x.dpu12m;f.n12=x.n12;f.dpu_src="yahoo";changed=true;}}
-        if(changed){if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-carteira").hidden)renderFiiCart();}
-      }catch(e){}
+        const set=new Set(chunk);
+        for(const f of FIIS){if(!set.has(f.ticker))continue;const x=d[f.ticker];if(x&&x.dpu12m>0){f.dpu12m=x.dpu12m;f.n12=x.n12;f.dpu_src="yahoo";}f.dpu_pending=false;}
+        if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-carteira").hidden)renderFiiCart();
+      }catch(e){const set=new Set(chunk);for(const f of FIIS)if(set.has(f.ticker))f.dpu_pending=false;}
     }
   }finally{_fiiDpuRunning=false;}
 }
@@ -3224,8 +3224,8 @@ function fiiIRR(f){
 /* ---------- screener / monitoradas ---------- */
 const FII_COLS=[
   ["ticker","Fundo",f=>f.ticker],["segment","Segmento",f=>f.segment],["price","Preço",f=>f.price],
-  ["dy","DY",f=>fiiResult(f).dy],["pvp","P/VP",f=>fiiResult(f).pvp],["fair","Justo",f=>fiiResult(f).fair],
-  ["upside","Upside",f=>fiiResult(f).upside],["msafe","Margem seg.",f=>fiiResult(f).msafe],["tir","TIR",f=>fiiIRR(f)],
+  ["dy","DY",f=>f.dpu_pending?null:fiiResult(f).dy],["pvp","P/VP",f=>fiiResult(f).pvp],["fair","Justo",f=>f.dpu_pending?null:fiiResult(f).fair],
+  ["upside","Upside",f=>f.dpu_pending?null:fiiResult(f).upside],["msafe","Margem seg.",f=>f.dpu_pending?null:fiiResult(f).msafe],["tir","TIR",f=>f.dpu_pending?null:fiiIRR(f)],
 ];
 function fiiSorted(list){
   const col=FII_COLS.find(c=>c[0]===fiiSortKey), val=col?col[2]:(f=>f.ticker);
@@ -3241,7 +3241,15 @@ function renderFiiTable(host,list){
   const rows=list.map(f=>{const r=fiiResult(f),tir=fiiIRR(f),ke=r.pr.ke,on=FII_WATCH.has(f.ticker)?"on":"";
     const w=r.upside!=null&&isFinite(r.upside)?fclamp(Math.abs(r.upside)/maxAbs*50,0,50):0;
     const fill=r.upside!=null?(r.upside>=0?`right:50%;width:${w}%;background:var(--good)`:`left:50%;width:${w}%;background:var(--bad)`):"";
-    const est=r.pr.dpuSource!=="yahoo";
+    const est=r.pr.dpuSource!=="yahoo", pend=!!f.dpu_pending;
+    if(pend)return `<tr data-fii="${f.ticker}">
+      <td><div class="ftk">${f.ticker}</div><div class="fnm">${f.name}</div></td>
+      <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
+      <td class="num">${brl(f.price)}</td>
+      <td class="num" style="color:var(--text-mute)" title="buscando proventos reais…">…</td>
+      <td class="num">${r.pvp!=null?fdec(r.pvp,2):'—'}</td>
+      <td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td>
+      <td><button class="fstar ${on}" data-fstar="${f.ticker}" title="monitorar">${on?'★':'☆'}</button></td></tr>`;
     return `<tr data-fii="${f.ticker}">
       <td><div class="ftk">${f.ticker}</div><div class="fnm">${f.name}</div></td>
       <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
@@ -3267,12 +3275,12 @@ function renderFiiView(){
   const host=$("fiiBody");
   if(!FIIS_LOADED){host.innerHTML=`<div style="padding:40px;text-align:center;color:var(--text-mute)">Carregando fundos…</div>`;ensureFiis().then(()=>{if(!$("view-fiis").hidden)renderFiiView();});return;}
   const list=fiiSorted(fiiFiltered());
-  const med=fiiMedian(FIIS,f=>fiiResult(f).upside);
+  const loaded=FIIS.filter(f=>!f.dpu_pending), med=fiiMedian(loaded,f=>fiiResult(f).upside);
   host.innerHTML=`
     <div class="fstats">
       <div class="fstat"><div class="k">Fundos</div><div class="v">${mon?list.length:FIIS.length}</div></div>
       <div class="fstat"><div class="k">Upside mediano</div><div class="v ${med>=0?'fpos':'fneg'}">${med!=null?(med>=0?'+':'')+fpct(med):'—'}</div></div>
-      <div class="fstat"><div class="k">DY mediano</div><div class="v">${fpct(fiiMedian(FIIS,f=>fiiResult(f).dy))}</div></div>
+      <div class="fstat"><div class="k">DY mediano</div><div class="v">${fpct(fiiMedian(loaded,f=>fiiResult(f).dy))}${loaded.length<FIIS.length?` <small>${FIIS.length-loaded.length} carregando…</small>`:''}</div></div>
       <div class="fstat"><div class="k">Monitorados</div><div class="v">${FII_WATCH.size}</div></div>
     </div>
     <div id="fiiTbl"></div>`;
@@ -3377,6 +3385,8 @@ async function openFii(tk){
   fiiChart.ticker=tk;fiiChart.period=365;fiiChart.fair=fiiResult(f).fair;
   drawFiiDetail(f,true);fiiLoadHistory(tk);
   if(!FDIV[tk]){try{const r=await fetch("/api/fii/"+tk);if(r.ok)FDIV[tk]=await r.json();}catch(e){}
+    const dd=FDIV[tk];if(dd){if(dd.dpu12m>0&&dd.source==="yahoo"){f.dpu12m=dd.dpu12m;f.n12=dd.n12;f.dpu_src="yahoo";}if(dd.vp_cota)f.vp_cota=dd.vp_cota;}
+    f.dpu_pending=false;
     if(curFii===tk){fiiChart.fair=fiiResult(f).fair;drawFiiDetail(f,false);}}
   window.scrollTo(0,0);
 }
@@ -3450,6 +3460,10 @@ function drawFiiDetail(f,loading){
     </div>`;
   buildFiiPrem(f);buildFiiSteps(f);buildFiiDivChart(f);renderFiiHistory(f);fiiRenderPeriods();fiiRenderChart();
   fiiHeroGauge(f.price,r.fair);fiiHeroTir(tir,pr.ke);refreshFiiImpl(f);
+  if(f.dpu_pending){ // proventos reais ainda a caminho: não mostrar número que vai mudar
+    $("fiiFairValue").textContent="…";$("fiiMosText").textContent="buscando proventos reais…";$("fiiHeroGauge").innerHTML="";$("fiiHeroTir").innerHTML="";
+    ["fii-impl-dy","fii-impl-dyeff","fii-impl-divpv","fii-impl-exit","fii-impl-fair","fii-impl-upside","fii-impl-msafe","fii-impl-tir"].forEach(id=>{const e=$(id);if(e){e.textContent="…";e.className="v num";}});
+  }
   $("fiiSaveBtn").onclick=()=>saveFiiPrem(f);
   $("fiiCartBtn").onclick=()=>addFiiCart(f);
   $("fiiWBtn").onclick=()=>toggleFiiWatch(f.ticker);
