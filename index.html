@@ -1050,7 +1050,7 @@ button{font-family:inherit;}
         <div class="prem-grid">
           <div class="card card-pad" id="r1PremCard">
             <div class="box-head"><h3>Premissas</h3><span class="box-sub">Regra nº1 · Town</span></div>
-            <p class="box-lead">Projeta o LPA por N anos, aplica um P/L futuro de saída, desconta ao retorno exigido (o "sticker") e tira a margem de segurança para achar o <b>preço-teto de compra</b>. Como no DDM, escolha se o crescimento sai do <b>ROE × (1 − payout)</b> — o lucro retido rende o ROE — ou se você <b>digita o g direto</b>.</p>
+            <p class="box-lead">Projeta o LPA por N anos, aplica um P/L futuro de saída, e desconta ao retorno exigido para achar o <b>preço justo</b> (o "sticker"). Como no DDM, escolha se o crescimento sai do <b>ROE × (1 − payout)</b> — o lucro retido rende o ROE — ou se você <b>digita o g direto</b>.</p>
             <div class="mode-toggle" id="r1GrowthToggle" role="tablist" aria-label="Como definir o crescimento do LPA">
               <button type="button" class="gt-btn active" data-mode="roe" role="tab">Via ROE</button>
               <button type="button" class="gt-btn" data-mode="g" role="tab">Crescimento direto</button>
@@ -1062,7 +1062,6 @@ button{font-family:inherit;}
               <div class="field"><label for="r1-payout">Payout (dividendos)</label><span class="val num" id="r1-payoutVal">40%</span><input type="range" id="r1-payout" min="0" max="100" value="40" step="5"></div>
               <div class="field wide"><label for="r1-pe">P/L futuro (saída)</label><input type="number" id="r1-pe" value="15" step="0.5"></div>
               <div class="field"><label for="r1-req">Retorno exigido (Ke) <label class="chk"><input type="checkbox" id="r1-reqDefault" checked><span id="r1-reqDefLbl">padrão</span></label></label><span class="val num" id="r1-reqVal">14%</span><input type="range" id="r1-req" min="8" max="25" value="14" step="0.1"></div>
-              <div class="field"><label for="r1-mos">Margem de segurança</label><span class="val num" id="r1-mosVal">50%</span><input type="range" id="r1-mos" min="0" max="70" value="50" step="5"></div>
               <div class="field"><label for="r1-n">Horizonte (anos) <label class="chk"><input type="checkbox" id="r1-nDefault" checked><span id="r1-nDefLbl">padrão</span></label></label><span class="val num" id="r1-nVal">10</span><input type="range" id="r1-n" min="3" max="20" value="10" step="1"></div>
               <div class="save-row"><button class="btn sm" id="r1SaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
             </div>
@@ -1079,15 +1078,13 @@ button{font-family:inherit;}
             <div class="impl-row"><span class="lbl"><span class="dot" style="background:var(--text-mute);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP do preço de venda</span><span class="v num" id="r1-impl-vpprice">—</span></div>
             <div class="comp-bar"><i id="r1-barS1" style="background:var(--accent)"></i><i id="r1-barS2" style="background:var(--text-mute)"></i></div>
             <div class="impl-fair"><span class="lbl">= Preço justo (sticker)</span><span class="v num" id="r1-impl-sticker">—</span></div>
-            <div class="impl-row"><span class="lbl">Preço-teto de compra <small>sticker × (1 − margem)</small></span><span class="v num accent" id="r1-impl-buy">—</span></div>
             <div class="impl-row"><span class="lbl">Upside <small id="r1-impl-margin-lbl">vs. preço atual</small></span><span class="v num" id="r1-impl-margin">—</span></div>
-            <div class="impl-row"><span class="lbl">Margem de segurança <small id="r1-impl-msafe-lbl">atual · exigida no slider: 50%</small></span><span class="v num" id="r1-impl-msafe">—</span></div>
+            <div class="impl-row"><span class="lbl">Margem de segurança <small>(justo − preço) ÷ justo</small></span><span class="v num" id="r1-impl-msafe">—</span></div>
             <div class="impl-row"><span class="lbl">TIR implícita <small id="r1-impl-tir-lbl">retorno anual no preço de hoje</small></span><span class="v num" id="r1-impl-tir">—</span></div>
-            <p class="comp-note" id="r1-buy-note" style="margin-top:12px;"></p>
           </div>
         </div>
         <div class="card">
-          <div class="steps-head"><div><h2>A conta, passo a passo</h2><p>A ideia do Phil Town (estilo Buffett): seu retorno vem de <b>duas fontes</b> — os <b>dividendos</b> que você recebe segurando a ação e o <b>preço de venda</b> no fim. Somando as duas e trazendo a hoje, acha-se o preço justo; a margem de segurança dá o preço-teto de compra.</p></div><div class="now">com os seus números atuais</div></div>
+          <div class="steps-head"><div><h2>A conta, passo a passo</h2><p>A ideia do Phil Town (estilo Buffett): seu retorno vem de <b>duas fontes</b> — os <b>dividendos</b> que você recebe segurando a ação e o <b>preço de venda</b> no fim. Somando as duas e trazendo a hoje, acha-se o preço justo.</p></div><div class="now">com os seus números atuais</div></div>
           <div class="step"><div class="step-badge">1</div><div>
             <div class="step-title">Projetar o LPA e os dividendos, ano a ano</div>
             <div class="step-body">O lucro por ação cresce à taxa <span class="mono">g</span>. A cada ano a empresa distribui <span class="mono">LPA × payout</span> em dividendos, que vão <b>pro seu bolso</b> — e cada um é trazido a hoje por <span class="mono">(1 + retorno)<sup>ano</sup></span>.</div>
@@ -1112,11 +1109,6 @@ button{font-family:inherit;}
             <div class="formula num" style="font-size:15px;"><span id="r1-f-pvdiv2">—</span> <span style="color:var(--text-mute)">dividendos</span> + <span id="r1-f-vpprice2">—</span> <span style="color:var(--text-mute)">venda</span> = <span class="accent" id="r1-f-sticker">—</span> <span style="color:var(--text-mute);font-size:13px">preço justo</span></div>
           </div></div>
           <div class="step"><div class="step-badge">5</div><div>
-            <div class="step-title">Aplicar a margem de segurança = preço-teto</div>
-            <div class="step-body">Só compre com desconto sobre o preço justo — a margem protege de erros nas suas estimativas de crescimento e múltiplo.</div>
-            <div class="formula num" style="font-size:15px;"><span id="r1-f-sticker2">—</span> × (1 − <span id="r1-f-mos">50%</span>) = <span class="accent" id="r1-f-buy">—</span> <span style="color:var(--text-mute);font-size:13px">preço-teto de compra</span></div>
-          </div></div>
-          <div class="step"><div class="step-badge">6</div><div>
             <div class="step-title">A TIR implícita — a mesma conta, ao contrário</div>
             <div class="step-body">Até aqui você <b>exigiu</b> um retorno e viu qual preço ele justifica. A TIR responde a pergunta inversa, que é a mais direta de todas: comprando <b>ao preço de hoje</b>, recebendo os dividendos do passo 1 e vendendo pelo preço do passo 2, <b>quanto isso rende ao ano</b>? É o <span class="mono">r</span> que resolve <span class="mono">dividendos + venda, descontados a r = preço de hoje</span>. Note que a <b>margem de segurança não entra</b>: ela é uma proteção que você aplica depois, não parte do retorno.</div>
             <div id="r1-tirBox"></div>
@@ -1222,10 +1214,6 @@ button{font-family:inherit;}
         <div class="cfg-field">
           <label>P/VP de saída <span class="cfg-hint">múltiplo a que você vende a cota no fim do horizonte</span></label>
           <div class="cfg-row"><input type="range" id="cfgFiiPvp" min="0.4" max="2" step="0.05"><span class="cfg-val num" id="cfgFiiPvpVal">1,00×</span></div>
-        </div>
-        <div class="cfg-field">
-          <label>Margem de segurança <span class="cfg-hint">desconto sobre o justo para o preço-teto</span></label>
-          <div class="cfg-row"><input type="range" id="cfgFiiMos" min="0" max="50" step="1"><span class="cfg-val num" id="cfgFiiMosVal">15%</span></div>
         </div>
         <p class="cfg-note">Salvo automaticamente <b>neste navegador</b> (preview de FIIs). Screener, monitoradas e carteira de FII recalculam na hora.</p>
       </div>
@@ -1440,7 +1428,7 @@ function fairResult(s){
   // Sem LPA positivo não há valuation confiável (empresa deficitária): não exibe preço justo.
   if(!(s.lpa>0))return {model:m,fair:null,valid:false};
   if(m===M_OE){const r=computeOE({lpa:s.lpa,g:oeG(s),gT:oeGT(s),disc:oeD(s),years:oeN(s)});return {model:m,fair:r.valid?r.fair:null,valid:r.valid};}
-  if(m===M_R1){const g=r1G(s);const r=computeR1({lpa:s.lpa,g,futPE:s.fut_pe!=null?s.fut_pe:defPE(g),req:s.ke!=null?s.ke:globalCfg.ke,years:oeN(s),mos:s.mos!=null?s.mos:0.5,payout:r1Payout(s)});return {model:m,fair:r.valid?r.sticker:null,valid:r.valid,buy:r.buy};}
+  if(m===M_R1){const g=r1G(s);const r=computeR1({lpa:s.lpa,g,futPE:s.fut_pe!=null?s.fut_pe:defPE(g),req:s.ke!=null?s.ke:globalCfg.ke,years:oeN(s),mos:0,payout:r1Payout(s)});return {model:m,fair:r.valid?r.sticker:null,valid:r.valid,buy:r.buy};}
   const r=computeDDM(params(s));return {model:m,fair:r.valid?r.fair:null,valid:r.valid};   // Gordon inválido (ke≤g) => sem preço justo (não exibe valor subestimado)
 }
 /* Duas leituras da mesma distância preço↔justo — nomes distintos porque as bases são distintas:
@@ -2073,7 +2061,7 @@ let detailMeta=false, previewModel=null;
 const MODEL_LBL={
  [M2]:["Preço justo · DDM","Preço justo (DDM)","Dividendos descontados ao Ke, com fade de ROE/payout + perpetuidade de Gordon."],
  [M_OE]:["Preço justo · Owner Earnings","Preço justo (Owner Earnings)","O método do Buffett: traz o lucro do dono (≈LPA) a valor presente por N anos + perpetuidade."],
- [M_R1]:["Preço justo · Regra nº1","Preço justo (Regra nº1)","Phil Town: LPA projetado × P/L futuro, descontado ao retorno exigido; o teto de compra aplica a margem."],
+ [M_R1]:["Preço justo · Regra nº1","Preço justo (Regra nº1)","Phil Town: LPA projetado × P/L futuro, descontado ao retorno exigido."],
  [M_NA]:["Sem valuation","(sem preço justo)","Ação marcada como sem valuation — sem preço justo nem margem. Útil p/ prejuízos crônicos onde qualquer premissa seria chute."]
 };
 function setVerdict(fair,price){
@@ -2128,7 +2116,7 @@ function seedModels(s){
   const r1roe=s.roe_i!=null?s.roe_i:0.15;
   $("r1-roe").value=Math.round(r1roe*1000)/10;bindExact("r1-roe",r1roe);
   $("r1-payout").value=Math.round(r1Payout(s)*100);bindExact("r1-payout",r1Payout(s));
-  $("r1-pe").value=s.fut_pe!=null?s.fut_pe:defPE(gR1);$("r1-mos").value=Math.round((s.mos!=null?s.mos:0.5)*100);
+  $("r1-pe").value=s.fut_pe!=null?s.fut_pe:defPE(gR1);
   ["oe-dDefault","oe-nDefault","r1-reqDefault","r1-nDefault"].forEach(id=>$(id).checked=true);
   applyDefList(DEF_OE);applyDefList(DEF_R1);
 }
@@ -2139,7 +2127,6 @@ function seedModelsPrem(p){   // ajusta OE/R1 a partir da premissa salva (respei
   if(p.roe_i!=null){$("r1-roe").value=Math.round(p.roe_i*1000)/10;bindExact("r1-roe",p.roe_i);}
   if(p.payout_i!=null){$("r1-payout").value=Math.round(p.payout_i*100);bindExact("r1-payout",p.payout_i);}
   if(p.fut_pe!=null)$("r1-pe").value=p.fut_pe;
-  if(p.mos!=null)$("r1-mos").value=Math.round(p.mos*100);
   const sd=(chk,slider,val,def,isFade)=>{const on=def==null?true:!!def;$(chk).checked=on;if(!on&&val!=null){$(slider).value=isFade?Math.round(val):Math.round(val*1000)/10;if(!isFade)bindExact(slider,val);}};
   sd("oe-dDefault","oe-d",p.ke,p.ke_default);sd("oe-nDefault","oe-n",p.fade,p.fade_default,true);
   sd("r1-reqDefault","r1-req",p.ke,p.ke_default);sd("r1-nDefault","r1-n",p.fade,p.fade_default,true);
@@ -2177,7 +2164,7 @@ function renderOE(){
 function renderR1(){
   // Ke/horizonte "padrão" ⇒ valor global exato (o slider arredonda; ver readAssum) — casa com o screener.
   const req=$("r1-reqDefault").checked?globalCfg.ke:rv("r1-req",100), years=$("r1-nDefault").checked?globalCfg.fade:+$("r1-n").value;
-  const lpa=+$("r1-lpa").value,payout=rv("r1-payout",100),futPE=+$("r1-pe").value,mos=+$("r1-mos").value/100,price=currentPrice||0;
+  const lpa=+$("r1-lpa").value,payout=rv("r1-payout",100),futPE=+$("r1-pe").value,mos=0,price=currentPrice||0;
   // crescimento: derivado do ROE (g = ROE × (1 − payout)) ou digitado direto — mesmo par de modos do DDM
   const useRoe=growthMode!=="g",roe=rv("r1-roe",100);
   const g=useRoe?roe*(1-payout):rv("r1-g",100);
@@ -2188,23 +2175,18 @@ function renderR1(){
     ?`<span class="lead">Crescimento</span> g = ROE <span>${pctv(roe*100)}</span> × (1 − payout <span>${pctv(payout*100)}</span>) = <span class="accent">${(g>=0?"+":"")+dec(g*100,1)}% a.a.</span>`
     :`<span class="lead">Crescimento</span> g digitado direto = <span class="accent">${(g>=0?"+":"")+dec(g*100,1)}% a.a.</span> <span style="color:var(--text-mute);font-size:13px">independe do ROE</span>`;
   $("r1-gVal").textContent=pctv(+$("r1-g").value);$("r1-payoutVal").textContent=pctv(+$("r1-payout").value);
-  $("r1-reqVal").textContent=pctv(+$("r1-req").value);$("r1-mosVal").textContent=pctv(+$("r1-mos").value);$("r1-nVal").textContent=Math.round(years);
+  $("r1-reqVal").textContent=pctv(+$("r1-req").value);$("r1-nVal").textContent=Math.round(years);
   const r=computeR1({lpa,g,futPE,req,years,mos,payout}),ok=r.valid;
   setVerdict(ok?r.sticker:NaN,price);
   $("r1-eps-lbl").textContent="daqui a "+Math.round(years)+" anos";
   $("r1-impl-dpa").textContent=brl(r.dpa0)+(price>0&&r.dpa0>0?` · DY ${dec(r.dpa0/price*100,1)}%`:"");
   $("r1-impl-eps").textContent=ok?brl(r.epsFut):"—";$("r1-impl-pf").textContent=ok?brl(r.priceFut):"—";
   $("r1-impl-vpdiv").textContent=ok?brl(r.pvDiv):"—";$("r1-impl-vpprice").textContent=ok?brl(r.pvPrice):"—";
-  $("r1-impl-sticker").textContent=ok?brl(r.sticker):"—";$("r1-impl-buy").textContent=ok?brl(r.buy):"—";
+  $("r1-impl-sticker").textContent=ok?brl(r.sticker):"—";
   setMarginRow("r1-impl-margin","r1-impl-margin-lbl",ok?r.sticker:NaN,price);
   setMosRow("r1-impl-msafe",ok?r.sticker:NaN,price);
-  // no R1 a margem tem dois papéis: a EXIGIDA (slider, define o teto) e a ATUAL (no preço de hoje)
-  $("r1-impl-msafe-lbl").textContent="atual · exigida no slider: "+pctv(mos*100);
   if(ok&&r.sticker>0){const p1=r.pvDiv/r.sticker*100,p2=r.pvPrice/r.sticker*100;$("r1-barS1").style.width=Math.max(0,p1)+"%";$("r1-barS2").style.width=Math.max(0,p2)+"%";}
   else{$("r1-barS1").style.width="0%";$("r1-barS2").style.width="0%";}
-  if(ok&&price>0){const under=price<=r.buy,share=dec(r.pvDiv/r.sticker*100,0);
-    $("r1-buy-note").innerHTML=`Dividendos são <b>${share}%</b> do preço justo. `+(under?`Preço atual <b>${brl(price)}</b> está <b>abaixo</b> do teto de compra ${brl(r.buy)} — dentro da margem de ${pctv(mos*100)}.`:`Preço atual <b>${brl(price)}</b> está <b>acima</b> do teto de compra ${brl(r.buy)} — espere um preço melhor.`);}
-  else $("r1-buy-note").textContent="";
   const yrs=Math.round(years);
   $("r1-proj").innerHTML=(ok?r.rows:[]).map(x=>`<tr><td>Ano ${x.k}</td><td>${brl(x.eps)}</td><td>${brl(x.div)}</td><td>÷ ${dec(Math.pow(1+req,x.k),2)}</td><td class="pv">${brl(x.pv)}</td></tr>`).join("");
   $("r1-f-pvdiv").textContent=ok?brl(r.pvDiv):"—";$("r1-f-pvdiv2").textContent=ok?brl(r.pvDiv):"—";
@@ -2212,8 +2194,7 @@ function renderR1(){
   $("r1-f-eps").textContent=ok?dec(r.epsFut):"—";
   $("r1-f-pe").textContent=dec(futPE,1);$("r1-f-pf").textContent=ok?brl(r.priceFut):"—";$("r1-f-pf2").textContent=ok?brl(r.priceFut):"—";
   $("r1-f-req").textContent=pctv(req*100);$("r1-f-vpprice").textContent=ok?brl(r.pvPrice):"—";$("r1-f-vpprice2").textContent=ok?brl(r.pvPrice):"—";
-  $("r1-f-sticker").textContent=ok?brl(r.sticker):"—";$("r1-f-sticker2").textContent=ok?brl(r.sticker):"—";
-  $("r1-f-mos").textContent=pctv(mos*100);$("r1-f-buy").textContent=ok?brl(r.buy):"—";
+  $("r1-f-sticker").textContent=ok?brl(r.sticker):"—";
   const r1A={lpa,g,futPE,years,payout},tirR1=irrR1(r1A,price);
   updateHeroTir(tirR1,req);setTirRow("r1-impl-tir","r1-impl-tir-lbl",tirR1,req);
   $("r1-tirBox").innerHTML=tirStepHtml({tir:tirR1,ke:req,price,valueAt:r1ValueAt(r1A),floor:-0.9,fairAtKe:ok?r.sticker:NaN,naNote:NA_R1});
@@ -2233,7 +2214,7 @@ $("naSaveBtn").addEventListener("click",async()=>{
 });
 /* inputs dos painéis Buffett */
 ["oe-lpa","oe-g","oe-gt","oe-d","oe-n"].forEach(id=>$(id).addEventListener("input",renderOE));
-["r1-lpa","r1-roe","r1-g","r1-payout","r1-pe","r1-req","r1-mos","r1-n"].forEach(id=>$(id).addEventListener("input",renderR1));
+["r1-lpa","r1-roe","r1-g","r1-payout","r1-pe","r1-req","r1-n"].forEach(id=>$(id).addEventListener("input",renderR1));
 /* modo de crescimento do R1 — `growthMode` é compartilhado com o DDM (é premissa da ação,
    como o Ke e o horizonte); trocar aqui reflete no painel do DDM e vice-versa. */
 function applyR1Mode(){
@@ -2270,15 +2251,15 @@ $("oeSaveBtn").addEventListener("click",async()=>{
 });
 $("r1SaveBtn").addEventListener("click",async()=>{
   if(!currentStock||currentStock.ticker==="Exemplo")return;
-  const lpa=+$("r1-lpa").value,g=+$("r1-g").value/100,roe=+$("r1-roe").value/100,payout=+$("r1-payout").value/100,futPE=+$("r1-pe").value,mos=+$("r1-mos").value/100,ke=+$("r1-req").value/100,fade=+$("r1-n").value;
+  const lpa=+$("r1-lpa").value,g=+$("r1-g").value/100,roe=+$("r1-roe").value/100,payout=+$("r1-payout").value/100,futPE=+$("r1-pe").value,ke=+$("r1-req").value/100,fade=+$("r1-n").value;
   const kd=$("r1-reqDefault").checked?1:0,fd=$("r1-nDefault").checked?1:0;
   const mode=growthMode==="g"?"g":"roe";   // modo de crescimento escolhido no toggle do R1
   const now=new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
-  const entry={date:now,lpa,growth_mode:mode,g_i:g,roe_i:roe,payout_i:payout,fut_pe:futPE,mos:mos,ke:ke,fade:fade,
+  const entry={date:now,lpa,growth_mode:mode,g_i:g,roe_i:roe,payout_i:payout,fut_pe:futPE,ke:ke,fade:fade,
     ke_default:kd,roet_default:1,payoutt_default:1,fade_default:fd};
   const btn=$("r1SaveBtn"),lbl=btn.innerHTML;btn.disabled=true;btn.textContent="Salvando…";
   try{const r=await fetch(`/api/premissas/${currentStock.ticker}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw 0;
-    const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.roe_i=roe;st.growth_mode=mode;st.payout_i=payout;st.fut_pe=futPE;st.mos=mos;st.ke=kd?globalCfg.ke:ke;st.fade=fd?globalCfg.fade:fade;}
+    const st=STOCKS.find(x=>x.ticker===currentStock.ticker);if(st){st.lpa=lpa;st.g_i=g;st.roe_i=roe;st.growth_mode=mode;st.payout_i=payout;st.fut_pe=futPE;st.ke=kd?globalCfg.ke:ke;st.fade=fd?globalCfg.fade:fade;}
     await commitModel();
     await loadPremissas(currentStock.ticker);
   }catch(e){alert("Não consegui salvar — verifique sua conexão e tente de novo.");}
@@ -2354,8 +2335,8 @@ function histResult(h){   // valor justo do snapshot conforme o modelo ativo da 
   if(m===M_R1){const po=h.payout_i!=null?h.payout_i:r1Payout(currentStock);
     // o snapshot guarda o modo: 'roe' deriva g de ROE×(1−payout); 'g' usa o crescimento digitado
     const viaRoe=ep.mode!=="g"&&ep.roeI!=null, g=viaRoe?ep.roeI*(1-po):(ep.gI!=null?ep.gI:0.10);
-    const pe=h.fut_pe!=null?h.fut_pe:defPE(g),ms=h.mos!=null?h.mos:0.5;
-    const r=computeR1({lpa:ep.lpa,g,futPE:pe,req:ep.ke,years:ep.fade,mos:ms,payout:po});
+    const pe=h.fut_pe!=null?h.fut_pe:defPE(g);
+    const r=computeR1({lpa:ep.lpa,g,futPE:pe,req:ep.ke,years:ep.fade,mos:0,payout:po});
     const gl=viaRoe?`ROE ${pctv(ep.roeI*100)} → g ${pctv(g*100)}`:`g ${pctv(g*100)}`;
     return {fair:r.sticker,label:`Ke ${pctv(ep.ke*100)} · ${gl} · payout ${pctv(po*100)} · P/L ${dec(pe,0)} · MS ${pctv(ms*100)}`};}
   const r=computeDDM(ep),growth=ep.mode==="g"?`g ${pctv(ep.gI*100)}→${pctv(ep.gTerm*100)}`:`ROE ${pctv(ep.roeI*100)}→${pctv(ep.roeT*100)}`;
@@ -2915,15 +2896,13 @@ function renderFiiConfig(){
   $("cfgFiiG").value=FII_CFG.g*100; $("cfgFiiGVal").textContent=pctv(Math.round(FII_CFG.g*1000)/10);
   $("cfgFiiGvp").value=FII_CFG.gvp*100; $("cfgFiiGvpVal").textContent=pctv(Math.round(FII_CFG.gvp*1000)/10);
   $("cfgFiiPvp").value=FII_CFG.pvp; $("cfgFiiPvpVal").textContent=dec(FII_CFG.pvp,2)+"×";
-  $("cfgFiiMos").value=FII_CFG.mos*100; $("cfgFiiMosVal").textContent=pctv(Math.round(FII_CFG.mos*100));
   document.querySelectorAll("#cfgFiiModel .period").forEach(b=>b.classList.toggle("active",b.dataset.model===FII_CFG.modelo));
 }
 function saveFiiConfig(){fiiSave(FII_LS.cfg,FII_CFG);rerenderFiiViews();}
 $("cfgFiiG").addEventListener("input",()=>{FII_CFG.g=+$("cfgFiiG").value/100;$("cfgFiiGVal").textContent=pctv(+$("cfgFiiG").value);});
 $("cfgFiiGvp").addEventListener("input",()=>{FII_CFG.gvp=+$("cfgFiiGvp").value/100;$("cfgFiiGvpVal").textContent=pctv(+$("cfgFiiGvp").value);});
 $("cfgFiiPvp").addEventListener("input",()=>{FII_CFG.pvp=+$("cfgFiiPvp").value;$("cfgFiiPvpVal").textContent=dec(+$("cfgFiiPvp").value,2)+"×";});
-$("cfgFiiMos").addEventListener("input",()=>{FII_CFG.mos=+$("cfgFiiMos").value/100;$("cfgFiiMosVal").textContent=pctv(+$("cfgFiiMos").value);});
-["cfgFiiG","cfgFiiGvp","cfgFiiPvp","cfgFiiMos"].forEach(id=>$(id).addEventListener("change",saveFiiConfig));
+["cfgFiiG","cfgFiiGvp","cfgFiiPvp"].forEach(id=>$(id).addEventListener("change",saveFiiConfig));
 $("cfgFiiModel").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.model===FII_CFG.modelo)return;FII_CFG.modelo=b.dataset.model;renderFiiConfig();saveFiiConfig();});
 $("cfgKeMode").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.mode===cfgKeMode())return;
   setKeMode(b.dataset.mode,true);saveConfig();});
@@ -2961,7 +2940,7 @@ function showModelPage(model){
   const info={
     [M2]:["DDM · 2 estágios","O <b>Dividend Discount Model</b> em 2 estágios projeta os dividendos ao longo do fade (estágio 1) e condensa o resto numa perpetuidade de Gordon (estágio 2), tudo descontado ao Ke. É o modelo padrão do screener. A conta passo a passo aparece na página de cada empresa."],
     [M_OE]:["Owner Earnings DCF · Buffett","O método que <b>Warren Buffett</b> descreve (relatório de 1986): valua o <b>lucro do dono</b> (owner earnings ≈ LPA) — não só os dividendos —, trazendo-o a valor presente por N anos e somando uma perpetuidade de Gordon. A taxa de desconto é ancorada no <b>juro longo do governo + prêmio</b>; o crescimento terminal é conservador (PIB de longo prazo). Gera um preço justo comparável ao do DDM."],
-    [M_R1]:["Regra nº1 · Phil Town","A versão simples de varejo do estilo Buffett/Graham (Phil Town / Preston Pysh): projeta o <b>LPA</b> por N anos, aplica um <b>P/L futuro</b> de saída, desconta ao <b>retorno exigido</b> (padrão 15%) para achar o preço justo (sticker) e aplica uma <b>margem de segurança</b> (padrão 50%) para o preço-teto de compra."],
+    [M_R1]:["Regra nº1 · Phil Town","A versão simples de varejo do estilo Buffett/Graham (Phil Town / Preston Pysh): projeta o <b>LPA</b> por N anos, aplica um <b>P/L futuro</b> de saída, desconta ao <b>retorno exigido</b> (padrão 15%) para achar o preço justo (sticker)."],
     [M_NA]:["Sem valuation","Ação marcada como <b>Sem valuation</b> — sem preço justo nem margem. Útil para empresas com prejuízo crônico (LPA ≤ 0), onde qualquer premissa de dividendos ou crescimento seria um chute. Escolha um modelo (DDM, Owner Earnings ou Regra nº1) na página da ação para calcular um preço justo."]
   };
   const i=info[model]||info[M2];
@@ -3146,10 +3125,10 @@ let FII_WATCH=new Set(fiiLoad(FII_LS.watch,[]));
 let FII_CART=fiiLoad(FII_LS.cart,{});                 // {ticker:{qtd,pm}}
 let FII_HIST=fiiLoad("fii.hist.v1",{});               // {ticker:[{date,prem,fair,price,modelo}]} — histórico de "Salvar premissas"
 // padrões específicos de FII (Config → card FIIs). Ke e horizonte vêm da config global (compartilhados).
-let FII_CFG=Object.assign({g:0.04,gvp:0.04,pvp:1.0,mos:0.15,modelo:"r1"},fiiLoad(FII_LS.cfg,{}));
-const fiiG=()=>({ke:globalCfg.ke,N:globalCfg.fade,g:FII_CFG.g,gvp:FII_CFG.gvp,pvp:FII_CFG.pvp,mos:FII_CFG.mos,modelo:FII_CFG.modelo});
+let FII_CFG=Object.assign({g:0.04,gvp:0.04,pvp:1.0,modelo:"r1"},fiiLoad(FII_LS.cfg,{}));
+const fiiG=()=>({ke:globalCfg.ke,N:globalCfg.fade,g:FII_CFG.g,gvp:FII_CFG.gvp,pvp:FII_CFG.pvp,modelo:FII_CFG.modelo});
 const FII_MODELS={
-  r1:{label:"Regra nº1 · FII",desc:"Proventos mensais projetados N anos + saída pelo P/VP no ano N, tudo a valor presente ao Ke. Teto de compra = justo × (1 − margem)."},
+  r1:{label:"Regra nº1 · FII",desc:"Proventos mensais projetados N anos + saída pelo P/VP no ano N, tudo a valor presente ao Ke."},
   dy:{label:"DY-alvo · perpetuidade",desc:"Perpetuidade de Gordon: o provento mensal cresce g e é descontado ao Ke, para sempre. Justo = DPU ÷ (Ke − g) — sem horizonte nem saída. Exige Ke > g."},
 };
 let FDRAFT={}, curFii=null, fiiScope="all", fiiSortKey="upside", fiiSortAsc=false, fiiQuery="";
@@ -3173,7 +3152,7 @@ function fiiPrem(f){
     g:p.g!=null?+p.g:G.g, N:p.N!=null?+p.N:G.N, ke:p.ke!=null?+p.ke:G.ke,
     pvpIn:p.pvpIn!=null?+p.pvpIn:null,                     // P/VP de entrada (múltiplo atual)
     vp:(p.pvpIn!=null&&+p.pvpIn>0&&f.price>0)?f.price/(+p.pvpIn):null,   // VP/cota derivado
-    gvp:p.gvp!=null?+p.gvp:G.gvp, pvp:p.pvp!=null?+p.pvp:G.pvp, mos:p.mos!=null?+p.mos:G.mos,
+    gvp:p.gvp!=null?+p.gvp:G.gvp, pvp:p.pvp!=null?+p.pvp:G.pvp,
     modelo:p.modelo||G.modelo,
   };
 }
@@ -3194,10 +3173,9 @@ function fiiValueAt(pr,r){return divPVmonthly(pr.dpu,pr.g,pr.N,r)+fiiExitValue(p
 function fiiResult(f){
   const pr=fiiPrem(f), price=f.price, isDy=pr.modelo==="dy";
   const fair=isDy?(gordonMonthly(pr.dpu,pr.g,pr.ke)??NaN):fiiValueAt(pr,pr.ke);
-  const teto=isFinite(fair)?fair*(1-pr.mos):null;
   const dy=price>0?pr.dpu/price:null, pvp=(pr.vp>0&&price>0)?price/pr.vp:null;
   const upside=(price>0&&fair>0)?(fair-price)/price:null, msafe=(fair>0)?(fair-price)/fair:null;
-  return {pr,price,fair:isFinite(fair)?fair:null,teto,dy,pvp,upside,msafe,
+  return {pr,price,fair:isFinite(fair)?fair:null,dy,pvp,upside,msafe,
           exitMode:isDy?"gordon":(pr.vp>0?"pvp":"dy"),
           divPV:isDy?(isFinite(fair)?fair:0):divPVmonthly(pr.dpu,pr.g,pr.N,pr.ke),
           exitN:isDy?0:fiiExitValue(pr)};
@@ -3413,7 +3391,7 @@ function drawFiiDetail(f,loading){
       <div class="prem-grid">
         <div class="card card-pad">
           <div class="box-head"><h3>Premissas</h3><span class="box-sub">o que você assume · ${model==='r1'?'saída por P/VP':'perpetuidade'}</span></div>
-          <p class="box-lead">DPU <b>mensal</b> (média dos 12m do Yahoo) ${fiiSrcPill(pr.dpuSource)} — editável; digitar torna manual. <b>P/VP de entrada</b> (atual) você informa; o VP/cota sai daí. <b>Ke e horizonte</b> vêm da Config global (compartilhados com as ações); g, P/VP de saída e margem do card FIIs da Config.</p>
+          <p class="box-lead">DPU <b>mensal</b> (média dos 12m do Yahoo) ${fiiSrcPill(pr.dpuSource)} — editável; digitar torna manual. <b>P/VP de entrada</b> (atual) você informa; o VP/cota sai daí. <b>Ke e horizonte</b> vêm da Config global (compartilhados com as ações); g e P/VP de saída do card FIIs da Config.</p>
           <div class="assumptions" id="fiiPremBox"></div>
           <div class="save-row"><button class="btn sm btn-primary" id="fiiSaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
         </div>
@@ -3466,17 +3444,16 @@ const FII_PREM_CTRLS=[
   ["dpu","DPU mensal (R$/cota)","num",0,0,0.01,false,"all"],
   ["ke","Retorno exigido (Ke)","rng",4,20,0.25,true,"all"],
   ["g","Crescimento do DPU (g)","rng",-2,15,0.5,true,"all"],
-  ["mos","Margem de segurança","rng",0,50,1,true,"all"],
   ["N","Anos até a venda","rng",1,30,1,false,"r1"],
   ["pvpIn","P/VP de entrada","num",0,0,0.01,false,"r1"],
   ["gvp","Cresc. do VP/cota","rng",-2,15,0.5,true,"r1"],
   ["pvp","P/VP de saída","rng",0.4,2,0.05,false,"r1"],
 ];
-function fmtFiiPrem(key,v,isPct){if(v==null||!isFinite(v))return"—";if(isPct)return dec(v*100,key==="mos"?0:1)+"%";if(key==="pvp")return dec(v,2)+"×";if(key==="N")return Math.round(v)+" anos";return dec(v,2);}
+function fmtFiiPrem(key,v,isPct){if(v==null||!isFinite(v))return"—";if(isPct)return dec(v*100,1)+"%";if(key==="pvp")return dec(v,2)+"×";if(key==="N")return Math.round(v)+" anos";return dec(v,2);}
 // Premissas ligadas à Config (checkbox "padrão", igual às ações): Ke e horizonte vêm do global
 // (globalCfg.ke / .fade); g, cresc. VP, P/VP de saída e margem vêm do card "Premissas de FIIs".
 // Marcado = sem override (segue a Config, slider travado); desmarcado = valor próprio do fundo.
-const FII_LINKED=new Set(["ke","N","g","gvp","pvp","mos"]);
+const FII_LINKED=new Set(["ke","N","g","gvp","pvp"]);
 const fiiGlobalOf=k=>fiiG()[k];
 function buildFiiPrem(f){
   const pr=fiiPrem(f),model=pr.modelo,box=$("fiiPremBox");
@@ -3525,7 +3502,7 @@ function saveFiiPrem(f){
 // rótulo curto de um snapshot: modelo + premissas efetivas (override ou padrão)
 function fiiHistLabel(h){
   const G=fiiG(),p=h.prem||{},v=(k,d)=>p[k]!=null?+p[k]:d;
-  const parts=[FII_MODELS[h.modelo||"r1"].label,"Ke "+fpct(v("ke",G.ke)),"g "+fpct(v("g",G.g)),"margem "+fpct(v("mos",G.mos),0)];
+  const parts=[FII_MODELS[h.modelo||"r1"].label,"Ke "+fpct(v("ke",G.ke)),"g "+fpct(v("g",G.g))];
   if((h.modelo||"r1")==="r1"){parts.push(Math.round(v("N",G.N))+" anos","P/VP saída "+dec(v("pvp",G.pvp),2)+"×");if(p.pvpIn!=null)parts.push("P/VP entrada "+dec(+p.pvpIn,2));}
   if(p.dpu!=null)parts.push("DPU "+brl(+p.dpu)+"/mês (manual)");
   return parts.join(" · ");
@@ -3537,7 +3514,7 @@ function renderFiiHistory(f){
     :`<div style="padding:18px 0;color:var(--text-mute);font-size:13px">Nenhuma premissa salva ainda. Ajuste os sliders e clique em "Salvar premissas".</div>`;
   box.querySelectorAll("button[data-fh]").forEach(b=>b.onclick=()=>{const h=hist[+b.dataset.fh];if(!h)return;
     // aplica o snapshot como rascunho (não grava até "Salvar"): chaves ausentes voltam ao padrão
-    FDRAFT={};["ke","N","g","gvp","pvp","mos","dpu","pvpIn"].forEach(k=>FDRAFT[k]=(h.prem&&h.prem[k]!=null)?h.prem[k]:null);FDRAFT.modelo=h.modelo||"r1";
+    FDRAFT={};["ke","N","g","gvp","pvp","dpu","pvpIn"].forEach(k=>FDRAFT[k]=(h.prem&&h.prem[k]!=null)?h.prem[k]:null);FDRAFT.modelo=h.modelo||"r1";
     fiiChart.fair=fiiResult(f).fair;drawFiiDetail(f,false);window.scrollTo({top:0,behavior:"smooth"});fiiToast("Premissas do histórico aplicadas — salve para fixar");});
 }
 const fiiStep=(n,title,body,formula)=>`<div class="step"><div class="step-badge">${n}</div><div><div class="step-title">${title}</div><div class="step-body">${body}</div>${formula||''}</div></div>`;
@@ -3551,8 +3528,7 @@ function buildFiiSteps(f){
     const s2=fiiStep(2,"Perpetuidade de Gordon (mensal)",`Assume o provento mensal crescendo <b>${fpct(pr.g)}</b> a.a. <b>para sempre</b>, descontado ao Ke mensal <span class="mono">${fpct(keM,2)}</span>. Sem horizonte nem saída.`,
       ok?`<div class="formula num"><span class="lead">Justo</span> = <span class="frac"><span class="top">${brl(pr.dpuM)}/mês × ${dec(x,4)}</span><span class="bot">1 − ${dec(x,4)}</span></span> = <span class="accent">${brl(r.fair)}</span></div>`
         :`<div class="formula num"><span class="lead">Não converge:</span> exige Ke (${fpct(pr.ke)}) &gt; g (${fpct(pr.g)}).</div>`);
-    const s3=ok?fiiStep(3,"Preço-teto de compra",`Aplica sua margem de segurança sobre o justo.`,`<div class="formula num" style="font-size:15px;">justo ${brl(r.fair)} × (1 − ${fpct(pr.mos)}) = <span class="accent">${brl(r.teto)}</span></div>`):"";
-    box.innerHTML=s1+s2+s3;return;
+    box.innerHTML=s1+s2;return;
   }
   const totalMonths=12*pr.N,mShow=Math.min(totalMonths,12),dpuM0=pr.dpu/12;let rows="";
   for(let m=1;m<=mShow;m++){const dpuMes=dpuM0*Math.pow(1+pr.g,m/12),fator=1/Math.pow(1+pr.ke,m/12);
@@ -3567,8 +3543,7 @@ function buildFiiSteps(f){
       :`Sem P/VP de entrada informado, a saída sai pelo <b>DY exigido</b> (${fpct(pr.ke)}) sobre o provento do ano ${pr.N}.`,
     `<div class="formula num"><span class="lead">Saída</span> = ${brl(r.exitN)} <span style="color:var(--text-mute)">→ a hoje</span> ÷ (1+${fpct(pr.ke)})^${pr.N} = <span class="accent">${brl(exitPV)}</span></div>`);
   const s4=fiiStep(4,"Somar = preço justo",`O valor da cota é o VP dos proventos mais a saída trazida a hoje.`,`<div class="formula num" style="font-size:15px;">${brl(r.divPV)} + ${brl(exitPV)} = <span class="accent">${brl(r.fair)}</span></div>`);
-  const s5=fiiStep(5,"Preço-teto de compra",`Aplica sua margem de segurança sobre o justo — o preço máximo a pagar.`,`<div class="formula num" style="font-size:15px;">justo ${brl(r.fair)} × (1 − ${fpct(pr.mos)}) = <span class="accent">${brl(r.teto)}</span></div>`);
-  box.innerHTML=s1+s2+s3+s4+s5;
+  box.innerHTML=s1+s2+s3+s4;
 }
 function buildFiiDivChart(f){
   const box=$("fiiDvBox"),dd=FDIV[f.ticker];

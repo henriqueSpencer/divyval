@@ -30,7 +30,7 @@ CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`,
 - **Config compartilhada** (pedido do usuário): `fiiG()` lê **Ke = `globalCfg.ke`** e **horizonte
   (anos até a venda) = `globalCfg.fade`** — mudar na Config global recalcula FIIs (`rerenderFiiViews`,
   chamada no `saveConfig`). O card **"Premissas de FIIs"** na Config (`renderFiiConfig`/`saveFiiConfig`)
-  guarda só o específico: modelo padrão, g do DPU, cresc. do VP/cota, P/VP de saída, margem — em
+  guarda só o específico: modelo padrão, g do DPU, cresc. do VP/cota, P/VP de saída — em
   **localStorage `fii.cfg.v1`** (preview; ao aprovar, viram chaves k/v na tabela `config`, sem schema).
 - **Dados**: preço ao vivo pela **brapi** (`subType:fii`, universo curado em `_lib/fii.js` → 41 líquidos).
   **DPU/DY real** vem do **Yahoo** por ticker (`/api/fii/{ticker}`, events=div, soma 12m, cache 6h); sem
@@ -51,6 +51,13 @@ CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`,
   dy 7/7; integração 16/16 (shim de DOM: ações intactas + rotas FII).
 - **Backend read-only** (sem banco): `functions/_lib/fii.js`, `functions/api/fiis.js`, `functions/api/fii/[ticker].js`.
   Yahoo dá 429 de curl direto local, mas **funciona via Function** (confirmado local e no edge).
+- **Premissas ligadas à Config no detalhe do FII** (checkbox **"padrão (x)"**, igual às ações;
+  `FII_LINKED` = ke, N, g, gvp, pvp): marcado = sem override (segue Config, slider travado `.locked`);
+  desmarcar cria override = global e destrava; remarcar apaga (`FDRAFT[k]=null`). DPU e P/VP de
+  entrada não têm global. **Histórico de premissas** (`FII_HIST`, localStorage `fii.hist.v1`, 20 por
+  fundo): cada "Salvar" grava `{date, prem, fair, price, modelo}`; card no detalhe com **Aplicar**
+  (vira rascunho; chaves ausentes voltam ao padrão). **Sem margem-input nem preço-teto** em FII
+  (removidos junto com o das ações); `msafe` segue como leitura calculada.
 
 ## Arquitetura (Cloudflare Pages + Functions)
 ```
@@ -163,7 +170,10 @@ Todo o cálculo é no **frontend** (`index.html`), despachado por `fairResult(s)
 - `Owner Earnings DCF` (`computeOE`) — método do Buffett: lucro do dono (≈LPA) a VP por N anos +
   perpetuidade.
 - `Regra nº1 · Town` (`computeR1`) — LPA×(P/L futuro) descontado ao retorno **+ dividendos
-  recebidos** (payout); saída = preço justo (sticker) e **preço-teto de compra** (sticker×(1−margem)).
+  recebidos** (payout); saída = preço justo (sticker). **A margem de segurança como INPUT foi removida
+  (set/2026, pedido do usuário)** — não há mais slider `mos` nem "preço-teto de compra" (era só
+  `sticker×(1−mos)`, trivial de fazer de cabeça e mais um campo pra preencher). `computeR1` ainda
+  aceita `mos` (passado sempre `0`); a coluna `mos` da `premissa_atual` fica no banco, ignorada.
   Tem os **mesmos dois modos de crescimento do DDM** (jul/2026): *Via ROE* (`g = ROE × (1 − payout)`,
   slider `r1-roe`) ou *Crescimento direto* (`r1-g`) — toggle `#r1GrowthToggle`, campos `.roe-only`/
   `.g-only` dentro de `#r1PremCard` (`applyR1Mode`, chamada por `applyMode`). O g efetivo sai de
@@ -179,7 +189,7 @@ Todo o cálculo é no **frontend** (`index.html`), despachado por `fairResult(s)
 
 **Ke (= retorno exigido) e horizonte (= anos de fade) são compartilhados** entre os modelos: usam o
 padrão global (Configurações) via checkbox "padrão". Premissas por ação em `premissa_atual` /
-`premissa_hist`; o R1 acrescentou as colunas **`fut_pe`** (P/L futuro) e **`mos`** (margem);
+`premissa_hist`; o R1 acrescentou a coluna **`fut_pe`** (P/L futuro) — e `mos`, hoje **sem uso**;
 payout→`payout_i`, retorno→`ke`, horizonte→`fade`. Screener e histórico recalculam por modelo.
 
 **Ke global — dois modos de entrada** (Configurações, jul/2026): *Nominal* (slider, como antes) ou
@@ -211,13 +221,12 @@ aparece nas duas leituras, com nomes agora distintos:
   mesma, então filtros/ordenação/colunas ocultas salvos no localStorage não quebram). Mantém o
   **mini medidor** (`.mos-bar`) — é a assinatura visual.
 - **`Margem seg.`** (coluna `msafe`, `mosOf`/`mosFromFair`) = `(justo − preço)/justo` — definição
-  clássica de Graham, **teto de +100%**; é a mesma base que o R1 usa no preço-teto
-  (`sticker×(1−mos)`). Número puro, sem barra. `justo ≤ 0` ⇒ `—`.
+  clássica de Graham, **teto de +100%**. Número puro, sem barra. `justo ≤ 0` ⇒ `—`. É uma
+  **leitura calculada** (não pede input) — foi mantida quando o slider de margem saiu.
 - Relação: `MS = upside/(1+upside)`. Ordenar por uma dá a mesma ordem da outra (transformação
   monotônica) — o que muda é a **leitura** (upside +260% = comprar a 28% do valor).
 - No detalhe as duas linhas convivem em "Implicações" (`impl-margin`/`impl-msafe` e equivalentes
-  em OE/R1) e o selo do hero passou a dizer "de upside". No R1, `r1-impl-msafe-lbl` distingue a
-  margem **atual** (no preço de hoje) da **exigida** (slider, que define o teto).
+  em OE/R1) e o selo do hero passou a dizer "de upside".
 - Cabeçalhos têm `title` (campo `hint` em `COLUMNS`) explicando cada fórmula.
 
 **TIR implícita (jul/2026) — o mesmo modelo rodado ao contrário.** Em vez de descontar ao Ke e
@@ -230,7 +239,7 @@ no preço de hoje. Como `valor(r)` é monotonicamente decrescente (todo fluxo é
   No R1 não há perpetuidade: o piso é −90%, então ação cara demais devolve **TIR negativa**.
   Teto `IRR_HI = 200%` (satura). Sem preço, LPA≤0 ou `Sem valuation` ⇒ `null`.
 - **É aditivo:** não altera preço justo nem margem — só relê os mesmos `compute*` com outro desconto.
-  A margem do R1 (`mos`) não entra na TIR (é proteção aplicada depois, não retorno).
+  (Não há mais margem-input no R1; a TIR usa o sticker direto.)
 - **Onde aparece:** coluna **TIR** no screener (ordenável/filtrável; verde/vermelho vs. o **Ke
   efetivo da ação** — `oeD(s)` = o dela se salvo, senão o global; o mesmo Ke que gerou o justo) +
   stat "TIR mediana"; no detalhe, linha no hero (`updateHeroTir`), linha em "Implicações"
