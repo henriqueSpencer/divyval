@@ -3215,13 +3215,40 @@ function fiiResult(f){
           exitN:isDy?0:fiiExitValue(pr)};
 }
 // TIR implícita: r que iguala o modelo (mensal) ao preço — bissecção; saída fixa (não varia com r)
+// valor(r) do fundo a uma taxa de desconto r (mesmo fluxo mensal do justo; saída fixa) + piso da busca
+function fiiValFn(f){
+  const pr=fiiPrem(f);
+  if(pr.modelo==="dy")return {val:r=>{const v=gordonMonthly(pr.dpu,pr.g,r);return v==null?Infinity:v;},floor:pr.g,pr};
+  const ex=fiiExitValue(pr);return {val:r=>divPVmonthly(pr.dpu,pr.g,pr.N,r)+ex/Math.pow(1+r,pr.N),floor:-0.5,pr};
+}
 function fiiIRR(f){
-  const pr=fiiPrem(f), price=f.price;if(!(price>0)||!(pr.dpu>0))return null;
-  let val,lo,hi=1.5;
-  if(pr.modelo==="dy"){val=r=>{const v=gordonMonthly(pr.dpu,pr.g,r);return v==null?Infinity:v;};lo=pr.g+1e-4;if(val(lo)<price)return null;if(val(hi)>price)return hi;}
-  else{const ex=fiiExitValue(pr);val=r=>divPVmonthly(pr.dpu,pr.g,pr.N,r)+ex/Math.pow(1+r,pr.N);lo=-0.5;if(val(lo)<price)return null;if(val(hi)>price)return hi;}
+  const price=f.price;const {val,floor,pr}=fiiValFn(f);if(!(price>0)||!(pr.dpu>0))return null;
+  let lo=floor+(pr.modelo==="dy"?1e-4:0),hi=1.5;
+  if(val(lo)<price)return null;if(val(hi)>price)return hi;
   for(let i=0;i<64;i++){const m=(lo+hi)/2;if(val(m)>price)lo=m;else hi=m;}
   return (lo+hi)/2;
+}
+// passo a passo da TIR (espelho do tirStepHtml das ações): ponto de partida ao Ke, tabela de
+// sensibilidade em torno da raiz (linha da TIR destacada), prêmio vs. Ke e equivalente real (IPCA da config)
+function fiiTirStepHtml(f){
+  const price=f.price,{val,floor,pr}=fiiValFn(f),tir=fiiIRR(f),ke=pr.ke,r=fiiResult(f);
+  const box=h=>`<div class="formula num">${h}</div>`;
+  if(!(price>0))return box("Sem preço de mercado para este fundo — a TIR precisa de um preço para inverter a conta.");
+  if(tir==null)return box(`<span class="lead">TIR indefinida</span> ${pr.modelo==="dy"
+    ?`ao preço de hoje a conta só fecharia com um desconto abaixo do crescimento g (${fpct(pr.g)}), faixa em que a perpetuidade não converge — o mercado paga mais do que o modelo entrega a qualquer taxa acima de g.`
+    :`com estas premissas o valor não alcança o preço de mercado em nenhuma taxa admissível — revise o DPU, o crescimento ou o P/VP de saída.`}`);
+  const start=r.fair!=null?box(`<span class="lead">Ponto de partida</span> ao Ke de <b>${fpct(ke)}</b> o modelo dá <span class="accent">${brl(r.fair)}</span>, ${r.fair>=price?"acima":"abaixo"} do preço de <b>${brl(price)}</b> → a TIR está <b>${r.fair>=price?"acima":"abaixo"}</b> do Ke.`):"";
+  const cand=[-0.04,-0.02,0,0.02,0.04].map(o=>tir+o).filter(x=>x>floor+1e-4&&x<1.5);
+  const rows=cand.map(x=>{const v=val(x),hit=Math.abs(x-tir)<1e-9,d=isFinite(v)?(v-price)/price*100:NaN;
+    const dTxt=!isFinite(d)?"—":Math.abs(d)<0.05?"0,0%":(d>0?"+":"")+dec(d,1)+"%";
+    return `<tr class="${hit?"hit":""}"><td>${dec(x*100,1)}%${hit?" &nbsp;← TIR":""}</td><td>${brl(v)}</td><td>${dTxt}</td></tr>`;}).join("");
+  const table=`<table class="proj num"><thead><tr><th>Desconto r testado</th><th>Valor que sai</th><th>vs. preço de ${brl(price)}</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const pp=(tir-ke)*100,pos=pp>=0;
+  const res=`<div class="formula num" style="font-size:15px;"><span class="lead">TIR</span> <span class="accent">${dec(tir*100,1)}% a.a.</span> <span style="color:var(--text-mute)">vs. Ke exigido</span> ${fpct(ke)} <span style="color:var(--text-mute)">=</span> <span style="color:var(--${pos?"good":"bad"});font-weight:700">${(pos?"+":"")}${dec(pp,1)} p.p.</span> <span style="color:var(--text-mute);font-size:13px">${pos?"de prêmio sobre o que você exige":"abaixo do que você exige"}</span></div>`;
+  const ipca=globalCfg.ipca||0;
+  const real=ipca>0?`<p class="comp-note">A TIR é <b>nominal</b> (os proventos são projetados em reais correntes), por isso compara direto com o Ke. Descontando a inflação de <b>${fpct(ipca)}</b>: <span class="mono">(1+${dec(tir*100,1)}%)÷(1+${fpct(ipca)})−1</span> = <b>${dec(((1+tir)/(1+ipca)-1)*100,1)}% a.a. reais</b>.</p>`:"";
+  const why=`<p class="comp-note">A TIR é o mesmo fluxo <b>mensal</b> do justo rodado ao contrário: em vez de descontar ao Ke e comparar com o preço, procura-se o desconto que faz o valor <b>bater no preço de hoje</b>. Como cada parcela é dividida por (1+r)^mês, o valor cai quando r sobe — daí a busca por bissecção. Põe todos os fundos na mesma unidade (retorno ao ano), comparável entre si, com as ações e com a NTN-B.</p>`;
+  return start+`<div class="formula num"><span class="lead">Procuro o r em que</span> <span class="mono">valor(r) = ${brl(price)}</span></div>`+table+res+real+why;
 }
 
 /* ---------- screener / monitoradas ---------- */
@@ -3582,7 +3609,8 @@ function buildFiiSteps(f){
     const s2=fiiStep(2,"Perpetuidade de Gordon (mensal)",`Assume o provento mensal crescendo <b>${fpct(pr.g)}</b> a.a. <b>para sempre</b>, descontado ao Ke mensal <span class="mono">${fpct(keM,2)}</span>. Sem horizonte nem saída.`,
       ok?`<div class="formula num"><span class="lead">Justo</span> = <span class="frac"><span class="top">${brlP(pr.dpuM)}/mês × ${dec(x,4)}</span><span class="bot">1 − ${dec(x,4)}</span></span> = <span class="accent">${brl(r.fair)}</span></div>`
         :`<div class="formula num"><span class="lead">Não converge:</span> exige Ke (${fpct(pr.ke)}) &gt; g (${fpct(pr.g)}).</div>`);
-    box.innerHTML=s1+s2;return;
+    const sT=fiiStep(3,"A TIR implícita — a mesma conta, ao contrário",`Qual retorno anual está embutido no preço de hoje, com estas mesmas premissas?`,fiiTirStepHtml(f));
+    box.innerHTML=s1+s2+sT;return;
   }
   const totalMonths=12*pr.N,mShow=Math.min(totalMonths,12),dpuM0=pr.dpu/12;let rows="";
   for(let m=1;m<=mShow;m++){const dpuMes=dpuM0*Math.pow(1+pr.g,m/12),fator=1/Math.pow(1+pr.ke,m/12);
@@ -3597,7 +3625,8 @@ function buildFiiSteps(f){
       :`Sem P/VP de entrada informado, a saída sai pelo <b>DY exigido</b> (${fpct(pr.ke)}) sobre o provento do ano ${pr.N}.`,
     `<div class="formula num"><span class="lead">Saída</span> = ${brl(r.exitN)} <span style="color:var(--text-mute)">→ a hoje</span> ÷ (1+${fpct(pr.ke)})^${pr.N} = <span class="accent">${brl(exitPV)}</span></div>`);
   const s4=fiiStep(4,"Somar = preço justo",`O valor da cota é o VP dos proventos mais a saída trazida a hoje.`,`<div class="formula num" style="font-size:15px;">${brl(r.divPV)} + ${brl(exitPV)} = <span class="accent">${brl(r.fair)}</span></div>`);
-  box.innerHTML=s1+s2+s3+s4;
+  const sT=fiiStep(5,"A TIR implícita — a mesma conta, ao contrário",`Qual retorno anual está embutido no preço de hoje, com estas mesmas premissas?`,fiiTirStepHtml(f));
+  box.innerHTML=s1+s2+s3+s4+sT;
 }
 function buildFiiDivChart(f){
   const box=$("fiiDvBox"),dd=FDIV[f.ticker];
