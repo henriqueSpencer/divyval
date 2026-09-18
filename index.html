@@ -3244,10 +3244,8 @@ function renderFiiView(){
       <div class="fstat"><div class="k">DY mediano</div><div class="v">${fpct(fiiMedian(FIIS,f=>fiiResult(f).dy))}</div></div>
       <div class="fstat"><div class="k">Monitorados</div><div class="v">${FII_WATCH.size}</div></div>
     </div>
-    <div style="margin-bottom:12px"><input class="scr-search" id="fiiQ" type="search" placeholder="Buscar ticker, nome ou segmento…" value="${fiiQuery.replace(/"/g,'&quot;')}" style="width:100%;max-width:420px"></div>
     <div id="fiiTbl"></div>`;
   renderFiiTable($("fiiTbl"),list);
-  $("fiiQ").oninput=e=>{fiiQuery=e.target.value;renderFiiTable($("fiiTbl"),fiiSorted(fiiFiltered()));};
 }
 function toggleFiiWatch(tk){if(FII_WATCH.has(tk))FII_WATCH.delete(tk);else FII_WATCH.add(tk);fiiSave(FII_LS.watch,[...FII_WATCH]);
   if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-detail").hidden&&curFii)drawFiiDetail(FIIS.find(x=>x.ticker===curFii),false);}
