@@ -10,6 +10,10 @@ Fontes:
 
 Como casa ticker ↔ fundo (a CVM não tem ticker):
 - FII_CURATED em fii.js pode fixar o ISIN (e nome/segmento curados) — usado quando existe.
+- Segmento: a CVM diz "Multicategoria/Outros" p/ a maioria (inútil). Classificamos pela COMPOSIÇÃO DA
+  CARTEIRA (arquivo ativo_passivo: CRI/LCI/LIG = papel; cotas de FII = fundo de fundos; Direitos sobre
+  imóveis = tijolo, com venda/construção/terrenos = desenvolvimento), refinando o tipo de tijolo pelo
+  Segmento_Atuacao quando específico ou por palavras do nome. FII_CURATED sobrepõe tudo.
 - senão, candidatos = fundos cujo ISIN começa com "BR" + 4 letras do ticker (BRHGLG…); pode haver
   vários (classes/CNPJs ou colisão de raiz, ex. TRXF) → escolhe a linha do mês mais recente cujo
   P/VP contra o preço real é plausível (0,4–1,8); desempate pelo maior PL. Sem candidato plausível
@@ -29,6 +33,39 @@ CVM_BASE = "https://dados.cvm.gov.br/dados/FII/DOC/INF_MENSAL/DADOS/"
 SEG_MAP = {"Logística": "Logística", "Escritórios": "Lajes corporativas", "Lajes Corporativas": "Lajes corporativas",
            "Shoppings": "Shoppings", "Residencial": "Residencial", "Hospital": "Hospitalar", "Hotel": "Hotel",
            "Varejo": "Renda urbana", "Educacional": "Educacional", "Híbrido": "Híbrido", "Títulos e Val. Mob.": "Papel (CRI)"}
+
+def classify(name, seg_cvm, comp):
+    """Segmento pelo balanço (comp = shares sobre Total_Investido) + refino por segmento/nome."""
+    n = (name or "").upper()
+    if re.search(r"FIAGRO|\bAGRO\b|AGRONEG|\bRURAL\b|TERRAS", n): return "Fiagro"
+    tijolo_sub = SEG_MAP.get(seg_cvm)
+    if tijolo_sub in ("Papel (CRI)", "Híbrido"): tijolo_sub = None      # só subtipos de tijolo
+    def by_name():
+        if re.search(r"LOG[IÍ]ST|\bLOG\b|GALP", n): return "Logística"
+        if re.search(r"SHOPPING|MALL", n): return "Shoppings"
+        if re.search(r"OFFICE|ESCRIT|CORPORATE|CORPORATIV|LAJES|TORRE|PRIME PROP|EDIF", n): return "Lajes corporativas"
+        if re.search(r"RENDA URBANA|VAREJO|RETAIL|SUPERMERC", n): return "Renda urbana"
+        if re.search(r"HOSPITAL|HEALTH|SA[UÚ]DE|CL[IÍ]NIC", n): return "Hospitalar"
+        if re.search(r"HOTEL|HOSPITALIDADE", n): return "Hotel"
+        if re.search(r"RESIDENC|HABITA|MORADIA", n): return "Residencial"
+        if re.search(r"EDUCA|UNIVERS|ESCOLA", n): return "Educacional"
+        if re.search(r"AG[EÊ]NCIA|BANC[OÁ]", n): return "Agências bancárias"
+        if re.search(r"DESENVOLV|INCORPORA", n): return "Desenvolvimento"
+        if re.search(r"\bFOF\b|FUNDO DE FUNDOS|FUNDOS DE INVESTIMENTO IMOB", n): return "Fundo de fundos"
+        if re.search(r"HEDGE|MULTIESTRAT|MULTI ?ESTRAT|MULTICARTEIRA", n): return "Híbrido"
+        if re.search(r"\bCRI\b|RECEB[IÍ]VEIS|CR[EÉ]DITO|HIGH GRADE|HIGH YIELD|SECURITIES|RENDIMENTOS IMOB|\bYIELD\b|\bDEBT\b", n): return "Papel (CRI)"
+        return None
+    TIJOLO = {"Logística", "Shoppings", "Lajes corporativas", "Renda urbana", "Hospitalar", "Hotel", "Residencial", "Educacional", "Agências bancárias"}
+    nm = by_name()
+    if nm in TIJOLO: return nm     # nome explícito de tijolo vence (muitos detêm imóveis via FIIs subsidiários → composição diria "FoF")
+    if comp:
+        papel, fof, tijolo, dev = comp["papel"], comp["fof"], comp["tijolo"], comp["dev"]
+        if papel >= 0.5: return "Papel (CRI)"
+        if fof >= 0.5: return "Fundo de fundos"
+        if dev >= 0.4: return "Desenvolvimento"
+        if tijolo >= 0.5: return tijolo_sub or nm or "Tijolo"
+        if sum(x >= 0.25 for x in (papel, fof, tijolo)) >= 2: return "Híbrido"
+    return tijolo_sub or nm or "—"
 
 def curated():
     """{ticker: (nome, segmento, isin)} de FII_CURATED em fii.js."""
@@ -73,12 +110,24 @@ def main():
     cur = curated(); px = brapi()
     with tempfile.TemporaryDirectory() as tmp:
         g, c, y = download_latest(tmp)
+        a = os.path.join(tmp, f"inf_mensal_fii_ativo_passivo_{y}.csv")
         rd = lambda p: f"read_csv('{p}',delim=';',header=true,all_varchar=true,encoding='latin-1')"
+        num = lambda col: f"COALESCE(TRY_CAST(REPLACE({col},',','.') AS DOUBLE),0)"
+        comp_rows = duck(f"""
+          SELECT * FROM (SELECT CNPJ_Fundo_Classe cnpj, Data_Referencia dref,
+              {num('Total_Investido')} tot,
+              {num('CRI')}+{num('CRI_CRA')}+{num('Letras_Hipotecarias')}+{num('LCI')}+{num('LCI_LCA')}+{num('LIG')} papel,
+              {num('FII')} fof,
+              {num('Direitos_Bens_Imoveis')}+{num('Acoes_Sociedades_Atividades_FII')}+{num('Cotas_Sociedades_Atividades_FII')} tijolo,
+              {num('Imoveis_Venda_Acabados')}+{num('Imoveis_Venda_Construcao')}+{num('Terrenos')}+{num('FIP')} dev,
+              ROW_NUMBER() OVER (PARTITION BY CNPJ_Fundo_Classe ORDER BY Data_Referencia DESC) rn
+            FROM {rd(a)}) WHERE rn=1 AND tot>0""") if os.path.exists(a) else []
+        COMP = {r["cnpj"]: {k: float(r[k]) / float(r["tot"]) for k in ("papel", "fof", "tijolo", "dev")} for r in comp_rows}
         rows = duck(f"""
           WITH g AS (SELECT DISTINCT CNPJ_Fundo_Classe cnpj, Codigo_ISIN isin, Nome_Fundo_Classe nome, Segmento_Atuacao seg FROM {rd(g)} WHERE Codigo_ISIN LIKE 'BR%'),
                c AS (SELECT CNPJ_Fundo_Classe cnpj, Data_Referencia dref, TRY_CAST(REPLACE(Valor_Patrimonial_Cotas,',','.') AS DOUBLE) vp,
                             TRY_CAST(REPLACE(Patrimonio_Liquido,',','.') AS DOUBLE) pl FROM {rd(c)} WHERE Valor_Patrimonial_Cotas IS NOT NULL)
-          SELECT g.isin, g.nome, g.seg, c.dref, c.vp, c.pl FROM g JOIN c USING(cnpj) WHERE c.vp>0""")
+          SELECT g.isin, g.cnpj, g.nome, g.seg, c.dref, c.vp, c.pl FROM g JOIN c USING(cnpj) WHERE c.vp>0""")
     byisin, byroot = {}, {}
     for r in rows:
         byisin.setdefault(r["isin"], []).append(r); byroot.setdefault(r["isin"][2:6], []).append(r)
@@ -95,8 +144,14 @@ def main():
             name, seg, isin = cur[t]; row = pick(byisin.get(isin, []), p) or (max(byisin[isin], key=lambda r: r["dref"]) if byisin.get(isin) else None)
         else:
             row = pick(byroot.get(t[:4], []), p)
-            if row: isin = row["isin"]; name = clean_name(row["nome"]); seg = SEG_MAP.get(row["seg"], "—")
-            else: name = t; seg = "—"
+            if row: isin = row["isin"]; name = clean_name(row["nome"]); seg = classify(row["nome"], row["seg"], COMP.get(row["cnpj"]))
+            else:
+                # sem VP plausível: se a raiz casa com UM ÚNICO fundo na CVM, a identidade é inequívoca →
+                # usa nome/segmento dele (o VP continua de fora, pois não passou na plausibilidade)
+                uniq = {r["isin"]: r for r in byroot.get(t[:4], [])}
+                if len(uniq) == 1:
+                    r0 = next(iter(uniq.values())); name = clean_name(r0["nome"]); seg = classify(r0["nome"], r0["seg"], COMP.get(r0["cnpj"]))
+                else: name = t; seg = "—"
         uni[t] = [name, seg, isin]
         if row and (p is None or 0.4 <= p / float(row["vp"]) <= 1.8):
             vpmap[t] = {"vp": round(float(row["vp"]), 4), "ref": row["dref"][:7]}; n_vp += 1

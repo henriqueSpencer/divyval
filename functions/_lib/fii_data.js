@@ -8,7 +8,7 @@ export const FII_UNIVERSE = {
 ],
 "ADSH11": [
 "Ad Shopping",
-"—",
+"Shoppings",
 "BRADSHCTF009"
 ],
 "AFHF11": [
@@ -18,7 +18,7 @@ null
 ],
 "AFHI11": [
 "Af Invest CRI",
-"—",
+"Papel (CRI)",
 "BRAFHICTF005"
 ],
 "AIEC11": [
@@ -32,8 +32,8 @@ null
 "BRAJFICTF001"
 ],
 "ALMI11": [
-"ALMI11",
-"—",
+"Torre Almirante",
+"Lajes corporativas",
 null
 ],
 "ALZC11": [
@@ -43,12 +43,12 @@ null
 ],
 "ALZR11": [
 "Alianza Trust",
-"—",
+"Tijolo",
 "BRALZRCTF006"
 ],
 "ANCR11": [
-"ANCR11",
-"—",
+"Ancar Ic",
+"Shoppings",
 null
 ],
 "APTO11": [
@@ -68,22 +68,22 @@ null
 ],
 "AROA11": [
 "Aroeira 333 Renda Logistica",
-"—",
+"Logística",
 "BRAROACTF003"
 ],
 "ARRI11": [
 "Open K Ativos e Recebiveis Imobiliarios",
-"—",
+"Papel (CRI)",
 "BRARRICTF009"
 ],
 "ARTE11": [
 "Artemis",
-"Residencial",
+"Papel (CRI)",
 "BRARTECTF004"
 ],
 "ARXD11": [
 "Arx Dover Recebíveis",
-"—",
+"Papel (CRI)",
 "BRARXDR01M19"
 ],
 "ATSA11": [
@@ -103,7 +103,7 @@ null
 ],
 "BBFO11": [
 "Bb Fundo de Fundos",
-"—",
+"Fundo de fundos",
 "BRBBFOCTF004"
 ],
 "BBIG11": [
@@ -113,17 +113,17 @@ null
 ],
 "BBRC11": [
 "Bb Renda Corporativa",
-"—",
+"Lajes corporativas",
 "BRBBRCCTF004"
 ],
 "BCIA11": [
 "Bradesco Carteira Imobiliária Ativa",
-"—",
+"Fundo de fundos",
 "BRBCIACTF005"
 ],
 "BCRI11": [
 "Banestes Recebiveis Imobiliarios",
-"—",
+"Papel (CRI)",
 "BRBCRICTF009"
 ],
 "BGRB11": [
@@ -143,7 +143,7 @@ null
 ],
 "BLMG11": [
 "Bluemacaw Logística Fundo Investimento",
-"—",
+"Logística",
 "BRBLMGCTF005"
 ],
 "BLMO11": [
@@ -153,12 +153,12 @@ null
 ],
 "BLOG11": [
 "Bluecap Log",
-"—",
+"Logística",
 "BRBLOGCTF001"
 ],
 "BMLC11": [
 "Bm Brascan Lajes",
-"—",
+"Lajes corporativas",
 "BRBMLCCTF004"
 ],
 "BNFS11": [
@@ -168,7 +168,7 @@ null
 ],
 "BPML11": [
 "Btgp Shoppings",
-"—",
+"Shoppings",
 "BRBPMLCTF006"
 ],
 "BRCO11": [
@@ -183,12 +183,12 @@ null
 ],
 "BRIP11": [
 "Brio Real Estate III",
-"—",
+"Residencial",
 "BRBRIPCTF001"
 ],
 "BROF11": [
 "Brpr Corporate",
-"—",
+"Lajes corporativas",
 "BRBROFCTF000"
 ],
 "BSLT11": [
@@ -218,37 +218,37 @@ null
 ],
 "BTRU11": [
 "BTG Renda Urb",
-"—",
+"Tijolo",
 "BRBTRUCTF008"
 ],
 "BTSI11": [
 "Btsp II Iliári",
-"—",
+"Tijolo",
 "BRBTSICTF001"
 ],
 "BTYU11": [
-"BTYU11",
-"—",
+"Btgp You",
+"Desenvolvimento",
 null
 ],
 "CACR11": [
-"CACR11",
-"—",
+"Cartesia Recebíveis Imobiliários",
+"Papel (CRI)",
 null
 ],
 "CARE11": [
-"CARE11",
-"—",
+"Brazilian Graveyard And Death Care Services",
+"Tijolo",
 null
 ],
 "CBOP11": [
-"CBOP11",
-"—",
+"Castello Branco Office Park",
+"Lajes corporativas",
 null
 ],
 "CCME11": [
 "Canuma Capital",
-"—",
+"Papel (CRI)",
 "BRCCMECTF007"
 ],
 "CEOC11": [
@@ -263,12 +263,12 @@ null
 ],
 "CLIN11": [
 "Clave Indices",
-"—",
+"Papel (CRI)",
 "BRCLINCTF007"
 ],
 "CNES11": [
-"CNES11",
-"—",
+"Cenesp",
+"Lajes corporativas",
 null
 ],
 "CPLG11": [
@@ -278,7 +278,7 @@ null
 ],
 "CPOF11": [
 "Capitânia Office",
-"—",
+"Lajes corporativas",
 "BRCPOFCTF002"
 ],
 "CPSH11": [
@@ -293,22 +293,22 @@ null
 ],
 "CPUR11": [
 "Capitania Hbc II",
-"—",
+"Tijolo",
 "BRCPURCTF004"
 ],
 "CRFF11": [
 "Cx Rio Bravo Fundo de Fundos de Investimento Imo",
-"—",
+"Fundo de fundos",
 "BRCRFFCTF006"
 ],
 "CTXT11": [
-"CTXT11",
-"—",
+"Fundo de Inv. Imobiliario Centro Textil Internac",
+"Lajes corporativas",
 null
 ],
 "CXAG11": [
 "Caixa Agencias",
-"Renda urbana",
+"Agências bancárias",
 "BRCXAGCTF003"
 ],
 "CXCE11": [
@@ -318,17 +318,17 @@ null
 ],
 "CXCI11": [
 "Caixa Carteira Imobiliária",
-"—",
+"Fundo de fundos",
 "BRCXCICTF005"
 ],
 "CXCO11": [
 "Caixa Imóveis Corporativos",
-"—",
+"Lajes corporativas",
 "BRCXCOCTF003"
 ],
 "CXRI11": [
 "Caixa Rio Bravo Fundo de Fundos de Investimento ",
-"—",
+"Fundo de fundos",
 "BRCXRICTF003"
 ],
 "CXTL11": [
@@ -338,7 +338,7 @@ null
 ],
 "CYCR11": [
 "Cyrela Crédito",
-"—",
+"Papel (CRI)",
 "BRCYCRCTF004"
 ],
 "CYLD11": [
@@ -348,7 +348,7 @@ null
 ],
 "DAMA11": [
 "Dama",
-"—",
+"Fundo de fundos",
 "BRDAMACTF007"
 ],
 "DAMT11": [
@@ -362,33 +362,33 @@ null
 null
 ],
 "DEVA11": [
-"DEVA11",
-"—",
+"Devant Recebíveis Imobiliários",
+"Papel (CRI)",
 null
 ],
 "DPRO11": [
 "Devant Properties",
-"—",
+"Tijolo",
 "BRDPROCTF005"
 ],
 "DVFF11": [
 "Devant Fundo de Fundo Imob",
-"—",
+"Fundo de fundos",
 "BRDVFFCTF006"
 ],
 "EDFO11": [
 "Edifício Ourinvest",
-"Residencial",
+"Lajes corporativas",
 "BREDFOCTF004"
 ],
 "EDGA11": [
-"EDGA11",
-"—",
+"Galeria",
+"Tijolo",
 null
 ],
 "EDGE11": [
 "Edge",
-"—",
+"Fundo de fundos",
 "BREDGECTF003"
 ],
 "EGDB11": [
@@ -398,52 +398,52 @@ null
 ],
 "EIRA11": [
 "Aroeira",
-"—",
+"Fundo de fundos",
 "BREIRACTF007"
 ],
 "EMET11": [
 "Emet Multiestrategia",
-"—",
+"Fundo de fundos",
 "BREMETR04M12"
 ],
 "EQIR11": [
 "Eqi CRI",
-"—",
+"Papel (CRI)",
 "BREQIRCTF003"
 ],
 "ERPA11": [
 "Europa 105",
-"—",
+"Tijolo",
 "BRERPACTF002"
 ],
 "EURO11": [
 "Europar",
-"Logística",
+"Desenvolvimento",
 "BREUROCTF011"
 ],
 "EXES11": [
 "Exes CRI",
-"—",
+"Papel (CRI)",
 "BREXESCTF006"
 ],
 "FAED11": [
 "Anhanguera",
-"—",
+"Tijolo",
 "BRFAEDCTF003"
 ],
 "FAMB11": [
 "Edifício Almirante Barroso",
-"Residencial",
+"Lajes corporativas",
 "BRFAMBCTF018"
 ],
 "FATN11": [
 "Brc Renda Corporativa",
-"—",
+"Lajes corporativas",
 "BRFATNCTF"
 ],
 "FCFL11": [
 "Campus Faria Lim",
-"—",
+"Tijolo",
 "BRFCFLCTF009"
 ],
 "FIGS11": [
@@ -473,7 +473,7 @@ null
 ],
 "FLCR11": [
 "Faria Lima Capital Recebíveis Imobiliários I",
-"—",
+"Papel (CRI)",
 "BRFLCRCTF004"
 ],
 "FLMA11": [
@@ -498,7 +498,7 @@ null
 ],
 "FPNG11": [
 "Pedra Negra Renda Imobiliária",
-"—",
+"Tijolo",
 "BRFPNGCTF005"
 ],
 "FVPQ11": [
@@ -513,27 +513,27 @@ null
 ],
 "GAME11": [
 "Guardian Multiestratégia",
-"—",
+"Papel (CRI)",
 "BRGAMECTF002"
 ],
 "GARE11": [
 "Guardial Logistica",
-"—",
+"Logística",
 "BRGARECTF001"
 ],
 "GCDL11": [
 "Galapagos Desenvolvimento",
-"Logística",
+"Fundo de fundos",
 "BRGCDLCTF002"
 ],
 "GCOI11": [
-"Galapagos Special Oportunities",
-"Residencial",
+"Galapagos Special Oportunities Respons. Limitada",
+"Fundo de fundos",
 "BRGCOICTF013"
 ],
 "GCRI11": [
 "Galapagos CRI",
-"—",
+"Papel (CRI)",
 "BRGCRICTF008"
 ],
 "GFDL11": [
@@ -548,7 +548,7 @@ null
 ],
 "GLCR11": [
 "Galapagos Hedge Fund",
-"—",
+"Papel (CRI)",
 "BRGLCRCTF002"
 ],
 "GLPF11": [
@@ -567,8 +567,8 @@ null
 "BRGSFICTF009"
 ],
 "GSRF11": [
-"GSRF11",
-"—",
+"Galapagos Sp Surf Fundo de Investimento",
+"Desenvolvimento",
 null
 ],
 "GTWR11": [
@@ -588,7 +588,7 @@ null
 ],
 "HABT11": [
 "Habitat Recebíveis Pulverizados",
-"—",
+"Residencial",
 "BRHABTCTF001"
 ],
 "HCRI11": [
@@ -598,12 +598,12 @@ null
 ],
 "HCST11": [
 "Hectare Student Housing",
-"—",
+"Tijolo",
 "BRHCSTCTF001"
 ],
 "HCTR11": [
-"HCTR11",
-"—",
+"Hectare Ce",
+"Papel (CRI)",
 null
 ],
 "HDEL11": [
@@ -637,8 +637,8 @@ null
 "BRHGCRCTF000"
 ],
 "HGIC11": [
-"HGIC11",
-"—",
+"Hgi",
+"Híbrido",
 null
 ],
 "HGLG11": [
@@ -678,7 +678,7 @@ null
 ],
 "HOMS11": [
 "Rooftop III",
-"—",
+"Desenvolvimento",
 "BRHOMSCTF001"
 ],
 "HOSI11": [
@@ -693,17 +693,17 @@ null
 ],
 "HRDF11": [
 "Hedge Realty Development",
-"—",
+"Híbrido",
 "BRHRDFCTF000"
 ],
 "HREC11": [
 "Hedge Recebíveis Imobiliários",
-"—",
+"Papel (CRI)",
 "BRHRECCTF005"
 ],
 "HSAF11": [
 "HSI Ativos Financeiros",
-"—",
+"Papel (CRI)",
 "BRHSAFCTF004"
 ],
 "HSLG11": [
@@ -733,12 +733,12 @@ null
 ],
 "IBCR11": [
 "CRI Brei",
-"—",
+"Papel (CRI)",
 "BRIBCRCTF009"
 ],
 "ICRI11": [
 "Itaú Crédito Imobiliário Ipca",
-"—",
+"Papel (CRI)",
 "BRICRICTF004"
 ],
 "IMMB11": [
@@ -758,17 +758,17 @@ null
 ],
 "IRIM11": [
 "Iridium CRI",
-"—",
+"Papel (CRI)",
 "BRIRIMCTF003"
 ],
 "ITIT11": [
 "Inter Teva Índice de Tijolo",
-"—",
+"Fundo de fundos",
 "BRITITCTF004"
 ],
 "ITRI11": [
 "Itaú Total Return",
-"—",
+"Fundo de fundos",
 "BRITRICTF008"
 ],
 "JASC11": [
@@ -783,12 +783,12 @@ null
 ],
 "JFLL11": [
 "Jfl Living",
-"—",
+"Tijolo",
 "BRJFLLCTF002"
 ],
 "JPPA11": [
 "Jpp Capital Recebíveis Imobiliários",
-"—",
+"Papel (CRI)",
 "BRJPPACTF005"
 ],
 "JPRD11": [
@@ -798,12 +798,12 @@ null
 ],
 "JSAF11": [
 "JS Ativos Financeiros",
-"—",
+"Fundo de fundos",
 "BRJSAFCTF000"
 ],
 "JSCR11": [
 "JS Recebíveis",
-"—",
+"Papel (CRI)",
 "BRJSCRCTF001"
 ],
 "JSRE11": [
@@ -813,7 +813,7 @@ null
 ],
 "KCRE11": [
 "Kinea Creditas",
-"—",
+"Papel (CRI)",
 "BRKCRECTF009"
 ],
 "KFOF11": [
@@ -822,13 +822,13 @@ null
 "BRKFOFCTF006"
 ],
 "KISU11": [
-"Kilima Fic",
-"—",
+"Kilima Fundo de Invest em Cotas de Fundos Imob S",
+"Fundo de fundos",
 "BRKISUCTF000"
 ],
 "KIVO11": [
 "Kilima Volkano Recebiveis Imobiliarios",
-"—",
+"Papel (CRI)",
 "BRKIVOCTF007"
 ],
 "KNCR11": [
@@ -838,12 +838,12 @@ null
 ],
 "KNHF11": [
 "Kinea Hedge Fund",
-"—",
+"Papel (CRI)",
 "BRKNHFCTF004"
 ],
 "KNHY11": [
 "Kinea High Yield CRI",
-"—",
+"Papel (CRI)",
 "BRKNHYCTF005"
 ],
 "KNIP11": [
@@ -853,12 +853,12 @@ null
 ],
 "KNPR11": [
 "Kinea Premium Properties",
-"—",
+"Fundo de fundos",
 "BRKNPRCTF002"
 ],
 "KNRE11": [
-"KNRE11",
-"—",
+"Kinea II Real Estate Equity",
+"Residencial",
 null
 ],
 "KNRI11": [
@@ -878,7 +878,7 @@ null
 ],
 "KORE11": [
 "Kinea Oportunidades Real Estate",
-"—",
+"Tijolo",
 "BRKORECTF012"
 ],
 "LASC11": [
@@ -897,18 +897,18 @@ null
 null
 ],
 "LRDI11": [
-"LRDI11",
-"—",
+"Leblon Realty",
+"Tijolo",
 null
 ],
 "LSOI11": [
 "Lcp Special Opportunities I Responsabilidade Ili",
-"Residencial",
+"Fundo de fundos",
 "BRLSOICTF001"
 ],
 "LSOP11": [
 "Lcp Special Opportunities III",
-"—",
+"Fundo de fundos",
 "BRLSOPCTF006"
 ],
 "LVBI11": [
@@ -918,22 +918,22 @@ null
 ],
 "MAGM11": [
 "Mag Multi Classe de Investimento Imobiliário",
-"—",
+"Papel (CRI)",
 "BRMAGMR01M14"
 ],
 "MANA11": [
 "Manatí Capital Hedge Fund",
-"—",
+"Papel (CRI)",
 "BRMANACTF006"
 ],
 "MAXR11": [
 "Max Retail",
-"—",
+"Renda urbana",
 "BRMAXRCTF009"
 ],
 "MCCI11": [
 "Maua Cap Re",
-"—",
+"Papel (CRI)",
 "BRMCCICTF008"
 ],
 "MCLO11": [
@@ -947,18 +947,18 @@ null
 null
 ],
 "MFII11": [
-"Mérito Desenvolvimento Imobiliário",
-"—",
+"Mérito Desenvolvimento Imobiliário I",
+"Desenvolvimento",
 "BRMFIICTF008"
 ],
 "MGHT11": [
-"Tzdk",
-"—",
+"Mogno Hoteis",
+"Hotel",
 "BRMGHTCTF005"
 ],
 "MIDW11": [
 "Midway Mall",
-"—",
+"Shoppings",
 "BRMIDWCTF004"
 ],
 "MXRF11": [
@@ -973,17 +973,17 @@ null
 ],
 "NCRI11": [
 "Navi Credito Imobiliario",
-"—",
+"Papel (CRI)",
 "BRNCRICTF004"
 ],
 "NEWL11": [
 "Newport Logistica",
-"—",
+"Logística",
 "BRNEWLCTF004"
 ],
 "NEWU11": [
 "Newport Renda Urbana",
-"—",
+"Renda urbana",
 "BRNEWUCTF005"
 ],
 "NMKS11": [
@@ -1003,7 +1003,7 @@ null
 ],
 "OCRE11": [
 "Octo",
-"—",
+"Fundo de fundos",
 "BROCRECTF001"
 ],
 "ONDA11": [
@@ -1013,7 +1013,7 @@ null
 ],
 "OUJP11": [
 "Ourinvest Jpp",
-"—",
+"Papel (CRI)",
 "BROUJPCTF006"
 ],
 "PABY11": [
@@ -1023,12 +1023,12 @@ null
 ],
 "PATA11": [
 "Patagonia Capital Multiestrategia",
-"—",
+"Papel (CRI)",
 "BRPATACTF006"
 ],
 "PATC11": [
 "Patria Edificios Corporativos",
-"—",
+"Lajes corporativas",
 "BRPATCCTF002"
 ],
 "PCIP11": [
@@ -1038,7 +1038,7 @@ null
 ],
 "PEMA11": [
 "Performa Real Estate",
-"—",
+"Papel (CRI)",
 "BRPEMACTF003"
 ],
 "PLAG11": [
@@ -1047,8 +1047,8 @@ null
 null
 ],
 "PLRI11": [
-"PLRI11",
-"—",
+"Polo Recebiveis Imobiliarios I",
+"Papel (CRI)",
 null
 ],
 "PLTB11": [
@@ -1058,7 +1058,7 @@ null
 ],
 "PMIS11": [
 "Paramis Hedge Fund",
-"—",
+"Papel (CRI)",
 "BRPMISCTF006"
 ],
 "PMLL11": [
@@ -1073,7 +1073,7 @@ null
 ],
 "PORD11": [
 "Polo Credito Imobiliario",
-"—",
+"Papel (CRI)",
 "BRPORDCTF005"
 ],
 "PQAG11": [
@@ -1087,8 +1087,8 @@ null
 "BRPQDPCTF004"
 ],
 "PRSV11": [
-"PRSV11",
-"—",
+"Presidente Vargas",
+"Lajes corporativas",
 null
 ],
 "PSEC11": [
@@ -1102,13 +1102,13 @@ null
 "BRPVBICTF003"
 ],
 "RBDS11": [
-"RBDS11",
-"—",
+"Rb Capital Desenvolvimento Residencial II",
+"Residencial",
 null
 ],
 "RBFM11": [
 "Rio Bravo Fundos de Investimento Imobiliário",
-"—",
+"Fundo de fundos",
 "BRRBFMCTF004"
 ],
 "RBFY11": [
@@ -1118,12 +1118,12 @@ null
 ],
 "RBHG11": [
 "Rio Bravo Crédito Imobiliário High Grade",
-"—",
+"Papel (CRI)",
 "BRRBHGCTF002"
 ],
 "RBHY11": [
 "Rio Bravo Crédito Imob High Yield Fundo de Inv. ",
-"—",
+"Papel (CRI)",
 "BRRBHYCTF005"
 ],
 "RBIR11": [
@@ -1132,18 +1132,18 @@ null
 "BRRBIRCTF007"
 ],
 "RBOP11": [
-"RBOP11",
-"—",
+"Rb Oportunidades",
+"Tijolo",
 null
 ],
 "RBRD11": [
 "Rb Capital Renda II",
-"—",
+"Tijolo",
 "BRRBRDCTF008"
 ],
 "RBRI11": [
 "RBR Desen III",
-"—",
+"Tijolo",
 "BRRBRICTF007"
 ],
 "RBRL11": [
@@ -1168,17 +1168,17 @@ null
 ],
 "RBRX11": [
 "RBR Plus Multi",
-"—",
+"Fundo de fundos",
 "BRRBRXCTF006"
 ],
 "RBRY11": [
-"RBR Credito Imob",
-"—",
+"Patria Credito",
+"Papel (CRI)",
 "BRRBRYCTF004"
 ],
 "RBTS11": [
 "Rb Capital Tfo Situs",
-"—",
+"Tijolo",
 "BRRBTSCTF002"
 ],
 "RBVA11": [
@@ -1193,7 +1193,7 @@ null
 ],
 "RCRI11": [
 "Rcri",
-"—",
+"Fundo de fundos",
 "BRRCRICTF021"
 ],
 "RDLI11": [
@@ -1208,7 +1208,7 @@ null
 ],
 "RECM11": [
 "REC Multiestratégia - Responsabilidade",
-"—",
+"Fundo de fundos",
 "BRRECMCTF005"
 ],
 "RECR11": [
@@ -1217,28 +1217,28 @@ null
 "BRRECRCTF004"
 ],
 "RECT11": [
-"RECT11",
-"—",
+"Fundo REC Renda Imobiliaria",
+"Tijolo",
 null
 ],
 "REME11": [
 "Rb Multiestratégia Imobiliária",
-"—",
+"Fundo de fundos",
 "BRREMECTF001"
 ],
 "RENV11": [
 "Cpv Energia",
-"—",
+"Tijolo",
 "BRRENVCTF003"
 ],
 "RINV11": [
 "Rinv",
-"—",
+"Fundo de fundos",
 "BRRINVCTF004"
 ],
 "RMBS11": [
 "REC Master Fundo de CRI Cotas Amortizáveis",
-"—",
+"Papel (CRI)",
 "BRRMBSCTF007"
 ],
 "RNGO11": [
@@ -1248,12 +1248,12 @@ null
 ],
 "ROOF11": [
 "Rooftop I",
-"—",
+"Desenvolvimento",
 "BRROOFCTF003"
 ],
 "RPRI11": [
 "RBR Premium Recebíveis Imob Fundo Investimento I",
-"—",
+"Papel (CRI)",
 "BRRPRICTF007"
 ],
 "RSPD11": [
@@ -1263,27 +1263,27 @@ null
 ],
 "RTEL16": [
 "Brc II",
-"—",
+"Tijolo",
 "BRRTELCTF001"
 ],
 "RZAK11": [
 "Riza Akin",
-"—",
+"Papel (CRI)",
 "BRRZAKCTF008"
 ],
 "RZAT11": [
 "Riza Arctium",
-"—",
+"Tijolo",
 "BRRZATCTF009"
 ],
 "RZLC11": [
 "Riza Lecci",
-"—",
+"Fundo de fundos",
 "BRRZLCR01M15"
 ],
 "RZTR11": [
 "Riza Terrax",
-"—",
+"Tijolo",
 "BRRZTRCTF003"
 ],
 "RZZR11": [
@@ -1293,7 +1293,7 @@ null
 ],
 "SAPI11": [
 "Sam - Santander Papeis Imobiliarios",
-"—",
+"Papel (CRI)",
 "BRSAPICTF001"
 ],
 "SCPF11": [
@@ -1313,22 +1313,22 @@ null
 ],
 "SHPP11": [
 "Shop Pt Paulista",
-"—",
+"Tijolo",
 "BRSHPPCTF001"
 ],
 "SJAU11": [
-"SJAU11",
-"—",
+"Sj Au Logística",
+"Logística",
 null
 ],
 "SMRE11": [
 "Smart Real Estate",
-"—",
+"Tijolo",
 "BRSMRECTF019"
 ],
 "SNCI11": [
 "Suno CRI",
-"—",
+"Papel (CRI)",
 "BRSNCICTF002"
 ],
 "SNEL11": [
@@ -1338,12 +1338,12 @@ null
 ],
 "SNFF11": [
 "Suno Fof",
-"—",
+"Fundo de fundos",
 "BRSNFFCTF001"
 ],
 "SNME11": [
 "Suno Mult",
-"—",
+"Fundo de fundos",
 "BRSNMECTF000"
 ],
 "SPG211": [
@@ -1358,32 +1358,32 @@ null
 ],
 "SPTW11": [
 "Sp Downtown",
-"—",
+"Tijolo",
 "BRSPTWCTF002"
 ],
 "SPXS11": [
 "Spx Real Estate",
-"—",
+"Papel (CRI)",
 "BRSPXSCTF002"
 ],
 "STYI11": [
 "Strivo Yield",
-"—",
+"Papel (CRI)",
 "BRSTYICTF003"
 ],
 "TELM11": [
 "Tellus Multi",
-"—",
+"Papel (CRI)",
 "BRTELMCTF002"
 ],
 "TEPP11": [
 "Tellus Prop",
-"—",
+"Tijolo",
 "BRTEPPCTF006"
 ],
 "TGAR11": [
 "Tg Ativo Real",
-"—",
+"Tijolo",
 "BRTGARCTF009"
 ],
 "TJKB11": [
@@ -1393,17 +1393,17 @@ null
 ],
 "TMPS11": [
 "Itaú Tempus",
-"—",
+"Fundo de fundos",
 "BRTMPSCTF003"
 ],
 "TOPP11": [
 "RBR Top Offices",
-"—",
+"Lajes corporativas",
 "BRTOPPCTF013"
 ],
 "TORD11": [
-"TORD11",
-"—",
+"Tordesilhas Ei",
+"Híbrido",
 null
 ],
 "TRBL11": [
@@ -1418,7 +1418,7 @@ null
 ],
 "TRPL11": [
 "Terras Paulistas Imobiliário de Permutas",
-"—",
+"Fiagro",
 "BRTRPLCTF007"
 ],
 "TRUE11": [
@@ -1428,7 +1428,7 @@ null
 ],
 "TRXB11": [
 "TRX Real Estate II",
-"—",
+"Tijolo",
 "BRTRXBCTF002"
 ],
 "TRXF11": [
@@ -1438,7 +1438,7 @@ null
 ],
 "TRXY11": [
 "TRX Hedge",
-"—",
+"Fundo de fundos",
 "BRTRXYCTF004"
 ],
 "TVRI11": [
@@ -1448,37 +1448,37 @@ null
 ],
 "URHF11": [
 "Urca Hedge Fund Multiestratégia Imobiliá",
-"—",
+"Papel (CRI)",
 "BRURHFCTF004"
 ],
 "URPR11": [
-"URPR11",
+"Urca Prime Renda Imobiliário",
 "—",
 null
 ],
 "VCJR11": [
 "Vectis Juros Real",
-"—",
+"Papel (CRI)",
 "BRVCJRCTF005"
 ],
 "VCRI11": [
 "Vinci Credit Securities",
-"—",
+"Papel (CRI)",
 "BRVCRICTF007"
 ],
 "VCRR11": [
 "Patria Renda Residencial I",
-"Logística",
+"Residencial",
 "BRVCRRCTF008"
 ],
 "VGHF11": [
 "Valora Hedge",
-"—",
+"Fundo de fundos",
 "BRVGHFCTF005"
 ],
 "VGII11": [
 "Valora CRI Infra II",
-"—",
+"Fundo de fundos",
 "BRVGIICTF007"
 ],
 "VGIP11": [
@@ -1488,7 +1488,7 @@ null
 ],
 "VGIR11": [
 "Valora CRI Cdi",
-"—",
+"Papel (CRI)",
 "BRVGIRCTF008"
 ],
 "VGRH11": [
@@ -1498,7 +1498,7 @@ null
 ],
 "VGRI11": [
 "Valora Renda Imobiliaria",
-"—",
+"Tijolo",
 "BRVGRICTF008"
 ],
 "VILG11": [
@@ -1508,7 +1508,7 @@ null
 ],
 "VINO11": [
 "Vinci Offices",
-"—",
+"Lajes corporativas",
 "BRVINOCTF001"
 ],
 "VISC11": [
@@ -1518,12 +1518,12 @@ null
 ],
 "VIUR11": [
 "Vinci Imóveis Urbanos",
-"—",
+"Tijolo",
 "BRVIURCTF009"
 ],
 "VOTS11": [
 "Tivio Securities",
-"—",
+"Papel (CRI)",
 "BRVOTSCTF007"
 ],
 "VPPR11": [
@@ -1533,12 +1533,12 @@ null
 ],
 "VRTA11": [
 "Fator Verita",
-"—",
+"Papel (CRI)",
 "BRVRTACTF008"
 ],
 "VRTM11": [
 "Fator Verita Multiestratégia",
-"—",
+"Desenvolvimento",
 "BRVRTMCTF003"
 ],
 "VSHO11": [
@@ -1547,8 +1547,8 @@ null
 "BRVSHOCTF002"
 ],
 "VSLH11": [
-"VSLH11",
-"—",
+"Versalhes Recebíveis Imobiliários",
+"Papel (CRI)",
 null
 ],
 "VVCO11": [
@@ -1558,12 +1558,12 @@ null
 ],
 "VVCR11": [
 "V2 Recebíveis",
-"—",
+"Papel (CRI)",
 "BRVVCRCTF000"
 ],
 "VVDI11": [
 "V2 Recebiveis Cdi",
-"—",
+"Papel (CRI)",
 "BRVVDICTF007"
 ],
 "VVMR11": [
@@ -1573,17 +1573,17 @@ null
 ],
 "VVRI11": [
 "V2 Renda Imob",
-"—",
+"Tijolo",
 "BRVVRICTF007"
 ],
 "VXXV11": [
 "Genesis Multiestratégia",
-"—",
+"Híbrido",
 "BRVXXVCTF004"
 ],
 "WHGR11": [
 "Whg Real Estate",
-"—",
+"Papel (CRI)",
 "BRWHGRCTF008"
 ],
 "WPLZ11": [
@@ -1593,7 +1593,7 @@ null
 ],
 "WTSP11": [
 "Ourinvest Re I",
-"—",
+"Tijolo",
 "BRWTSPCTF002"
 ],
 "XLPR11": [
@@ -1603,7 +1603,7 @@ null
 ],
 "XPCI11": [
 "XP Credito Imobiliário",
-"—",
+"Papel (CRI)",
 "BRXPCICTF007"
 ],
 "XPCM11": [
@@ -1623,22 +1623,22 @@ null
 ],
 "XPSF11": [
 "XP Selection",
-"—",
+"Fundo de fundos",
 "BRXPSFCTF009"
 ],
 "ZAGH11": [
 "Zagros Multiestratégia",
-"—",
+"Híbrido",
 "BRZAGHCTF007"
 ],
 "ZAVC11": [
 "Zavit Crédito Imobiliário",
-"—",
+"Papel (CRI)",
 "BRZAVCCTF007"
 ],
 "ZAVI11": [
 "Zavit Real Estate Fund",
-"—",
+"Tijolo",
 "BRZAVICTF004"
 ]
 };

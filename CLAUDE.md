@@ -39,8 +39,13 @@ CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`,
   fixado ou candidatos por raiz `BR+4 letras` → escolhe a linha do mês mais recente com **P/VP plausível
   (0,4–1,8) contra o preço real**, desempate por maior PL (resolve classes múltiplas, ex. XPML 110 vs
   22.548, e colisão de raiz, ex. TRXF). Set/2026: 269/328 com VP; os demais entram sem P/VP (modelo sai
-  pelo DY exigido). Segmento: curado nos 34; nos outros vem do `Segmento_Atuacao` da CVM mapeado
-  (`SEG_MAP`), e "Multicategoria/Outros" (a maioria) vira `—`. **DPU/DY real** vem do **Yahoo** (events=div,
+  pelo DY exigido). Segmento: curado nos 34; nos outros é **classificado pela composição da carteira**
+  (arquivo `ativo_passivo` do informe mensal: CRI/LCI/LIG ⇒ Papel; cotas de FII ⇒ Fundo de fundos;
+  direitos sobre imóveis ⇒ tijolo, com venda/construção/terrenos ⇒ Desenvolvimento; mistura ⇒ Híbrido),
+  refinando o tipo de tijolo pelo `Segmento_Atuacao` quando específico ou por palavras do nome (`classify()`
+  no script; **nome explícito de tijolo vence a composição**, pois muitos detêm imóveis via FIIs
+  subsidiários). Resultado set/2026: só 38/328 ficam `—` (sem identidade na CVM); o `Segmento_Atuacao`
+  cru era "Multicategoria/Outros" p/ 207. **DPU/DY real** vem do **Yahoo** (events=div,
   soma 12m, cache 6h por ticker): `/api/fiis` responde rápido (DPU **só do cache**, `cacheOnly`) e o front
   completa **progressivamente** via **`/api/fii-dpu?t=…`** (lotes de 24, 8 em paralelo; monitoradas e
   carteira primeiro; ~35 s p/ cobrir tudo a frio, depois cache). Screener e detalhe usam o **mesmo cache**
