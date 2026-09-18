@@ -3144,6 +3144,7 @@ const fiiSave=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 let FII_PREM=fiiLoad(FII_LS.prem,{});                 // {ticker:{dpu(mensal),g,N,ke,pvpIn,gvp,pvp,mos,modelo}}
 let FII_WATCH=new Set(fiiLoad(FII_LS.watch,[]));
 let FII_CART=fiiLoad(FII_LS.cart,{});                 // {ticker:{qtd,pm}}
+let FII_HIST=fiiLoad("fii.hist.v1",{});               // {ticker:[{date,prem,fair,price,modelo}]} — histórico de "Salvar premissas"
 // padrões específicos de FII (Config → card FIIs). Ke e horizonte vêm da config global (compartilhados).
 let FII_CFG=Object.assign({g:0.04,gvp:0.04,pvp:1.0,mos:0.15,modelo:"r1"},fiiLoad(FII_LS.cfg,{}));
 const fiiG=()=>({ke:globalCfg.ke,N:globalCfg.fade,g:FII_CFG.g,gvp:FII_CFG.gvp,pvp:FII_CFG.pvp,mos:FII_CFG.mos,modelo:FII_CFG.modelo});
@@ -3436,8 +3437,9 @@ function drawFiiDetail(f,loading){
         <div id="fiiStepBox"></div>
       </div>
       <div class="card card-pad"><div class="card-title">Proventos ${dd&&dd.divs&&dd.divs.length?'· últimos pagamentos (Yahoo)':''}</div><div id="fiiDvBox"></div></div>
+      <div class="card card-pad"><div class="card-title">Histórico de premissas</div><div id="fiiHistList"></div></div>
     </div>`;
-  buildFiiPrem(f);buildFiiSteps(f);buildFiiDivChart(f);fiiRenderPeriods();fiiRenderChart();
+  buildFiiPrem(f);buildFiiSteps(f);buildFiiDivChart(f);renderFiiHistory(f);fiiRenderPeriods();fiiRenderChart();
   fiiHeroGauge(f.price,r.fair);fiiHeroTir(tir,pr.ke);refreshFiiImpl(f);
   $("fiiSaveBtn").onclick=()=>saveFiiPrem(f);
   $("fiiCartBtn").onclick=()=>addFiiCart(f);
@@ -3471,17 +3473,34 @@ const FII_PREM_CTRLS=[
   ["pvp","P/VP de saída","rng",0.4,2,0.05,false,"r1"],
 ];
 function fmtFiiPrem(key,v,isPct){if(v==null||!isFinite(v))return"—";if(isPct)return dec(v*100,key==="mos"?0:1)+"%";if(key==="pvp")return dec(v,2)+"×";if(key==="N")return Math.round(v)+" anos";return dec(v,2);}
+// Premissas ligadas à Config (checkbox "padrão", igual às ações): Ke e horizonte vêm do global
+// (globalCfg.ke / .fade); g, cresc. VP, P/VP de saída e margem vêm do card "Premissas de FIIs".
+// Marcado = sem override (segue a Config, slider travado); desmarcado = valor próprio do fundo.
+const FII_LINKED=new Set(["ke","N","g","gvp","pvp","mos"]);
+const fiiGlobalOf=k=>fiiG()[k];
 function buildFiiPrem(f){
   const pr=fiiPrem(f),model=pr.modelo,box=$("fiiPremBox");
+  const raw={...(FII_PREM[f.ticker]||{}),...FDRAFT};          // o que está gravado/rascunhado (override?)
   const field=c=>{const[key,lbl,type,min,max,step,isPct,scope]=c;const hide=(scope==="r1"&&model!=="r1")?' style="display:none"':"";
     const v=key==="dpu"?pr.dpuM:pr[key];
-    if(type==="rng"){const rv=(v==null?min:(isPct?v*100:v));
-      return `<div class="field" data-scope="${scope}"${hide}><label>${lbl}</label><span class="val num" id="fpv_${key}">${fmtFiiPrem(key,v,isPct)}</span><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step}" value="${rv}"></div>`;}
+    if(type==="rng"){
+      const linked=FII_LINKED.has(key), locked=linked&&raw[key]==null;   // padrão = sem override
+      const rv=(v==null?min:(isPct?v*100:v));
+      const chk=linked?` <label class="chk"><input type="checkbox" data-fdef="${key}" ${locked?'checked':''}><span id="fdl_${key}">padrão (${fmtFiiPrem(key,fiiGlobalOf(key),isPct)})</span></label>`:"";
+      return `<div class="field${locked?' locked':''}" data-scope="${scope}"${hide}><label>${lbl}${chk}</label><span class="val num" id="fpv_${key}">${fmtFiiPrem(key,v,isPct)}</span><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step}" value="${rv}" ${locked?'disabled':''}></div>`;}
     return `<div class="field wide" data-scope="${scope}"${hide}><label>${lbl}</label><input type="number" data-k="${key}" data-num="1" inputmode="decimal" value="${v!=null?dec(v,2).replace(",","."):''}" step="${step}" placeholder="—"></div>`;};
   let html="";FII_PREM_CTRLS.forEach(c=>{if(c[0]==="N")html+=`<div class="asm-group" data-scope="r1"${model!=="r1"?' style="display:none"':''}>saída no ano N · vira preço pelo P/VP</div>`;html+=field(c);});
   box.innerHTML=html;
-  box.querySelectorAll("input[type=range]").forEach(inp=>inp.oninput=()=>{const k=inp.dataset.k,c=FII_PREM_CTRLS.find(x=>x[0]===k),isPct=c[6];let val=+inp.value;if(isPct)val/=100;$("fpv_"+k).textContent=fmtFiiPrem(k,val,isPct);setFiiDraft(f,k,val);});
+  box.querySelectorAll("input[type=range]").forEach(inp=>inp.oninput=()=>{if(inp.disabled)return;const k=inp.dataset.k,c=FII_PREM_CTRLS.find(x=>x[0]===k),isPct=c[6];let val=+inp.value;if(isPct)val/=100;$("fpv_"+k).textContent=fmtFiiPrem(k,val,isPct);setFiiDraft(f,k,val);});
   box.querySelectorAll("input[data-num]").forEach(inp=>inp.oninput=()=>{const k=inp.dataset.k,raw=inp.value.replace(",",".").trim();setFiiDraft(f,k,raw===""?null:+raw);});
+  // checkbox "padrão": marcar → remove o override (volta ao global, trava); desmarcar → cria override = global (destrava)
+  box.querySelectorAll("input[data-fdef]").forEach(cb=>cb.onchange=()=>{
+    const k=cb.dataset.fdef,c=FII_PREM_CTRLS.find(x=>x[0]===k),isPct=c[6],fld=cb.closest(".field"),sl=fld.querySelector("input[type=range]");
+    const gv=fiiGlobalOf(k);
+    if(cb.checked){FDRAFT[k]=null;sl.disabled=true;fld.classList.add("locked");sl.value=isPct?gv*100:gv;$("fpv_"+k).textContent=fmtFiiPrem(k,gv,isPct);}
+    else{FDRAFT[k]=gv;sl.disabled=false;fld.classList.remove("locked");}
+    refreshFiiLive(f);
+  });
 }
 function setFiiDraft(f,k,v){FDRAFT[k]=v;refreshFiiLive(f);}
 function refreshFiiLive(f){
@@ -3496,7 +3515,30 @@ function saveFiiPrem(f){
   const merged={...(FII_PREM[f.ticker]||{}),...FDRAFT};
   Object.keys(merged).forEach(k=>{if(k!=="modelo"&&(merged[k]==null||merged[k]===""))delete merged[k];});
   if(Object.keys(merged).length)FII_PREM[f.ticker]=merged;else delete FII_PREM[f.ticker];
-  fiiSave(FII_LS.prem,FII_PREM);FDRAFT={};fiiToast("Premissas salvas");fiiChart.fair=fiiResult(f).fair;drawFiiDetail(f,false);
+  fiiSave(FII_LS.prem,FII_PREM);FDRAFT={};
+  // snapshot no histórico (data, premissas gravadas, justo e preço da época)
+  const rr=fiiResult(f),now=new Date();
+  const snap={date:now.toLocaleDateString("pt-BR")+" "+now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),prem:{...merged},fair:rr.fair,price:f.price,modelo:rr.pr.modelo};
+  FII_HIST[f.ticker]=[snap,...(FII_HIST[f.ticker]||[])].slice(0,20);fiiSave("fii.hist.v1",FII_HIST);
+  fiiToast("Premissas salvas");fiiChart.fair=rr.fair;drawFiiDetail(f,false);
+}
+// rótulo curto de um snapshot: modelo + premissas efetivas (override ou padrão)
+function fiiHistLabel(h){
+  const G=fiiG(),p=h.prem||{},v=(k,d)=>p[k]!=null?+p[k]:d;
+  const parts=[FII_MODELS[h.modelo||"r1"].label,"Ke "+fpct(v("ke",G.ke)),"g "+fpct(v("g",G.g)),"margem "+fpct(v("mos",G.mos),0)];
+  if((h.modelo||"r1")==="r1"){parts.push(Math.round(v("N",G.N))+" anos","P/VP saída "+dec(v("pvp",G.pvp),2)+"×");if(p.pvpIn!=null)parts.push("P/VP entrada "+dec(+p.pvpIn,2));}
+  if(p.dpu!=null)parts.push("DPU "+brl(+p.dpu)+"/mês (manual)");
+  return parts.join(" · ");
+}
+function renderFiiHistory(f){
+  const box=$("fiiHistList");if(!box)return;const hist=FII_HIST[f.ticker]||[];
+  box.innerHTML=hist.length?hist.map((h,i)=>`<div class="hist-item"><div class="hist-meta"><div class="date">${h.date||"—"}</div><div class="hist-vals">${fiiHistLabel(h)} · preço na época ${brl(h.price)}</div></div>
+      <div style="display:flex;align-items:center;gap:14px;"><span class="hist-fair accent">${brl(h.fair)}</span><button class="btn sm" data-fh="${i}">Aplicar</button></div></div>`).join("")
+    :`<div style="padding:18px 0;color:var(--text-mute);font-size:13px">Nenhuma premissa salva ainda. Ajuste os sliders e clique em "Salvar premissas".</div>`;
+  box.querySelectorAll("button[data-fh]").forEach(b=>b.onclick=()=>{const h=hist[+b.dataset.fh];if(!h)return;
+    // aplica o snapshot como rascunho (não grava até "Salvar"): chaves ausentes voltam ao padrão
+    FDRAFT={};["ke","N","g","gvp","pvp","mos","dpu","pvpIn"].forEach(k=>FDRAFT[k]=(h.prem&&h.prem[k]!=null)?h.prem[k]:null);FDRAFT.modelo=h.modelo||"r1";
+    fiiChart.fair=fiiResult(f).fair;drawFiiDetail(f,false);window.scrollTo({top:0,behavior:"smooth"});fiiToast("Premissas do histórico aplicadas — salve para fixar");});
 }
 const fiiStep=(n,title,body,formula)=>`<div class="step"><div class="step-badge">${n}</div><div><div class="step-title">${title}</div><div class="step-body">${body}</div>${formula||''}</div></div>`;
 function buildFiiSteps(f){
