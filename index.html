@@ -3109,6 +3109,8 @@ updateGroupBtn();
 const fdec=(n,d=2)=>(n==null||!isFinite(n))?"—":dec(n,d);
 const fpct=(n,d=1)=>(n==null||!isFinite(n))?"—":dec(n*100,d)+"%";
 const fclamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fnum=v=>String(+(+v).toFixed(4));                                   // p/ <input type=number>: 0.093, 1.11
+const brlP=n=>(n==null||!isFinite(n))?"—":"R$ "+n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:Math.abs(n)<1?4:2});   // cotas baratas: 4 casas
 function fiiToast(m){let t=$("fiiToast");if(!t){t=document.createElement("div");t.id="fiiToast";t.className="ftoast";document.body.appendChild(t);}
   t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800);}
 function assetToggleHtml(base,cur){ // base: screener|monitoradas|carteira
@@ -3471,11 +3473,11 @@ function refreshFiiImpl(f){
 }
 // [key, label, type, min, max, step, isPct, scope]
 const FII_PREM_CTRLS=[
-  ["dpu","DPU mensal (R$/cota)","num",0,0,0.01,false,"all"],
+  ["dpu","DPU mensal (R$/cota)","num",0,0,"any",false,"all"],
   ["ke","Retorno exigido (Ke)","rng",4,20,0.25,true,"all"],
   ["g","Crescimento do DPU (g)","rng",-2,15,0.5,true,"all"],
   ["N","Anos até a venda","rng",1,30,1,false,"r1"],
-  ["pvpIn","P/VP de entrada","num",0,0,0.01,false,"r1"],
+  ["pvpIn","P/VP de entrada","num",0,0,"any",false,"r1"],
   ["gvp","Cresc. do VP/cota","rng",-2,15,0.5,true,"r1"],
   ["pvp","P/VP de saída","rng",0.4,2,0.05,false,"r1"],
 ];
@@ -3496,7 +3498,7 @@ function buildFiiPrem(f){
       const chk=linked?` <label class="chk"><input type="checkbox" data-fdef="${key}" ${locked?'checked':''}><span id="fdl_${key}">padrão (${fmtFiiPrem(key,fiiGlobalOf(key),isPct)})</span></label>`:"";
       return `<div class="field${locked?' locked':''}" data-scope="${scope}"${hide}><label>${lbl}${chk}</label><span class="val num" id="fpv_${key}">${fmtFiiPrem(key,v,isPct)}</span><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step}" value="${rv}" ${locked?'disabled':''}></div>`;}
     const pill=key==="pvpIn"&&pr.pvpSource?` <label class="chk" style="cursor:default">${pr.pvpSource==="cvm"?`<span class="srcpill estimado" style="text-transform:none">CVM ${pr.vpRef||""}</span>`:`<span class="srcpill manual">manual</span>`}</label>`:"";
-    return `<div class="field wide" data-scope="${scope}"${hide}><label>${lbl}${pill}</label><input type="number" data-k="${key}" data-num="1" inputmode="decimal" value="${v!=null?dec(v,2).replace(",","."):''}" step="${step}" placeholder="${key==='pvpIn'?'preço ÷ VP/cota':'—'}"></div>`;};
+    return `<div class="field wide" data-scope="${scope}"${hide}><label>${lbl}${pill}</label><input type="number" data-k="${key}" data-num="1" inputmode="decimal" value="${v!=null?fnum(v):''}" step="${step}" placeholder="${key==='pvpIn'?'preço ÷ VP/cota':'—'}"></div>`;};
   let html="";FII_PREM_CTRLS.forEach(c=>{if(c[0]==="N")html+=`<div class="asm-group" data-scope="r1"${model!=="r1"?' style="display:none"':''}>saída no ano N · vira preço pelo P/VP</div>`;html+=field(c);});
   box.innerHTML=html;
   box.querySelectorAll("input[type=range]").forEach(inp=>inp.oninput=()=>{if(inp.disabled)return;const k=inp.dataset.k,c=FII_PREM_CTRLS.find(x=>x[0]===k),isPct=c[6];let val=+inp.value;if(isPct)val/=100;$("fpv_"+k).textContent=fmtFiiPrem(k,val,isPct);setFiiDraft(f,k,val);});
@@ -3539,7 +3541,7 @@ function fiiHistLabel(h){
   const G=fiiG(),p=h.prem||{},v=(k,d)=>p[k]!=null?+p[k]:d;
   const parts=[FII_MODELS[h.modelo||"r1"].label,"Ke "+fpct(v("ke",G.ke)),"g "+fpct(v("g",G.g))];
   if((h.modelo||"r1")==="r1"){parts.push(Math.round(v("N",G.N))+" anos","P/VP saída "+dec(v("pvp",G.pvp),2)+"×");if(p.pvpIn!=null)parts.push("P/VP entrada "+dec(+p.pvpIn,2));}
-  if(p.dpu!=null)parts.push("DPU "+brl(+p.dpu)+"/mês (manual)");
+  if(p.dpu!=null)parts.push("DPU "+brlP(+p.dpu)+"/mês (manual)");
   return parts.join(" · ");
 }
 function renderFiiHistory(f){
@@ -3557,21 +3559,21 @@ function buildFiiSteps(f){
   const r=fiiResult(f),pr=r.pr,box=$("fiiStepBox");if(!box)return;
   const keM=Math.pow(1+pr.ke,1/12)-1;
   const s1=fiiStep(1,"Provento de partida",`O DPU <b>mensal</b> pago pelo fundo — o ponto de partida do fluxo.`,
-    `<div class="formula num"><span class="lead">DPU</span> = <span class="accent">${brl(pr.dpuM)}/mês</span> = ${brl(pr.dpu)}/ano → DY ${fpct(r.dy)}</div>`);
+    `<div class="formula num"><span class="lead">DPU</span> = <span class="accent">${brlP(pr.dpuM)}/mês</span> = ${brlP(pr.dpu)}/ano → DY ${fpct(r.dy)}</div>`);
   if(pr.modelo==="dy"){
     const x=Math.pow((1+pr.g)/(1+pr.ke),1/12),ok=pr.ke>pr.g&&r.fair!=null;
     const s2=fiiStep(2,"Perpetuidade de Gordon (mensal)",`Assume o provento mensal crescendo <b>${fpct(pr.g)}</b> a.a. <b>para sempre</b>, descontado ao Ke mensal <span class="mono">${fpct(keM,2)}</span>. Sem horizonte nem saída.`,
-      ok?`<div class="formula num"><span class="lead">Justo</span> = <span class="frac"><span class="top">${brl(pr.dpuM)}/mês × ${dec(x,4)}</span><span class="bot">1 − ${dec(x,4)}</span></span> = <span class="accent">${brl(r.fair)}</span></div>`
+      ok?`<div class="formula num"><span class="lead">Justo</span> = <span class="frac"><span class="top">${brlP(pr.dpuM)}/mês × ${dec(x,4)}</span><span class="bot">1 − ${dec(x,4)}</span></span> = <span class="accent">${brl(r.fair)}</span></div>`
         :`<div class="formula num"><span class="lead">Não converge:</span> exige Ke (${fpct(pr.ke)}) &gt; g (${fpct(pr.g)}).</div>`);
     box.innerHTML=s1+s2;return;
   }
   const totalMonths=12*pr.N,mShow=Math.min(totalMonths,12),dpuM0=pr.dpu/12;let rows="";
   for(let m=1;m<=mShow;m++){const dpuMes=dpuM0*Math.pow(1+pr.g,m/12),fator=1/Math.pow(1+pr.ke,m/12);
-    rows+=`<tr><td>mês ${m}</td><td>${brl(dpuMes)}</td><td>× ${dec(fator,4)}</td><td class="pv">${brl(dpuMes*fator)}</td></tr>`;}
+    rows+=`<tr><td>mês ${m}</td><td>${brlP(dpuMes)}</td><td>× ${dec(fator,4)}</td><td class="pv">${brlP(dpuMes*fator)}</td></tr>`;}
   if(totalMonths>mShow){const restVP=r.divPV-divPVmonthly(pr.dpu,pr.g,mShow/12,pr.ke);rows+=`<tr class="base"><td>meses ${mShow+1}–${totalMonths}</td><td>…</td><td>…</td><td class="pv">${brl(restVP)}</td></tr>`;}
   const exitPV=r.exitN/Math.pow(1+pr.ke,pr.N);
   const s2=fiiStep(2,"Projetar mensal e descontar ao Ke mensal",
-    `O FII paga <b>mensal</b>: <b>${totalMonths} parcelas</b> de ~<b>${brl(dpuM0)}</b>${pr.g!==0?` (crescendo <b>${fpct(pr.g)}</b> a.a.)`:''}, cada uma trazida a hoje por <span class="mono">1 ÷ (1+Ke_mês)^mês</span>, com Ke mensal <span class="mono">${fpct(keM,2)}</span> (= ${fpct(pr.ke)} a.a.). O <b>fator de desconto</b> encolhe a cada mês — o aluguel do mês 1 vale mais que o do mês 12.`,
+    `O FII paga <b>mensal</b>: <b>${totalMonths} parcelas</b> de ~<b>${brlP(dpuM0)}</b>${pr.g!==0?` (crescendo <b>${fpct(pr.g)}</b> a.a.)`:''}, cada uma trazida a hoje por <span class="mono">1 ÷ (1+Ke_mês)^mês</span>, com Ke mensal <span class="mono">${fpct(keM,2)}</span> (= ${fpct(pr.ke)} a.a.). O <b>fator de desconto</b> encolhe a cada mês — o aluguel do mês 1 vale mais que o do mês 12.`,
     `<table class="proj num"><thead><tr><th>Mês</th><th>Provento</th><th>fator VP</th><th>= VP a hoje</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="sum"><td colspan="3">VP dos proventos (${totalMonths} meses)</td><td class="pv">${brl(r.divPV)}</td></tr></tfoot></table>`);
   const s3=fiiStep(3,`Valor de saída no ano ${pr.N}`,
     r.exitMode==="pvp"?`${pr.pvpSource==="cvm"?`VP/cota <b>${brl(pr.vp)}</b> (Informe Mensal CVM ${pr.vpRef||""}) → P/VP de entrada <b>${dec(pr.pvpIn,2)}×</b>.`:`Do <b>P/VP de entrada ${dec(pr.pvpIn,2)}×</b> (informado) sai o VP/cota = preço ÷ P/VP = <b>${brl(pr.vp)}</b>.`} Ele cresce <b>${fpct(pr.gvp)}</b>/ano e você vende a <b>P/VP de saída ${dec(pr.pvp,2)}×</b> no ano ${pr.N}.`
