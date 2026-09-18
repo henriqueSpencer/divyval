@@ -834,7 +834,7 @@ button{font-family:inherit;}
           <p id="fiiSub">Fundos imobiliários ordenados por upside — quanto o preço justo está acima do preço atual.</p>
         </div>
       </div>
-      <div class="fnote"><b>Todos os FIIs com cotação</b> (brapi, ~330). <b>DY/DPU real</b> vem do Yahoo e carrega <b>progressivamente</b> (as linhas trocam de <span class="srcpill estimado">estimado</span> para real em segundos; monitoradas e carteira primeiro). <b>P/VP</b> usa o VP/cota do <b>Informe Mensal da CVM</b> (mês de referência no detalhe; você pode sobrescrever por fundo). Premissas, monitoradas e carteira de FII ficam no seu navegador por enquanto (preview).</div>
+      <div class="fnote"><b>Todos os FIIs com cotação</b> (brapi, ~330). <b>DY/DPU real</b> vem do Yahoo e carrega <b>progressivamente</b> (as linhas trocam de <span class="srcpill estimado">estimado</span> para real em segundos; monitoradas e carteira primeiro). <b>P/VP</b> usa o VP/cota do <b>Informe Mensal da CVM</b> (mês de referência no detalhe; você pode sobrescrever por fundo). Premissas, monitoradas e carteira de FII são salvas na sua conta (sincronizam entre dispositivos).</div>
       <div id="fiiBody"></div>
     </section>
     <section class="view" id="view-fii-detail" hidden><div id="fiiDetailBody"></div></section>
@@ -2884,7 +2884,7 @@ function renderConfig(){
 }
 function saveConfig(){
   const mode=cfgKeMode();
-  globalCfg={ke:mode==="real"?keReal():+$("cfgKe").value/100,
+  globalCfg={...globalCfg,ke:mode==="real"?keReal():+$("cfgKe").value/100,   // spread preserva fii_g/fii_gvp/fii_pvp/fii_modelo
     roet:+$("cfgRoet").value/100,payoutt:+$("cfgPayoutt").value/100,fade:+$("cfgFade").value,
     ke_mode:mode,ipca:numv($("cfgIpca"))/100,ntnb:numv($("cfgNtnb"))/100,premio:numv($("cfgPremio"))/100};
   fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(globalCfg)})
@@ -2892,18 +2892,18 @@ function saveConfig(){
 }
 /* ===== Config → card "Premissas de FIIs" (Ke/fade são os globais; aqui só o específico de FII) ===== */
 function renderFiiConfig(){
-  if(!$("cfgFiiG"))return;
-  $("cfgFiiG").value=FII_CFG.g*100; $("cfgFiiGVal").textContent=pctv(Math.round(FII_CFG.g*1000)/10);
-  $("cfgFiiGvp").value=FII_CFG.gvp*100; $("cfgFiiGvpVal").textContent=pctv(Math.round(FII_CFG.gvp*1000)/10);
-  $("cfgFiiPvp").value=FII_CFG.pvp; $("cfgFiiPvpVal").textContent=dec(FII_CFG.pvp,2)+"×";
-  document.querySelectorAll("#cfgFiiModel .period").forEach(b=>b.classList.toggle("active",b.dataset.model===FII_CFG.modelo));
+  if(!$("cfgFiiG"))return;const G=fiiG();
+  $("cfgFiiG").value=G.g*100; $("cfgFiiGVal").textContent=pctv(Math.round(G.g*1000)/10);
+  $("cfgFiiGvp").value=G.gvp*100; $("cfgFiiGvpVal").textContent=pctv(Math.round(G.gvp*1000)/10);
+  $("cfgFiiPvp").value=G.pvp; $("cfgFiiPvpVal").textContent=dec(G.pvp,2)+"×";
+  document.querySelectorAll("#cfgFiiModel .period").forEach(b=>b.classList.toggle("active",b.dataset.model===G.modelo));
 }
-function saveFiiConfig(){fiiSave(FII_LS.cfg,FII_CFG);rerenderFiiViews();}
-$("cfgFiiG").addEventListener("input",()=>{FII_CFG.g=+$("cfgFiiG").value/100;$("cfgFiiGVal").textContent=pctv(+$("cfgFiiG").value);});
-$("cfgFiiGvp").addEventListener("input",()=>{FII_CFG.gvp=+$("cfgFiiGvp").value/100;$("cfgFiiGvpVal").textContent=pctv(+$("cfgFiiGvp").value);});
-$("cfgFiiPvp").addEventListener("input",()=>{FII_CFG.pvp=+$("cfgFiiPvp").value;$("cfgFiiPvpVal").textContent=dec(+$("cfgFiiPvp").value,2)+"×";});
+function saveFiiConfig(){saveConfig();}   // as chaves fii_* vão junto com a config global (Supabase) e rerenderFiiViews roda lá
+$("cfgFiiG").addEventListener("input",()=>{globalCfg.fii_g=+$("cfgFiiG").value/100;$("cfgFiiGVal").textContent=pctv(+$("cfgFiiG").value);});
+$("cfgFiiGvp").addEventListener("input",()=>{globalCfg.fii_gvp=+$("cfgFiiGvp").value/100;$("cfgFiiGvpVal").textContent=pctv(+$("cfgFiiGvp").value);});
+$("cfgFiiPvp").addEventListener("input",()=>{globalCfg.fii_pvp=+$("cfgFiiPvp").value;$("cfgFiiPvpVal").textContent=dec(+$("cfgFiiPvp").value,2)+"×";});
 ["cfgFiiG","cfgFiiGvp","cfgFiiPvp"].forEach(id=>$(id).addEventListener("change",saveFiiConfig));
-$("cfgFiiModel").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.model===FII_CFG.modelo)return;FII_CFG.modelo=b.dataset.model;renderFiiConfig();saveFiiConfig();});
+$("cfgFiiModel").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.model===fiiG().modelo)return;globalCfg.fii_modelo=b.dataset.model;renderFiiConfig();saveFiiConfig();});
 $("cfgKeMode").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.mode===cfgKeMode())return;
   setKeMode(b.dataset.mode,true);saveConfig();});
 ["cfgIpca","cfgNtnb","cfgPremio"].forEach(id=>{$(id).addEventListener("input",renderKeEq);$(id).addEventListener("change",saveConfig);});
@@ -3117,16 +3117,16 @@ function assetToggleHtml(base,cur){ // base: screener|monitoradas|carteira
 /* ---------- estado ---------- */
 let FIIS=[], FIIS_LOADED=false, FIIS_LOADING=null;   // [{ticker,name,segment,price,dpu_est,seg_dy}]
 const FDIV={};                                        // cache detalhe por ticker: {price,dpu12m,source,divs,n12}
-const FII_LS={prem:"fii.prem.v1",watch:"fii.watch.v1",cart:"fii.cart.v1",cfg:"fii.cfg.v1"};
-const fiiLoad=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d;}catch(e){return d;}};
-const fiiSave=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
-let FII_PREM=fiiLoad(FII_LS.prem,{});                 // {ticker:{dpu(mensal),g,N,ke,pvpIn,gvp,pvp,mos,modelo}}
-let FII_WATCH=new Set(fiiLoad(FII_LS.watch,[]));
-let FII_CART=fiiLoad(FII_LS.cart,{});                 // {ticker:{qtd,pm}}
-let FII_HIST=fiiLoad("fii.hist.v1",{});               // {ticker:[{date,prem,fair,price,modelo}]} — histórico de "Salvar premissas"
+// Estado do usuário p/ FIIs vive no SUPABASE (igual às ações) — carregado por /api/fii-state junto com o
+// universo, gravado pelos endpoints /api/fii-premissa|fii-watchlist|fii-carteira/{ticker}. Sincroniza entre dispositivos.
+let FII_PREM={};                                      // {ticker:{dpu(mensal),g,N,ke,pvpIn,gvp,pvp,modelo}} — só overrides
+let FII_WATCH=new Set();
+let FII_CART={};                                      // {ticker:{qtd,pm}}
+let FII_HIST={};                                      // {ticker:[{date,prem,fair,price,modelo}]} — histórico de "Salvar premissas"
+const fiiApi=(url,method,body)=>fetch(url,{method,headers:body?{"Content-Type":"application/json"}:undefined,body:body?JSON.stringify(body):undefined}).then(r=>{if(!r.ok)throw new Error(method+" "+url+" "+r.status);return r;});
 // padrões específicos de FII (Config → card FIIs). Ke e horizonte vêm da config global (compartilhados).
-let FII_CFG=Object.assign({g:0.04,gvp:0.04,pvp:1.0,modelo:"r1"},fiiLoad(FII_LS.cfg,{}));
-const fiiG=()=>({ke:globalCfg.ke,N:globalCfg.fade,g:FII_CFG.g,gvp:FII_CFG.gvp,pvp:FII_CFG.pvp,modelo:FII_CFG.modelo});
+// padrões de FII (card "Premissas de FIIs") vivem na config global (tabela config: fii_g/fii_gvp/fii_pvp/fii_modelo)
+const fiiG=()=>({ke:globalCfg.ke,N:globalCfg.fade,g:globalCfg.fii_g??0.04,gvp:globalCfg.fii_gvp??0.04,pvp:globalCfg.fii_pvp??1.0,modelo:globalCfg.fii_modelo||"r1"});
 const FII_MODELS={
   r1:{label:"Regra nº1 · FII",desc:"Proventos mensais projetados N anos + saída pelo P/VP no ano N, tudo a valor presente ao Ke."},
   dy:{label:"DY-alvo · perpetuidade",desc:"Perpetuidade de Gordon: o provento mensal cresce g e é descontado ao Ke, para sempre. Justo = DPU ÷ (Ke − g) — sem horizonte nem saída. Exige Ke > g."},
@@ -3135,7 +3135,11 @@ let FDRAFT={}, curFii=null, fiiScope="all", fiiSortKey="upside", fiiSortAsc=fals
 
 async function ensureFiis(){
   if(FIIS_LOADED)return FIIS;
-  if(!FIIS_LOADING)FIIS_LOADING=(async()=>{try{const r=await fetch("/api/fiis");if(r.ok){const j=await r.json();FIIS=j.fiis||[];}}catch(e){}FIIS_LOADED=true;fiiLoadDpuProgressive();return FIIS;})();
+  if(!FIIS_LOADING)FIIS_LOADING=(async()=>{
+    const [a,b]=await Promise.all([fetch("/api/fiis").catch(()=>null),fetch("/api/fii-state").catch(()=>null)]);
+    try{if(a&&a.ok){const j=await a.json();FIIS=j.fiis||[];}}catch(e){}
+    try{if(b&&b.ok){const st=await b.json();FII_PREM=st.prem||{};FII_WATCH=new Set(st.watch||[]);FII_CART=st.cart||{};FII_HIST=st.hist||{};}}catch(e){}
+    FIIS_LOADED=true;fiiLoadDpuProgressive();return FIIS;})();
   return FIIS_LOADING;
 }
 // DPU real (Yahoo) dos fundos que vieram "estimado": em lotes de 24 via /api/fii-dpu, monitoradas e carteira
@@ -3158,7 +3162,7 @@ async function fiiLoadDpuProgressive(){
 }
 
 /* ---------- modelo ---------- */
-// Premissa efetiva: rascunho (só do ticker aberto) → override salvo → padrão (config global + FII_CFG).
+// Premissa efetiva: rascunho (só do ticker aberto) → override salvo → padrão (config global: Ke/fade + fii_*).
 function fiiPrem(f){
   const G=fiiG(), base=FII_PREM[f.ticker]||{};
   const p=(curFii===f.ticker)?{...base,...FDRAFT}:base;
@@ -3272,8 +3276,10 @@ function renderFiiView(){
     <div id="fiiTbl"></div>`;
   renderFiiTable($("fiiTbl"),list);
 }
-function toggleFiiWatch(tk){if(FII_WATCH.has(tk))FII_WATCH.delete(tk);else FII_WATCH.add(tk);fiiSave(FII_LS.watch,[...FII_WATCH]);
-  if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-detail").hidden&&curFii)drawFiiDetail(FIIS.find(x=>x.ticker===curFii),false);}
+function toggleFiiWatch(tk){
+  const on=!FII_WATCH.has(tk);if(on)FII_WATCH.add(tk);else FII_WATCH.delete(tk);   // otimista; desfaz se a API falhar
+  if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-detail").hidden&&curFii)drawFiiDetail(FIIS.find(x=>x.ticker===curFii),false);
+  fiiApi("/api/fii-watchlist/"+tk,on?"POST":"DELETE").catch(()=>{if(on)FII_WATCH.delete(tk);else FII_WATCH.add(tk);fiiToast("Não consegui salvar a monitorada");if(!$("view-fiis").hidden)renderFiiView();});}
 
 /* ---------- gráfico de preço (mesmo UX do index; ids próprios p/ não colidir) ---------- */
 let fiiChart={ticker:null,fair:0,period:365};
@@ -3517,12 +3523,16 @@ function saveFiiPrem(f){
   const merged={...(FII_PREM[f.ticker]||{}),...FDRAFT};
   Object.keys(merged).forEach(k=>{if(k!=="modelo"&&(merged[k]==null||merged[k]===""))delete merged[k];});
   if(Object.keys(merged).length)FII_PREM[f.ticker]=merged;else delete FII_PREM[f.ticker];
-  fiiSave(FII_LS.prem,FII_PREM);FDRAFT={};
-  // snapshot no histórico (data, premissas gravadas, justo e preço da época)
+  FDRAFT={};
+  // snapshot no histórico (data, premissas gravadas, justo e preço da época) — gravado no Supabase
   const rr=fiiResult(f),now=new Date();
   const snap={date:now.toLocaleDateString("pt-BR")+" "+now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),prem:{...merged},fair:rr.fair,price:f.price,modelo:rr.pr.modelo};
-  FII_HIST[f.ticker]=[snap,...(FII_HIST[f.ticker]||[])].slice(0,20);fiiSave("fii.hist.v1",FII_HIST);
-  fiiToast("Premissas salvas");fiiChart.fair=rr.fair;drawFiiDetail(f,false);
+  FII_HIST[f.ticker]=[snap,...(FII_HIST[f.ticker]||[])].slice(0,20);
+  fiiChart.fair=rr.fair;drawFiiDetail(f,false);
+  const btn=$("fiiSaveBtn");if(btn){btn.disabled=true;btn.textContent="Salvando…";}
+  fiiApi("/api/fii-premissa/"+f.ticker,"POST",{prem:merged,fair:rr.fair,price:f.price,modelo:rr.pr.modelo,date:snap.date})
+    .then(()=>fiiToast("Premissas salvas")).catch(()=>fiiToast("Não consegui salvar no servidor"))
+    .finally(()=>{const b=$("fiiSaveBtn");if(b){b.disabled=false;b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas';}});
 }
 // rótulo curto de um snapshot: modelo + premissas efetivas (override ou padrão)
 function fiiHistLabel(h){
@@ -3587,7 +3597,9 @@ function addFiiCart(f){
   const pm=prompt(`Preço médio (R$) de ${f.ticker}?`,cur.pm||f.price);if(pm==null)return;
   const q=+String(qtd).replace(",","."),p=+String(pm).replace(",",".");
   if(!(q>0)||!(p>=0)){fiiToast("valores inválidos");return;}
-  FII_CART[f.ticker]={qtd:q,pm:p};fiiSave(FII_LS.cart,FII_CART);fiiToast(`${f.ticker} na carteira de FIIs`);
+  FII_CART[f.ticker]={qtd:q,pm:p};
+  fiiApi("/api/fii-carteira/"+f.ticker,"POST",{quantidade:q,preco_medio:p}).then(()=>fiiToast(`${f.ticker} na carteira de FIIs`)).catch(()=>fiiToast("Não consegui salvar a posição"));
+  if(!$("view-fii-carteira").hidden)renderFiiCart();
 }
 function renderFiiCart(){
   $("fiiCartAssetToggle").innerHTML=assetToggleHtml("carteira","fiis");
@@ -3613,7 +3625,7 @@ function renderFiiCart(){
     <div class="ftbl"><table><thead><tr><th>Fundo</th><th>Cotas</th><th>PM</th><th>Preço</th><th>Valor</th><th>Peso</th><th>Resultado</th><th>DY</th><th>Renda/mês</th><th></th></tr></thead><tbody>${trs}</tbody></table></div>
     <div class="fcard" style="margin-top:16px"><h3>Concentração por segmento</h3><div class="segbars">${segRows}</div></div>
     <div class="fnote">Renda estimada usa <b>DPU × cotas</b> (mesma base do modelo). Onde o DPU é <b>estimado</b>, a renda também é — abra cada fundo para puxar o DPU real do Yahoo.</div>`;
-  host.querySelectorAll("[data-fdel]").forEach(b=>b.onclick=e=>{e.stopPropagation();delete FII_CART[b.dataset.fdel];fiiSave(FII_LS.cart,FII_CART);renderFiiCart();});
+  host.querySelectorAll("[data-fdel]").forEach(b=>b.onclick=e=>{e.stopPropagation();const tk=b.dataset.fdel;delete FII_CART[tk];renderFiiCart();fiiApi("/api/fii-carteira/"+tk,"DELETE").catch(()=>fiiToast("Não consegui remover no servidor"));});
   host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=()=>{location.hash="#/fii/"+tr.dataset.fii;});
 }
 // re-render das telas de FII quando a config global muda (Ke/fade compartilhados)

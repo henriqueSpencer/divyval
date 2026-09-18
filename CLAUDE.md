@@ -48,9 +48,15 @@ CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`,
   Sem DPU real, estimativa por DY típico do segmento (`dpu_src:"estimado"`, pill). **P/VP de entrada** no
   detalhe é **automático** (preço ÷ VP/cota CVM, pill `CVM aaaa-mm`); digitar sobrescreve (pill `manual`),
   apagar volta. Histórico do gráfico: `/api/history/{ticker}`.
-  ⚠️ **Persistência de FII ainda é localStorage** (`fii.prem.v1`/`fii.watch.v1`/`fii.cart.v1`/`fii.cfg.v1`/
-  `fii.hist.v1`) — por navegador, **não sincroniza entre dispositivos** (ações usam Supabase). Migrar p/
-  tabelas no Supabase é o próximo passo natural.
+- **Persistência de FII = Supabase, igual às ações** (migrado do localStorage em 18/set/2026, antes de ir
+  a prod): tabelas **`fii_premissa`** (ticker PK; só overrides — null = padrão/auto), **`fii_premissa_hist`**
+  (snapshots de "Salvar": `date, prem jsonb, fair, price, modelo`; 20 por fundo na leitura),
+  **`fii_watchlist`**, **`fii_carteira`** (quantidade, preco_medio) — todas com RLS ligado sem políticas.
+  Padrões de FII (`fii_g/fii_gvp/fii_pvp/fii_modelo`, este 0=r1/1=dy) são chaves k/v na **`config`**,
+  expostas por `api/config.js` junto com o resto (`saveConfig` faz spread pra preservá-las). Endpoints:
+  `GET /api/fii-state` (tudo numa chamada: prem/watch/cart/hist, carregado com o universo em `ensureFiis`),
+  `POST|DELETE /api/fii-premissa/{tk}` (POST grava overrides + snapshot), `POST|DELETE /api/fii-watchlist/{tk}`,
+  `POST|DELETE /api/fii-carteira/{tk}`. Front é otimista (atualiza e depois chama a API; toast se falhar).
 - **Dois modelos** (seletor no detalhe; `fiiPrem().modelo`, default do card FII): **`r1` Regra nº1 · FII**
   (`fiiValueAt`) = VP dos proventos + saída no ano N (por P/VP se houver P/VP de entrada, senão por DY
   exigido); **`dy` DY-alvo · perpetuidade** (`gordonMonthly`), exige Ke>g. **Proventos MENSAIS**
@@ -93,6 +99,10 @@ CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`,
     api/premissas/[ticker].js ← GET / POST (hist + upsert atual)
     api/watchlist.js          ← GET;  api/watchlist/[ticker].js ← POST/DELETE
     api/carteira.js           ← GET;  api/carteira/[ticker].js ← POST(upsert qtd+PM)/DELETE
+    _lib/fii.js, _lib/fii_data.js ← FIIs: curadoria+ISIN, universo gerado (brapi∩CVM) e VP/cota
+    api/fiis.js, api/fii/[ticker].js, api/fii-dpu.js ← screener FII, detalhe, DPU em lote (Yahoo)
+    api/fii-state.js, api/fii-premissa|fii-watchlist|fii-carteira/[ticker].js ← estado do usuário (FII)
+  backend/build_fii_universe.py ← gera _lib/fii_data.js (rodar mensalmente)
   backend/                    ← FastAPI legado (NÃO deployado)
 ```
 As Functions são **buildless** (`fetch` puro, zero npm). A lógica de merge/CRUD é porta direta do
@@ -118,7 +128,8 @@ Não há mais `init_db`/seed no boot: a base já está semeada
 novo da CVM. O projeto Supabase `divyval` é administrável pelo **MCP** (`list_tables` /
 `execute_sql` / `apply_migration`).
 
-Dados do usuário vivem em `premissa_atual` / `premissa_hist` / `watchlist` / `carteira` / `config`.
+Dados do usuário vivem em `premissa_atual` / `premissa_hist` / `watchlist` / `carteira` / `config`
+(ações) e `fii_premissa` / `fii_premissa_hist` / `fii_watchlist` / `fii_carteira` (FIIs; ver seção FIIs).
 A tabela **`carteira`** (`ticker` PK, `quantidade`, `preco_medio`, `updated_at`; RLS ligado) guarda as
 posições do usuário — uma linha por ativo, upsert por ticker.
 `buildStocks()` (`_lib/db.js`) monta o screener: fundamentos de `stocks` + override da premissa
@@ -318,8 +329,9 @@ Pesos e concentração vêm do **valor de mercado** (`qtd × preço ao vivo`). C
 - `/api/stocks` (screener), `/api/history/{ticker}?range=5y` (fechamento diário p/ o gráfico),
   `/api/config`, `/api/premissas/{ticker}`, `/api/watchlist[/{ticker}]`, `/api/carteira[/{ticker}]`
   (GET lista; POST upsert `{quantidade, preco_medio}`; DELETE), `/api/stocks/{ticker}`
-  (PATCH/DELETE), `/api/macro` (Selic + IPCA-12m do BCB). Cache no edge (preços 15 min,
-  histórico 30 min, macro 12h).
+  (PATCH/DELETE), `/api/macro` (Selic + IPCA-12m do BCB), FIIs: `/api/fiis`, `/api/fii/{ticker}`,
+  `/api/fii-dpu?t=…`, `/api/fii-state`, `/api/fii-premissa|fii-watchlist|fii-carteira/{ticker}`.
+  Cache no edge (preços 15 min, histórico 30 min, macro 12h, proventos de FII 6h).
 - O gráfico de preços tem **seleção por clique-e-arrasto** (mostra a variação % entre dois pontos).
 - O frontend cai nos dados de exemplo embutidos se as Functions estiverem fora. O `bootstrap`
   faz só um retry curto (não há mais cold start pra cobrir).

@@ -13,6 +13,10 @@ const CFG = [
   ["ipca", "ipca_global", 0.045],
   ["ntnb", "ntnb_global", 0.072],
   ["premio", "premio_global", 0],
+  // FIIs (card "Premissas de FIIs"): Ke e horizonte são os globais acima; aqui só o específico
+  ["fii_g", "fii_g_global", 0.04],
+  ["fii_gvp", "fii_gvp_global", 0.04],
+  ["fii_pvp", "fii_pvp_global", 1.0],
 ];
 
 export async function onRequestGet(context) {
@@ -21,6 +25,7 @@ export async function onRequestGet(context) {
   const out = {};
   for (const [k, dbk, d] of CFG) out[k] = m[dbk] ?? d;
   out.ke_mode = (m.ke_mode_global ?? 0) ? "real" : "nom"; // numérico no banco, string na API
+  out.fii_modelo = (m.fii_modelo_global ?? 0) ? "dy" : "r1";  // idem: 0=r1, 1=dy
   return json(out);
 }
 
@@ -30,6 +35,7 @@ export async function onRequestPost(context) {
   for (const [k, dbk] of CFG)
     if (p[k] != null) rows.push({ k: dbk, v: parseFloat(p[k]) });
   if (p.ke_mode != null) rows.push({ k: "ke_mode_global", v: p.ke_mode === "real" ? 1 : 0 });
+  if (p.fii_modelo != null) rows.push({ k: "fii_modelo_global", v: p.fii_modelo === "dy" ? 1 : 0 });
   if (rows.length) await upsert(context.env, "config", rows);
   return json({ ok: true });
 }
