@@ -12,39 +12,45 @@ Classificação curada em `backend/stocks_meta.json`.
 > referência mas **não é mais deployado**.
 
 ## FIIs — valuation (PREVIEW, branch `fii-valuation`, **NÃO em prod**)
-Feature nova, ainda **em revisão do usuário** (só local via `wrangler pages dev`; nada deployado). Página
-autocontida **`fiis.html`** (servida em `/fiis`; `.html`→clean URL por 308 do Pages), separada do
-`index.html` pra não arriscar o app de ações. Abas internas: **Screener / Monitoradas / Carteira / detalhe**.
-- **Dados**: preço ao vivo pela **brapi** (`subType:fii`, ~334 fundos; universo curado em `_lib/fii.js`
-  → 41 líquidos). **DPU/DY real** vem do **Yahoo** por ticker (`/api/fii/{ticker}`, events=div, soma 12m,
-  cache 6h); onde o Yahoo não responde, cai numa **estimativa por DY típico do segmento** (rótulo
-  `estimado`). **NÃO usa a CVM p/ FII**: informe anual defasado + estrutura de classes corrompe DPU/segmento
-  (verificado — DPU derivado bate errado por fatores grandes; segmento classifica MXRF como "Logística").
-  **P/VP** exige **VP/cota** = premissa manual do usuário (sem fonte grátis confiável — statusinvest está
-  atrás do Cloudflare; brapi per-ticker exige token). **Persistência 100% em localStorage** (`fii.prem.v1`
-  / `fii.watch.v1` / `fii.cart.v1`) — o preview **não escreve no Supabase**. Ao aprovar, migrar p/ tabelas.
-- **Dois modelos escolhíveis** (seletor no detalhe, igual às ações; `prem().modelo`, default `r1`):
-  **`r1` Regra nº1 · FII** (`fiiValueAt`) = **VP dos proventos + saída no ano N** (por P/VP se houver
-  VP/cota, senão por DY exigido); **`dy` DY-alvo · perpetuidade** (`gordonMonthly`) = Gordon do provento
-  mensal, `DPU_m·x/(1−x)`, exige Ke>g. **Proventos MENSAIS** (`divPVmonthly`): 12N parcelas = DPU/12
-  crescendo `g`, descontadas ao **Ke mensal** `(1+ke)^(1/12)−1` (soma geométrica fechada, conferida vs.
-  loop). Rende ~3% a mais que anual. **TIR implícita** por bissecção (piso `−50%` no r1, `g` no dy).
-  Ke anual vem do `/api/config`. Math conferida: r1 15/15, mensal 10/10, dy 7/7.
-- **UI/UX = mesma das ações** (pedido do usuário): `fiis.html` **reusa o `<style>` inteiro do
-  `index.html`** (classes de shell renomeadas p/ evitar colisão: `.fbrand`/`.fstat`/`.fcard`, screener
-  escopado em `.tbl-wrap`). Detalhe traz **hero+verdict com o medidor** (`updateHeroGauge`, classes
-  `.hg-*`), **seletor de Modelo** (`.mode-toggle`), **gráfico Preço · fechamento diário** (porte do
-  `renderChart` do index — Yahoo `/api/history/{ticker}` serve FII, com seleção clique-arraste e linha do
-  justo), **Premissas em `.field`/slider** (model-scoped: campos de saída só no r1), **Implicações**
-  (`refreshImpl`, ids fixos) e **"A conta, passo a passo"** numerada (`.step`/`.formula`/`.proj`, com
-  projeção mensal por ano). Edição ao vivo via `refreshDetailLive` (sem re-render pesado). Saída por **P/VP** (`VP/cota×(1+g_vp)^N × P/VP_alvo`) se houver VP/cota; senão por **DY de
-  saída** (=Ke). Teto de compra = justo×(1−margem). Reads: DY=DPU/preço, P/VP=preço/VP, upside, margem seg.,
-  **TIR implícita** (bissecção: taxa que iguala VP dos fluxos ao preço; saída fixa). Ke global vem do
-  `/api/config` (reusa o trabalho de Ke/BCB das ações). Matemática conferida (15/15 vs. cálculo manual) e
-  runtime (8/8 via shim de DOM).
-- **Backend read-only** (sem banco): `functions/_lib/fii.js`, `functions/api/fiis.js` (screener),
-  `functions/api/fii/[ticker].js` (detalhe: DPU real + série). Yahoo dá 429 de curl direto local, mas
-  **funciona via Function** (confirmado local e no edge).
+Feature em **revisão do usuário** (só local via `wrangler pages dev`; nada deployado). **Integrada ao
+`index.html`** (set/2026): a navegação continua com os 4 itens (Monitoradas · Carteira · Screener ·
+Config) e cada tela ganhou um **toggle "Ações | FIIs"** (`assetToggleHtml`, classe `.asset-toggle`) no
+topo. Rotas: `#/screener/fiis`, `#/monitoradas/fiis`, `#/carteira/fiis`, `#/fii/{ticker}` (as rotas de
+ações ficaram como estavam). Views próprias: `#view-fiis` (screener/monitoradas, `renderFiiView`),
+`#view-fii-detail` (`openFii`/`drawFiiDetail`), `#view-fii-carteira` (`renderFiiCart`); `show()` conhece
+as três. `fiis.html` virou só um **redirect** p/ `/#/screener/fiis`. Todo o código FII tem prefixo
+`fii`/`FII_` (estado `FIIS`/`FDIV`/`FII_PREM`/`FII_WATCH`/`FII_CART`/`FII_CFG`, rascunho `FDRAFT`,
+`curFii`, `fiiScope`) e ids próprios no DOM (`fiiChartWrap`, `fiiHeroGauge`, `fii-impl-*`, `fpv_*`,
+gráfico com `fiiSvg`/`fiiHit`/…) para **não colidir** com o detalhe das ações (que fica no DOM oculto).
+Reusa do index: `$`, `dec`, `brl`, `brl0`, `pctv`, `globalCfg`, `show`, `setActiveNav`, `closePop` e todo o
+CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`, `.step`/`.formula`/`.proj`,
+`.chart-wrap`/`.periods`); CSS específico de FII (`.ftbl`, `.fstat`, `.srcpill`, `.dvchart`, `.segbar`,
+`.fmos`, `.fest`, `.fpos/.fneg`) fica num bloco próprio no `<style>`. `/api/fiis` carrega **sob demanda**
+(`ensureFiis`, na 1ª tela de FII), não no boot das ações.
+- **Config compartilhada** (pedido do usuário): `fiiG()` lê **Ke = `globalCfg.ke`** e **horizonte
+  (anos até a venda) = `globalCfg.fade`** — mudar na Config global recalcula FIIs (`rerenderFiiViews`,
+  chamada no `saveConfig`). O card **"Premissas de FIIs"** na Config (`renderFiiConfig`/`saveFiiConfig`)
+  guarda só o específico: modelo padrão, g do DPU, cresc. do VP/cota, P/VP de saída, margem — em
+  **localStorage `fii.cfg.v1`** (preview; ao aprovar, viram chaves k/v na tabela `config`, sem schema).
+- **Dados**: preço ao vivo pela **brapi** (`subType:fii`, universo curado em `_lib/fii.js` → 41 líquidos).
+  **DPU/DY real** vem do **Yahoo** por ticker (`/api/fii/{ticker}`, events=div, soma 12m, cache 6h); sem
+  Yahoo, cai numa **estimativa por DY típico do segmento** (rótulo `estimado`). **NÃO usa a CVM p/ FII**
+  (informe anual defasado + classes corrompem DPU/segmento — verificado). **P/VP de entrada** é premissa
+  manual (sem fonte grátis confiável); o **VP/cota é derivado** = preço ÷ P/VP. Histórico do gráfico:
+  `/api/history/{ticker}` (Yahoo serve FII). Premissas/monitoradas/carteira de FII em **localStorage**
+  (`fii.prem.v1`/`fii.watch.v1`/`fii.cart.v1`) — o preview **não escreve no Supabase**; ao aprovar, migrar.
+- **Dois modelos** (seletor no detalhe; `fiiPrem().modelo`, default do card FII): **`r1` Regra nº1 · FII**
+  (`fiiValueAt`) = VP dos proventos + saída no ano N (por P/VP se houver P/VP de entrada, senão por DY
+  exigido); **`dy` DY-alvo · perpetuidade** (`gordonMonthly`), exige Ke>g. **Proventos MENSAIS**
+  (`divPVmonthly`): 12N parcelas = DPU_mês crescendo `g`, descontadas ao **Ke mensal** `(1+ke)^(1/12)−1`
+  (soma fechada, conferida vs. loop mês a mês; ~3% acima do anual). A premissa **DPU é mensal**
+  (`dpuM`; o cálculo usa `dpu=dpuM×12`). **TIR implícita** por bissecção com o mesmo fluxo mensal.
+  Implicações mostram **DY corrente** (12×DPU_mês÷preço, soma) e **DY efetivo reinvestido**
+  ((1+DY_mês)¹²−1) — leituras distintas, ambas corretas. Passo 2 do passo a passo é **mês a mês** (1º ano
+  detalhado + resto agregado, coluna do fator de desconto). Math conferida: r1 15/15, mensal 10/10,
+  dy 7/7; integração 16/16 (shim de DOM: ações intactas + rotas FII).
+- **Backend read-only** (sem banco): `functions/_lib/fii.js`, `functions/api/fiis.js`, `functions/api/fii/[ticker].js`.
+  Yahoo dá 429 de curl direto local, mas **funciona via Function** (confirmado local e no edge).
 
 ## Arquitetura (Cloudflare Pages + Functions)
 ```

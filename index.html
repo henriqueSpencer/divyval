@@ -701,6 +701,55 @@ button{font-family:inherit;}
   .scard-metrics{grid-template-columns:1fr 1fr;gap:9px 12px;}
   .fs-grid{grid-template-columns:1fr;}
 }
+
+/* ===== FIIs (integrados ao app; toggle Ações|FIIs nas telas) ===== */
+.asset-toggle{display:inline-flex;gap:3px;padding:3px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;margin:0 0 12px;}
+.asset-toggle a{font-size:12.5px;font-weight:600;padding:6px 14px;border-radius:6px;color:var(--text-soft);text-decoration:none;transition:background .15s,color .15s;}
+.asset-toggle a:hover{color:var(--text);}
+.asset-toggle a.active{background:var(--surface);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,.06);}
+.fstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;margin-bottom:16px;}
+.fstat{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 16px;box-shadow:var(--shadow);}
+.fstat .k{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--text-mute);}
+.fstat .v{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600;margin-top:4px;}
+.fstat .v small{font-size:12px;color:var(--text-mute);font-weight:400;}
+.ftbl{overflow-x:auto;border:1px solid var(--border);border-radius:13px;background:var(--surface);box-shadow:var(--shadow);}
+.ftbl table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.ftbl th,.ftbl td{padding:10px 12px;text-align:right;white-space:nowrap;}
+.ftbl th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mute);font-weight:600;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;position:sticky;top:0;background:var(--surface);}
+.ftbl th:first-child,.ftbl td:first-child{text-align:left;}
+.ftbl th.arrow::after{content:" ▾";color:var(--accent);}
+.ftbl th.arrow.asc::after{content:" ▴";}
+.ftbl tbody tr{border-bottom:1px solid var(--border-2);cursor:pointer;transition:background .12s;}
+.ftbl tbody tr:last-child{border-bottom:none;}
+.ftbl tbody tr:hover{background:var(--surface-2);}
+.ftk{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;}
+.fnm{font-size:11.5px;color:var(--text-mute);margin-top:1px;max-width:210px;overflow:hidden;text-overflow:ellipsis;}
+.fseg{font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border);}
+.fpos{color:var(--good);} .fneg{color:var(--bad);}
+.fest{color:var(--text-mute);border-bottom:1px dashed var(--text-mute);cursor:help;}
+.fstar{cursor:pointer;font-size:16px;color:var(--text-mute);background:none;border:none;padding:2px 4px;}
+.fstar.on{color:var(--worth);}
+.fmos{position:relative;width:74px;height:7px;border-radius:4px;background:var(--surface-2);border:1px solid var(--border);display:inline-block;vertical-align:middle;overflow:hidden;}
+.fmos i{position:absolute;top:0;bottom:0;display:block;}
+.fmos .tick{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--worth);}
+.srcpill{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.04em;}
+.srcpill.yahoo{color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent);}
+.srcpill.estimado{color:var(--worth);background:var(--worth-soft);}
+.srcpill.manual{color:var(--accent);background:var(--accent-soft);}
+.dvchart{display:flex;align-items:flex-end;gap:3px;height:90px;padding-top:8px;}
+.dvbar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;opacity:.85;}
+.dvlabels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-mute);margin-top:5px;}
+.segbars{display:flex;flex-direction:column;gap:8px;}
+.segbar{display:grid;grid-template-columns:130px 1fr auto;align-items:center;gap:10px;font-size:12.5px;}
+.segbar .track{height:9px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;overflow:hidden;}
+.segbar .fill{display:block;height:100%;background:var(--accent);}
+.fcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:14px;}
+.fcard h3{font-family:'Space Grotesk',sans-serif;font-size:14px;margin:0 0 12px;}
+.fnote{font-size:12px;color:var(--text-soft);background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;margin:10px 0 16px;line-height:1.5;}
+.fnote b{color:var(--text);}
+.ftoast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:13px;font-weight:600;padding:11px 18px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:60;}
+.ftoast.show{opacity:.96;}
+@media (max-width:720px){.ftoast{bottom:84px;}}
 </style>
 </head>
 <body>
@@ -728,6 +777,7 @@ button{font-family:inherit;}
     <section class="view" id="view-screener">
       <div class="page-head">
         <div>
+          <div id="scrAssetToggle"></div>
           <h1 id="scrTitle">Screener</h1>
           <p id="scrSub">Ações ordenadas por margem de segurança — quanto o preço justo está acima do preço atual.</p>
           <div class="sample-tag" id="sampleTag">Dados de exemplo — carregando cotações reais…</div>
@@ -765,6 +815,7 @@ button{font-family:inherit;}
     <section class="view" id="view-carteira" hidden>
       <div class="page-head">
         <div>
+          <div id="cartAssetToggle"></div>
           <h1>Carteira</h1>
           <p>Suas posições cruzadas com o valuation do DIVYVAL — concentração, preço justo, retorno implícito e renda projetada.</p>
           <div class="sample-tag" id="cartTag">—</div>
@@ -772,6 +823,30 @@ button{font-family:inherit;}
         <button class="btn btn-primary" id="cartAddBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Adicionar posição</button>
       </div>
       <div id="cartBody"></div>
+    </section>
+
+    <!-- FIIs: screener / monitoradas -->
+    <section class="view" id="view-fiis" hidden>
+      <div class="page-head">
+        <div>
+          <div id="fiiAssetToggle"></div>
+          <h1 id="fiiTitle">Screener · FIIs</h1>
+          <p id="fiiSub">Fundos imobiliários ordenados por upside — quanto o preço justo está acima do preço atual.</p>
+        </div>
+      </div>
+      <div class="fnote">Preço ao vivo (brapi). <b>DY/DPU real</b> vem do Yahoo por fundo — abrir o detalhe carrega; onde o Yahoo não responder, uso uma <b>estimativa por DY típico do segmento</b> (<span class="srcpill estimado">estimado</span>). <b>P/VP de entrada</b> é premissa sua. Premissas, monitoradas e carteira de FII ficam no seu navegador por enquanto (preview).</div>
+      <div id="fiiBody"></div>
+    </section>
+    <section class="view" id="view-fii-detail" hidden><div id="fiiDetailBody"></div></section>
+    <section class="view" id="view-fii-carteira" hidden>
+      <div class="page-head">
+        <div>
+          <div id="fiiCartAssetToggle"></div>
+          <h1>Carteira · FIIs</h1>
+          <p>Suas cotas de FII cruzadas com o valuation — concentração, renda mensal estimada e retorno.</p>
+        </div>
+      </div>
+      <div id="fiiCartBody"></div>
     </section>
 
     <!-- DETALHE -->
@@ -1124,6 +1199,37 @@ button{font-family:inherit;}
         </div>
         <p class="cfg-note">Salvo automaticamente. O crescimento (g) é derivado: <b>g = ROE × (1 − payout)</b>. Vale para todo ativo com o "padrão" marcado — valor justo e margem recalculam na hora.<br>No modo <b>IPCA + NTN-B</b> o Ke é <b>nominal equivalente</b> à taxa do título (ex.: IPCA 4,5% + 8,2% ⇒ 13,1%) — é esse nominal que entra nos modelos, porque LPA e dividendos projetados também são nominais.</p>
       </div>
+
+      <!-- FIIs: padrões específicos (Ke e horizonte são os globais acima, compartilhados) -->
+      <div class="card card-pad" style="max-width:560px;margin-top:16px;">
+        <div class="card-title">Premissas de FIIs</div>
+        <p class="cfg-note" style="margin-top:0">A <b>taxa de desconto (Ke)</b> e o <b>horizonte</b> (anos de fade = anos até a venda) são os <b>globais acima</b>, compartilhados com as ações. Abaixo, só o que é específico de FII — cada fundo pode sobrescrever no detalhe.</p>
+        <div class="cfg-field">
+          <label>Modelo padrão <span class="cfg-hint">como o preço justo é calculado</span></label>
+          <div class="periods" id="cfgFiiModel" style="margin:-4px 0 12px;">
+            <button class="period" data-model="r1">Regra nº1 · FII</button>
+            <button class="period" data-model="dy">DY-alvo · perpetuidade</button>
+          </div>
+        </div>
+        <div class="cfg-field">
+          <label>Crescimento do DPU (g) <span class="cfg-hint">quanto o provento cresce ao ano</span></label>
+          <div class="cfg-row"><input type="range" id="cfgFiiG" min="-2" max="15" step="0.5"><span class="cfg-val num" id="cfgFiiGVal">4%</span></div>
+        </div>
+        <div class="cfg-field">
+          <label>Crescimento do VP/cota <span class="cfg-hint">valorização patrimonial ao ano (saída por P/VP)</span></label>
+          <div class="cfg-row"><input type="range" id="cfgFiiGvp" min="-2" max="15" step="0.5"><span class="cfg-val num" id="cfgFiiGvpVal">4%</span></div>
+        </div>
+        <div class="cfg-field">
+          <label>P/VP de saída <span class="cfg-hint">múltiplo a que você vende a cota no fim do horizonte</span></label>
+          <div class="cfg-row"><input type="range" id="cfgFiiPvp" min="0.4" max="2" step="0.05"><span class="cfg-val num" id="cfgFiiPvpVal">1,00×</span></div>
+        </div>
+        <div class="cfg-field">
+          <label>Margem de segurança <span class="cfg-hint">desconto sobre o justo para o preço-teto</span></label>
+          <div class="cfg-row"><input type="range" id="cfgFiiMos" min="0" max="50" step="1"><span class="cfg-val num" id="cfgFiiMosVal">15%</span></div>
+        </div>
+        <p class="cfg-note">Salvo automaticamente <b>neste navegador</b> (preview de FIIs). Screener, monitoradas e carteira de FII recalculam na hora.</p>
+      </div>
+
       <div class="card card-pad" style="max-width:560px;margin-top:16px;">
         <div class="card-title">Sessão</div>
         <p class="cfg-note" style="margin-top:0">Você está autenticado neste navegador. A sessão dura 180 dias e se renova sozinha a cada uso — só pede a senha de novo se você sair, limpar os dados do site ou a senha do app for trocada.</p>
@@ -2742,7 +2848,7 @@ async function loadPortfolio(){
 }
 
 /* ===== ROTEADOR ===== */
-function show(v){["screener","carteira","detail","modelo","config"].forEach(n=>$("view-"+n).hidden=n!==v);}
+function show(v){["screener","carteira","detail","modelo","config","fiis","fii-detail","fii-carteira"].forEach(n=>$("view-"+n).hidden=n!==v);}
 /* "4,5" ou "4.5" → 4.5 (o usuário digita com vírgula) */
 const numv=(el,d=0)=>{const n=parseFloat(String(el.value).replace(",","."));return isFinite(n)?n:d;};
 /* Fisher composto: nominal = (1+IPCA)(1+real)(1+prêmio) − 1 */
@@ -2793,6 +2899,7 @@ function renderConfig(){
   $("cfgRoet").value=Math.round(globalCfg.roet*1000)/10; $("cfgRoetVal").textContent=pctv(globalCfg.roet*100);
   $("cfgPayoutt").value=Math.round(globalCfg.payoutt*100); $("cfgPayouttVal").textContent=pctv(globalCfg.payoutt*100);
   $("cfgFade").value=globalCfg.fade; $("cfgFadeVal").textContent=Math.round(globalCfg.fade)+" anos";
+  renderFiiConfig();
 }
 function saveConfig(){
   const mode=cfgKeMode();
@@ -2800,8 +2907,24 @@ function saveConfig(){
     roet:+$("cfgRoet").value/100,payoutt:+$("cfgPayoutt").value/100,fade:+$("cfgFade").value,
     ke_mode:mode,ipca:numv($("cfgIpca"))/100,ntnb:numv($("cfgNtnb"))/100,premio:numv($("cfgPremio"))/100};
   fetch("/api/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(globalCfg)})
-    .then(()=>fetchStocks()).then(()=>{if(!$("view-screener").hidden)renderScreener();if(!$("view-carteira").hidden)renderCarteira();}).catch(()=>{});
+    .then(()=>fetchStocks()).then(()=>{if(!$("view-screener").hidden)renderScreener();if(!$("view-carteira").hidden)renderCarteira();rerenderFiiViews();}).catch(()=>{});
 }
+/* ===== Config → card "Premissas de FIIs" (Ke/fade são os globais; aqui só o específico de FII) ===== */
+function renderFiiConfig(){
+  if(!$("cfgFiiG"))return;
+  $("cfgFiiG").value=FII_CFG.g*100; $("cfgFiiGVal").textContent=pctv(Math.round(FII_CFG.g*1000)/10);
+  $("cfgFiiGvp").value=FII_CFG.gvp*100; $("cfgFiiGvpVal").textContent=pctv(Math.round(FII_CFG.gvp*1000)/10);
+  $("cfgFiiPvp").value=FII_CFG.pvp; $("cfgFiiPvpVal").textContent=dec(FII_CFG.pvp,2)+"×";
+  $("cfgFiiMos").value=FII_CFG.mos*100; $("cfgFiiMosVal").textContent=pctv(Math.round(FII_CFG.mos*100));
+  document.querySelectorAll("#cfgFiiModel .period").forEach(b=>b.classList.toggle("active",b.dataset.model===FII_CFG.modelo));
+}
+function saveFiiConfig(){fiiSave(FII_LS.cfg,FII_CFG);rerenderFiiViews();}
+$("cfgFiiG").addEventListener("input",()=>{FII_CFG.g=+$("cfgFiiG").value/100;$("cfgFiiGVal").textContent=pctv(+$("cfgFiiG").value);});
+$("cfgFiiGvp").addEventListener("input",()=>{FII_CFG.gvp=+$("cfgFiiGvp").value/100;$("cfgFiiGvpVal").textContent=pctv(+$("cfgFiiGvp").value);});
+$("cfgFiiPvp").addEventListener("input",()=>{FII_CFG.pvp=+$("cfgFiiPvp").value;$("cfgFiiPvpVal").textContent=dec(+$("cfgFiiPvp").value,2)+"×";});
+$("cfgFiiMos").addEventListener("input",()=>{FII_CFG.mos=+$("cfgFiiMos").value/100;$("cfgFiiMosVal").textContent=pctv(+$("cfgFiiMos").value);});
+["cfgFiiG","cfgFiiGvp","cfgFiiPvp","cfgFiiMos"].forEach(id=>$(id).addEventListener("change",saveFiiConfig));
+$("cfgFiiModel").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.model===FII_CFG.modelo)return;FII_CFG.modelo=b.dataset.model;renderFiiConfig();saveFiiConfig();});
 $("cfgKeMode").addEventListener("click",e=>{const b=e.target.closest(".period");if(!b||b.dataset.mode===cfgKeMode())return;
   setKeMode(b.dataset.mode,true);saveConfig();});
 ["cfgIpca","cfgNtnb","cfgPremio"].forEach(id=>{$(id).addEventListener("input",renderKeEq);$(id).addEventListener("change",saveConfig);});
@@ -2849,10 +2972,15 @@ function router(){
   const h=location.hash||"#/monitoradas";const parts=h.replace(/^#\//,"").split("/");
   const go=()=>{
     if(parts[0]==="acao"&&parts[1]){openStock(STOCKS.find(x=>x.ticker===parts[1])||EXAMPLE,"stock");}
+    else if(parts[0]==="fii"&&parts[1]){openFii(parts[1]);}
     else if(parts[0]==="modelo"){showModelPage(window.__modelPage||M2);}
-    else if(parts[0]==="carteira"){setActiveNav("carteira");show("carteira");renderCarteira();closePop();}
+    else if(parts[0]==="carteira"&&parts[1]==="fiis"){setActiveNav("carteira");show("fii-carteira");renderFiiCart();closePop();}
+    else if((parts[0]==="screener"||parts[0]==="monitoradas")&&parts[1]==="fiis"){
+      fiiScope=parts[0]==="monitoradas"?"monitoradas":"all";setActiveNav(fiiScope==="monitoradas"?"monitoradas":"screener");show("fiis");renderFiiView();closePop();}
+    else if(parts[0]==="carteira"){setActiveNav("carteira");show("carteira");$("cartAssetToggle").innerHTML=assetToggleHtml("carteira","acoes");renderCarteira();closePop();}
     else if(parts[0]==="config"){setActiveNav("config");show("config");renderConfig();closePop();}
     else{scope=parts[0]==="monitoradas"?"monitoradas":"all";setActiveNav(scope==="monitoradas"?"monitoradas":"screener");show("screener");
+      $("scrAssetToggle").innerHTML=assetToggleHtml(scope==="monitoradas"?"monitoradas":"screener","acoes");
       $("scrTitle").textContent=scope==="monitoradas"?"Monitoradas":"Screener";
       $("scrSub").textContent=scope==="monitoradas"?"Sua watchlist — as ações que você acompanha, ordenadas por margem de segurança.":"Ações ordenadas por margem de segurança — quanto o preço justo está acima do preço atual.";
       $("addBtnLabel").textContent=scope==="monitoradas"?"Adicionar às monitoradas":"Adicionar ação";
@@ -2992,6 +3120,463 @@ $("filterSheetBody").addEventListener("input",e=>{const el=e.target.closest("inp
 renderHeader();
 applyCols();
 updateGroupBtn();
+/* =====================================================================================
+   FIIs — integrados ao app (toggle Ações|FIIs em Screener/Monitoradas/Carteira).
+   Reusa $, dec, brl, brl0, globalCfg (Ke e fade compartilhados), show, setActiveNav, closePop.
+   Tudo com prefixo fii/FII_ p/ não colidir com o código das ações.
+   Dados: preço brapi (/api/fiis), DPU real Yahoo por ticker (/api/fii/{tk}), histórico /api/history.
+   Persistência (preview): localStorage — fii.prem.v1 / fii.watch.v1 / fii.cart.v1 / fii.cfg.v1.
+   ===================================================================================== */
+const fdec=(n,d=2)=>(n==null||!isFinite(n))?"—":dec(n,d);
+const fpct=(n,d=1)=>(n==null||!isFinite(n))?"—":dec(n*100,d)+"%";
+const fclamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function fiiToast(m){let t=$("fiiToast");if(!t){t=document.createElement("div");t.id="fiiToast";t.className="ftoast";document.body.appendChild(t);}
+  t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800);}
+function assetToggleHtml(base,cur){ // base: screener|monitoradas|carteira
+  return `<div class="asset-toggle"><a href="#/${base}" class="${cur==='acoes'?'active':''}">Ações</a><a href="#/${base}/fiis" class="${cur==='fiis'?'active':''}">FIIs</a></div>`;}
+
+/* ---------- estado ---------- */
+let FIIS=[], FIIS_LOADED=false, FIIS_LOADING=null;   // [{ticker,name,segment,price,dpu_est,seg_dy}]
+const FDIV={};                                        // cache detalhe por ticker: {price,dpu12m,source,divs,n12}
+const FII_LS={prem:"fii.prem.v1",watch:"fii.watch.v1",cart:"fii.cart.v1",cfg:"fii.cfg.v1"};
+const fiiLoad=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d;}catch(e){return d;}};
+const fiiSave=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+let FII_PREM=fiiLoad(FII_LS.prem,{});                 // {ticker:{dpu(mensal),g,N,ke,pvpIn,gvp,pvp,mos,modelo}}
+let FII_WATCH=new Set(fiiLoad(FII_LS.watch,[]));
+let FII_CART=fiiLoad(FII_LS.cart,{});                 // {ticker:{qtd,pm}}
+// padrões específicos de FII (Config → card FIIs). Ke e horizonte vêm da config global (compartilhados).
+let FII_CFG=Object.assign({g:0.04,gvp:0.04,pvp:1.0,mos:0.15,modelo:"r1"},fiiLoad(FII_LS.cfg,{}));
+const fiiG=()=>({ke:globalCfg.ke,N:globalCfg.fade,g:FII_CFG.g,gvp:FII_CFG.gvp,pvp:FII_CFG.pvp,mos:FII_CFG.mos,modelo:FII_CFG.modelo});
+const FII_MODELS={
+  r1:{label:"Regra nº1 · FII",desc:"Proventos mensais projetados N anos + saída pelo P/VP no ano N, tudo a valor presente ao Ke. Teto de compra = justo × (1 − margem)."},
+  dy:{label:"DY-alvo · perpetuidade",desc:"Perpetuidade de Gordon: o provento mensal cresce g e é descontado ao Ke, para sempre. Justo = DPU ÷ (Ke − g) — sem horizonte nem saída. Exige Ke > g."},
+};
+let FDRAFT={}, curFii=null, fiiScope="all", fiiSortKey="upside", fiiSortAsc=false, fiiQuery="";
+
+async function ensureFiis(){
+  if(FIIS_LOADED)return FIIS;
+  if(!FIIS_LOADING)FIIS_LOADING=(async()=>{try{const r=await fetch("/api/fiis");if(r.ok){const j=await r.json();FIIS=j.fiis||[];}}catch(e){}FIIS_LOADED=true;return FIIS;})();
+  return FIIS_LOADING;
+}
+
+/* ---------- modelo ---------- */
+// Premissa efetiva: rascunho (só do ticker aberto) → override salvo → padrão (config global + FII_CFG).
+function fiiPrem(f){
+  const G=fiiG(), base=FII_PREM[f.ticker]||{};
+  const p=(curFii===f.ticker)?{...base,...FDRAFT}:base;
+  const dpuBaseM=((FDIV[f.ticker]&&FDIV[f.ticker].dpu12m)||f.dpu_est||0)/12;   // DPU MENSAL
+  const dpuM=p.dpu!=null?+p.dpu:dpuBaseM;
+  return {
+    dpuM, dpu:dpuM*12,                                   // mensal (campo) / anual (cálculo)
+    dpuSource:p.dpu!=null?"manual":(FDIV[f.ticker]?FDIV[f.ticker].source:"estimado"),
+    g:p.g!=null?+p.g:G.g, N:p.N!=null?+p.N:G.N, ke:p.ke!=null?+p.ke:G.ke,
+    pvpIn:p.pvpIn!=null?+p.pvpIn:null,                     // P/VP de entrada (múltiplo atual)
+    vp:(p.pvpIn!=null&&+p.pvpIn>0&&f.price>0)?f.price/(+p.pvpIn):null,   // VP/cota derivado
+    gvp:p.gvp!=null?+p.gvp:G.gvp, pvp:p.pvp!=null?+p.pvp:G.pvp, mos:p.mos!=null?+p.mos:G.mos,
+    modelo:p.modelo||G.modelo,
+  };
+}
+// VP dos proventos — FII paga MENSAL: 12N parcelas (dpu/12 crescendo g a.a.) descontadas ao Ke mensal
+// equivalente (1+ke)^(1/12)−1. Soma geométrica fechada (conferida contra loop mês a mês).
+function divPVmonthly(dpuAnnual,g,N,r){
+  if(!(dpuAnnual>0)||!(N>0))return 0;
+  const dpuM0=dpuAnnual/12, ratio=(1+g)/(1+r);if(ratio<=0)return 0;
+  const x=Math.pow(ratio,1/12), months=Math.round(12*N);
+  const sum=Math.abs(x-1)<1e-9?months:x*(1-Math.pow(x,months))/(1-x);
+  return dpuM0*sum;
+}
+// Perpetuidade de Gordon MENSAL: dpuM0·x/(1−x), x=((1+g)/(1+r))^(1/12). Exige r>g.
+function gordonMonthly(dpuAnnual,g,r){if(!(dpuAnnual>0)||r<=g)return null;const dpuM0=dpuAnnual/12,x=Math.pow((1+g)/(1+r),1/12);return dpuM0*x/(1-x);}
+// saída no ano N: por P/VP (se houver P/VP de entrada → VP/cota) ou por DY exigido (=ke)
+function fiiExitValue(pr){if(pr.vp>0)return pr.vp*Math.pow(1+pr.gvp,pr.N)*pr.pvp;return pr.dpu*Math.pow(1+pr.g,pr.N)/pr.ke;}
+function fiiValueAt(pr,r){return divPVmonthly(pr.dpu,pr.g,pr.N,r)+fiiExitValue(pr)/Math.pow(1+r,pr.N);}
+function fiiResult(f){
+  const pr=fiiPrem(f), price=f.price, isDy=pr.modelo==="dy";
+  const fair=isDy?(gordonMonthly(pr.dpu,pr.g,pr.ke)??NaN):fiiValueAt(pr,pr.ke);
+  const teto=isFinite(fair)?fair*(1-pr.mos):null;
+  const dy=price>0?pr.dpu/price:null, pvp=(pr.vp>0&&price>0)?price/pr.vp:null;
+  const upside=(price>0&&fair>0)?(fair-price)/price:null, msafe=(fair>0)?(fair-price)/fair:null;
+  return {pr,price,fair:isFinite(fair)?fair:null,teto,dy,pvp,upside,msafe,
+          exitMode:isDy?"gordon":(pr.vp>0?"pvp":"dy"),
+          divPV:isDy?(isFinite(fair)?fair:0):divPVmonthly(pr.dpu,pr.g,pr.N,pr.ke),
+          exitN:isDy?0:fiiExitValue(pr)};
+}
+// TIR implícita: r que iguala o modelo (mensal) ao preço — bissecção; saída fixa (não varia com r)
+function fiiIRR(f){
+  const pr=fiiPrem(f), price=f.price;if(!(price>0)||!(pr.dpu>0))return null;
+  let val,lo,hi=1.5;
+  if(pr.modelo==="dy"){val=r=>{const v=gordonMonthly(pr.dpu,pr.g,r);return v==null?Infinity:v;};lo=pr.g+1e-4;if(val(lo)<price)return null;if(val(hi)>price)return hi;}
+  else{const ex=fiiExitValue(pr);val=r=>divPVmonthly(pr.dpu,pr.g,pr.N,r)+ex/Math.pow(1+r,pr.N);lo=-0.5;if(val(lo)<price)return null;if(val(hi)>price)return hi;}
+  for(let i=0;i<64;i++){const m=(lo+hi)/2;if(val(m)>price)lo=m;else hi=m;}
+  return (lo+hi)/2;
+}
+
+/* ---------- screener / monitoradas ---------- */
+const FII_COLS=[
+  ["ticker","Fundo",f=>f.ticker],["segment","Segmento",f=>f.segment],["price","Preço",f=>f.price],
+  ["dy","DY",f=>fiiResult(f).dy],["pvp","P/VP",f=>fiiResult(f).pvp],["fair","Justo",f=>fiiResult(f).fair],
+  ["upside","Upside",f=>fiiResult(f).upside],["msafe","Margem seg.",f=>fiiResult(f).msafe],["tir","TIR",f=>fiiIRR(f)],
+];
+function fiiSorted(list){
+  const col=FII_COLS.find(c=>c[0]===fiiSortKey), val=col?col[2]:(f=>f.ticker);
+  return list.slice().sort((a,b)=>{let x=val(a),y=val(b);
+    if(typeof x==="string"){x=x||"";y=y||"";return fiiSortAsc?x.localeCompare(y):y.localeCompare(x);}
+    x=(x==null||!isFinite(x))?-1e18:x;y=(y==null||!isFinite(y))?-1e18:y;return fiiSortAsc?x-y:y-x;});
+}
+function fiiFiltered(){const q=fiiQuery.trim().toUpperCase();
+  return FIIS.filter(f=>(fiiScope!=="monitoradas"||FII_WATCH.has(f.ticker))&&(!q||f.ticker.includes(q)||f.name.toUpperCase().includes(q)||f.segment.toUpperCase().includes(q)));}
+function fiiMedian(list,fn){const xs=list.map(fn).filter(x=>x!=null&&isFinite(x)).sort((a,b)=>a-b);return xs.length?xs[Math.floor(xs.length/2)]:null;}
+function renderFiiTable(host,list){
+  const maxAbs=Math.max(0.01,...list.map(f=>{const u=fiiResult(f).upside;return u!=null&&isFinite(u)?Math.abs(u):0;}));
+  const rows=list.map(f=>{const r=fiiResult(f),tir=fiiIRR(f),ke=r.pr.ke,on=FII_WATCH.has(f.ticker)?"on":"";
+    const w=r.upside!=null&&isFinite(r.upside)?fclamp(Math.abs(r.upside)/maxAbs*50,0,50):0;
+    const fill=r.upside!=null?(r.upside>=0?`right:50%;width:${w}%;background:var(--good)`:`left:50%;width:${w}%;background:var(--bad)`):"";
+    const est=r.pr.dpuSource!=="yahoo";
+    return `<tr data-fii="${f.ticker}">
+      <td><div class="ftk">${f.ticker}</div><div class="fnm">${f.name}</div></td>
+      <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
+      <td class="num">${brl(f.price)}</td>
+      <td class="num ${est?'fest':''}" ${est?'title="DY estimado — abra o detalhe p/ o valor real do Yahoo"':''}>${fpct(r.dy)}</td>
+      <td class="num">${r.pvp!=null?fdec(r.pvp,2):'—'}</td>
+      <td class="num" style="color:var(--worth)">${brl(r.fair)}</td>
+      <td class="num ${r.upside>=0?'fpos':'fneg'}">${r.upside!=null?(r.upside>=0?'+':'')+fpct(r.upside):'—'} <span class="fmos"><span class="tick"></span><i style="${fill}"></i></span></td>
+      <td class="num">${fpct(r.msafe)}</td>
+      <td class="num ${tir!=null?(tir>=ke?'fpos':'fneg'):''}">${tir!=null?fpct(tir):'—'}</td>
+      <td><button class="fstar ${on}" data-fstar="${f.ticker}" title="monitorar">${on?'★':'☆'}</button></td></tr>`;}).join("");
+  const head=FII_COLS.map(c=>`<th data-k="${c[0]}" class="${fiiSortKey===c[0]?'arrow '+(fiiSortAsc?'asc':''):''}">${c[1]}</th>`).join("")+"<th></th>";
+  host.innerHTML=`<div class="ftbl"><table><thead><tr>${head}</tr></thead><tbody>${rows||`<tr><td colspan="10" style="text-align:center;color:var(--text-mute);padding:36px">${fiiScope==="monitoradas"?"Nenhum FII monitorado ainda — toque na ★ no screener.":"nenhum fundo"}</td></tr>`}</tbody></table></div>`;
+  host.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(fiiSortKey===k)fiiSortAsc=!fiiSortAsc;else{fiiSortKey=k;fiiSortAsc=false;}renderFiiView();});
+  host.querySelectorAll("[data-fstar]").forEach(b=>b.onclick=e=>{e.stopPropagation();toggleFiiWatch(b.dataset.fstar);});
+  host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=()=>{location.hash="#/fii/"+tr.dataset.fii;});
+}
+function renderFiiView(){
+  const mon=fiiScope==="monitoradas";
+  $("fiiAssetToggle").innerHTML=assetToggleHtml(mon?"monitoradas":"screener","fiis");
+  $("fiiTitle").textContent=mon?"Monitoradas · FIIs":"Screener · FIIs";
+  $("fiiSub").textContent=mon?"Os fundos que você acompanha, ordenados por upside.":"Fundos imobiliários ordenados por upside — quanto o preço justo está acima do preço atual.";
+  const host=$("fiiBody");
+  if(!FIIS_LOADED){host.innerHTML=`<div style="padding:40px;text-align:center;color:var(--text-mute)">Carregando fundos…</div>`;ensureFiis().then(()=>{if(!$("view-fiis").hidden)renderFiiView();});return;}
+  const list=fiiSorted(fiiFiltered());
+  const med=fiiMedian(FIIS,f=>fiiResult(f).upside);
+  host.innerHTML=`
+    <div class="fstats">
+      <div class="fstat"><div class="k">Fundos</div><div class="v">${mon?list.length:FIIS.length}</div></div>
+      <div class="fstat"><div class="k">Upside mediano</div><div class="v ${med>=0?'fpos':'fneg'}">${med!=null?(med>=0?'+':'')+fpct(med):'—'}</div></div>
+      <div class="fstat"><div class="k">DY mediano</div><div class="v">${fpct(fiiMedian(FIIS,f=>fiiResult(f).dy))}</div></div>
+      <div class="fstat"><div class="k">Monitorados</div><div class="v">${FII_WATCH.size}</div></div>
+    </div>
+    <div style="margin-bottom:12px"><input class="scr-search" id="fiiQ" type="search" placeholder="Buscar ticker, nome ou segmento…" value="${fiiQuery.replace(/"/g,'&quot;')}" style="width:100%;max-width:420px"></div>
+    <div id="fiiTbl"></div>`;
+  renderFiiTable($("fiiTbl"),list);
+  $("fiiQ").oninput=e=>{fiiQuery=e.target.value;renderFiiTable($("fiiTbl"),fiiSorted(fiiFiltered()));};
+}
+function toggleFiiWatch(tk){if(FII_WATCH.has(tk))FII_WATCH.delete(tk);else FII_WATCH.add(tk);fiiSave(FII_LS.watch,[...FII_WATCH]);
+  if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-detail").hidden&&curFii)drawFiiDetail(FIIS.find(x=>x.ticker===curFii),false);}
+
+/* ---------- gráfico de preço (mesmo UX do index; ids próprios p/ não colidir) ---------- */
+let fiiChart={ticker:null,fair:0,period:365};
+const fiiSeries={}, fiiHist={};
+const FII_PERIODS=[["1M",30],["3M",90],["6M",180],["1A",365],["5A",1300]];
+function fiiRenderPeriods(){const p=$("fiiPeriods");if(!p)return;
+  p.innerHTML=FII_PERIODS.map(([l,d])=>`<button class="period${d===fiiChart.period?' active':''}" data-d="${d}">${l}</button>`).join("");
+  p.querySelectorAll(".period").forEach(b=>b.onclick=()=>{fiiChart.period=+b.dataset.d;fiiRenderPeriods();fiiRenderChart();});}
+function fiiLoadHistory(tk){
+  if(fiiSeries[tk]){fiiRenderChart();return;}
+  fiiHist[tk]="loading";fiiRenderChart();
+  fetch(`/api/history/${tk}?range=5y`).then(r=>r.ok?r.json():null).then(d=>{
+    if(d&&d.series&&d.series.length){fiiSeries[tk]=d.series.map(a=>({t:new Date(a[0]),c:a[1]}));fiiHist[tk]="ok";}else fiiHist[tk]="empty";
+    fiiRenderChart();}).catch(()=>{fiiHist[tk]="empty";fiiRenderChart();});
+}
+function fiiRenderChart(){
+  const wrap=$("fiiChartWrap");if(!wrap||!fiiChart.ticker)return;
+  const W=Math.max(280,Math.round(wrap.clientWidth||900)), H=Math.round(Math.max(190,Math.min(300,W*0.34)));
+  const full=fiiSeries[fiiChart.ticker];
+  if(!full||!full.length){const msg=fiiHist[fiiChart.ticker]==="empty"?"Sem histórico de preço disponível para este fundo.":"Carregando histórico…";
+    wrap.innerHTML=`<div style="height:${H}px;display:flex;align-items:center;justify-content:center;color:var(--text-mute);font-size:14px;text-align:center;padding:0 16px">${msg}</div>`;return;}
+  const data=full.slice(-Math.min(fiiChart.period,full.length)), fair=fiiChart.fair;
+  const ys=data.map(d=>d.c).concat(isFinite(fair)?[fair]:[]);
+  let min=Math.min(...ys),max=Math.max(...ys);const pad=(max-min)*0.08||1;min-=pad;max+=pad;
+  const L=8,T=10,B=22,R=W<520?46:56,fs=W<420?12:11;
+  const x=i=>L+i/(data.length-1)*(W-L-R), y=v=>T+(1-(v-min)/(max-min))*(H-T-B);
+  let d="";data.forEach((pt,i)=>{d+=(i?"L":"M")+x(i).toFixed(1)+" "+y(pt.c).toFixed(1)+" ";});
+  const area=d+`L${x(data.length-1).toFixed(1)} ${(H-B)} L${x(0).toFixed(1)} ${(H-B)} Z`, fy=y(fair);
+  let yt="";for(let g=0;g<=3;g++){const v=min+pad+(max-min-2*pad)*g/3,yy=y(v);
+    yt+=`<line x1="${L}" x2="${(W-R).toFixed(1)}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}" stroke="var(--border-2)"/><text x="${(W-R+6).toFixed(1)}" y="${(yy+3).toFixed(1)}" fill="var(--text-mute)" font-size="${fs}">${brl(v).replace("R$ ","")}</text>`;}
+  const n=data.length,nx=W<520?3:5,xi=[];for(let g=0;g<nx;g++)xi.push(Math.round(g/(nx-1)*(n-1)));
+  let xt="";xi.forEach(i=>{const lab=data[i].t.toLocaleDateString("pt-BR",{month:"short",year:"2-digit"}),anchor=i===0?"start":i===n-1?"end":"middle";
+    xt+=`<text x="${x(i).toFixed(1)}" y="${H-6}" fill="var(--text-mute)" font-size="${fs}" text-anchor="${anchor}">${lab}</text>`;});
+  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" id="fiiSvg">
+      <defs><linearGradient id="fiiGArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity="0.18"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+      ${yt}${xt}<path d="${area}" fill="url(#fiiGArea)"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${isFinite(fair)?`<line x1="${L}" x2="${(W-R).toFixed(1)}" y1="${fy.toFixed(1)}" y2="${fy.toFixed(1)}" stroke="var(--text-mute)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="${L+4}" y="${(fy-6).toFixed(1)}" fill="var(--text-mute)" font-size="${fs}">justo ${brl(fair)}</text>`:""}
+      <rect id="fiiSelband" x="0" y="${T}" width="0" height="${(H-T-B).toFixed(1)}" fill="var(--accent)" opacity="0" style="pointer-events:none"/>
+      <line id="fiiSelL" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>
+      <line id="fiiSelR" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>
+      <line id="fiiCross" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--text-mute)" stroke-width="1" opacity="0"/>
+      <circle id="fiiCdot" r="3.5" fill="var(--accent)" opacity="0"/>
+      <rect id="fiiHit" x="${L}" y="0" width="${(W-L-R).toFixed(1)}" height="${H}" fill="transparent" style="cursor:crosshair"/>
+    </svg><div class="tip" id="fiiTip"></div><div class="tip selbadge" id="fiiSelbadge"></div>`;
+  const svg=$("fiiSvg"),hit=$("fiiHit"),tip=$("fiiTip"),cross=$("fiiCross"),cdot=$("fiiCdot");
+  const idxAt=ev=>{const rect=svg.getBoundingClientRect();const cx=ev.touches&&ev.touches[0]?ev.touches[0].clientX:ev.clientX;let i=Math.round(((cx-rect.left)/rect.width*W-L)/(W-L-R)*(data.length-1));return Math.max(0,Math.min(data.length-1,i));};
+  const move=ev=>{const i=idxAt(ev),cx=x(i),cy=y(data[i].c);cross.setAttribute("x1",cx);cross.setAttribute("x2",cx);cross.setAttribute("opacity","0.5");
+    cdot.setAttribute("cx",cx);cdot.setAttribute("cy",cy);cdot.setAttribute("opacity","1");tip.style.opacity="1";tip.style.left=(cx/W*100)+"%";tip.style.top=(cy/H*100)+"%";
+    tip.innerHTML=`<b>${brl(data[i].c)}</b><br>${data[i].t.toLocaleDateString("pt-BR")}`;};
+  const hide=()=>{cross.setAttribute("opacity","0");cdot.setAttribute("opacity","0");tip.style.opacity="0";};
+  hit.addEventListener("mousemove",move);hit.addEventListener("mouseleave",hide);hit.addEventListener("touchstart",move,{passive:true});hit.addEventListener("touchmove",move,{passive:true});
+  const selband=$("fiiSelband"),selL=$("fiiSelL"),selR=$("fiiSelR"),selbadge=$("fiiSelbadge");
+  const clearSel=()=>{selband.setAttribute("opacity","0");selL.setAttribute("opacity","0");selR.setAttribute("opacity","0");selbadge.style.opacity="0";};
+  const drawSel=(a,b)=>{const lo=Math.min(a,b),hi=Math.max(a,b),xa=x(lo),xb=x(hi);
+    selband.setAttribute("x",xa.toFixed(1));selband.setAttribute("width",Math.max(0,xb-xa).toFixed(1));selband.setAttribute("opacity","0.14");
+    selL.setAttribute("x1",x(a).toFixed(1));selL.setAttribute("x2",x(a).toFixed(1));selL.setAttribute("opacity","0.7");selR.setAttribute("x1",x(b).toFixed(1));selR.setAttribute("x2",x(b).toFixed(1));selR.setAttribute("opacity","0.7");
+    const c0=data[a].c,c1=data[b].c,p=(c1-c0)/c0*100,up=c1>=c0,mid=(xa+xb)/2;
+    selbadge.className="tip selbadge "+(up?"up":"down");selbadge.style.opacity="1";selbadge.style.left=(mid/W*100)+"%";selbadge.style.top=((T+2)/H*100)+"%";
+    selbadge.innerHTML=`<b>${p>=0?"+":""}${p.toFixed(2)}%</b><br><span style="font-size:11px;color:var(--text-mute)">${c1-c0>=0?"+":""}${brl(c1-c0)} · ${data[lo].t.toLocaleDateString("pt-BR")} → ${data[hi].t.toLocaleDateString("pt-BR")}</span>`;};
+  let drag=null;
+  const dStart=ev=>{if(ev.button!==undefined&&ev.button!==0)return;if(ev.preventDefault)ev.preventDefault();drag=idxAt(ev);clearSel();};
+  const dMove=ev=>{if(drag===null)return;drawSel(drag,idxAt(ev));};
+  const dEnd=ev=>{if(drag===null)return;const j=idxAt(ev);if(j===drag)clearSel();else drawSel(drag,j);drag=null;};
+  hit.addEventListener("mousedown",dStart);hit.addEventListener("mousemove",dMove);hit.addEventListener("mouseup",dEnd);hit.addEventListener("mouseleave",dEnd);
+  hit.addEventListener("touchstart",dStart,{passive:true});hit.addEventListener("touchmove",dMove,{passive:true});hit.addEventListener("touchend",dEnd);
+}
+let _fiiRAF=null;
+function fiiScheduleChart(){if(_fiiRAF)return;const raf=(typeof requestAnimationFrame==="function")?requestAnimationFrame:(fn=>setTimeout(fn,16));_fiiRAF=raf(()=>{_fiiRAF=null;fiiRenderChart();});}
+window.addEventListener("resize",()=>{const v=$("view-fii-detail");if(v&&!v.hidden){clearTimeout(window.__fcr);window.__fcr=setTimeout(fiiRenderChart,150);}});
+
+/* ---------- medidor + TIR do hero (mesmas classes .hg-* do index, ids próprios) ---------- */
+function fiiHeroGauge(price,fair){
+  const g=$("fiiHeroGauge");if(!g)return;
+  if(fair==null||!isFinite(fair)||price==null){g.innerHTML="";return;}
+  const margin=(fair-price)/price*100,pos=margin>=0,cap=40,m=Math.max(-cap,Math.min(cap,margin));
+  const priceLeft=50-(m/cap*50),lo=Math.min(50,priceLeft),hi=Math.max(50,priceLeft),pl=Math.max(9,Math.min(91,priceLeft));
+  g.innerHTML=`<div class="hg-track"><div class="hg-fill ${pos?'good':'bad'}" style="left:${lo}%;right:${100-hi}%"></div><div class="hg-fairmark"></div><div class="hg-price" style="left:${priceLeft}%"></div><div class="hg-lab fair" style="left:50%">justo ${brl(fair)}</div><div class="hg-lab price" style="left:${pl}%">preço ${brl(price)}</div></div>`;
+}
+function fiiHeroTir(tir,ke){
+  const el=$("fiiHeroTir");if(!el)return;
+  if(tir==null||!isFinite(tir)){el.innerHTML="";return;}
+  const pp=(tir-ke)*100,pos=pp>=0;
+  el.innerHTML=`<span class="tl">TIR implícita</span><span class="tv ${pos?'pos':'neg'}">${dec(tir*100,1)}% a.a.</span><span>Ke ${fpct(ke)} → ${pos?"prêmio":"déficit"} ${(pos?"+":"")}${dec(pp,1)} p.p.</span>`;
+}
+const fiiSrcPill=s=>`<span class="srcpill ${s}">${s}</span>`;
+
+/* ---------- detalhe ---------- */
+async function openFii(tk){
+  await ensureFiis();
+  const f=FIIS.find(x=>x.ticker===tk);
+  if(!f){location.hash="#/screener/fiis";return;}
+  curFii=tk;FDRAFT={};setActiveNav(fiiScope==="monitoradas"?"monitoradas":"screener");show("fii-detail");closePop();
+  fiiChart.ticker=tk;fiiChart.period=365;fiiChart.fair=fiiResult(f).fair;
+  drawFiiDetail(f,true);fiiLoadHistory(tk);
+  if(!FDIV[tk]){try{const r=await fetch("/api/fii/"+tk);if(r.ok)FDIV[tk]=await r.json();}catch(e){}
+    if(curFii===tk){fiiChart.fair=fiiResult(f).fair;drawFiiDetail(f,false);}}
+  window.scrollTo(0,0);
+}
+function drawFiiDetail(f,loading){
+  const r=fiiResult(f),pr=r.pr,model=pr.modelo,ml=FII_MODELS[model],tir=fiiIRR(f),dd=FDIV[f.ticker],up=r.upside;
+  const back=fiiScope==="monitoradas"?"#/monitoradas/fiis":"#/screener/fiis";
+  $("fiiDetailBody").innerHTML=`
+    <div class="detail-top">
+      <div class="crumb"><a href="${back}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>${fiiScope==="monitoradas"?"Monitoradas":"Screener"} · FIIs</a> <span>/</span> <span>${f.ticker}</span></div>
+      <div class="detail-actions">
+        <button class="btn sm ${FII_WATCH.has(f.ticker)?'watch-on':''}" id="fiiWBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .8-5 4.9 1.3 7-6.3-3.4L5.7 21l1.3-7-5-4.9 7-.8z"/></svg><span>${FII_WATCH.has(f.ticker)?'Monitorando':'Monitorar'}</span></button>
+        <button class="btn sm" id="fiiCartBtn">＋ Carteira</button>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="hero-id">
+        <div class="stock-title"><h1>${f.ticker}</h1><span class="sec">${f.segment}</span></div>
+        <p class="fair-sub" style="margin:6px 0 0;">${f.name}</p>
+        <div class="hero-price"><span class="hp-lbl">Preço atual · B3</span><span class="hp-val num">${brl(f.price)}</span></div>
+      </div>
+      <div class="card verdict">
+        <div class="fair-label" id="fiiFairLabel">Preço justo · ${ml.label}</div>
+        <div class="fair-value num" id="fiiFairValue">${brl(r.fair)}</div>
+        <div class="badge-mos"><span id="fiiMosText">${up!=null?(up>=0?'+':'')+fpct(up)+' de upside':'—'}</span></div>
+        <div class="hero-gauge" id="fiiHeroGauge"></div>
+        <div class="hero-tir" id="fiiHeroTir"></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card card-pad">
+        <div class="box-head"><h3>Modelo de valuation</h3><span class="box-sub">pré-visualize · salve para aplicar ao fundo</span></div>
+        <div class="mode-toggle" id="fiiModelSwitch" role="tablist">
+          <button type="button" class="gt-btn ${model==='r1'?'active':''}" data-model="r1">Regra nº1 · FII</button>
+          <button type="button" class="gt-btn ${model==='dy'?'active':''}" data-model="dy">DY-alvo · perpetuidade</button>
+        </div>
+        <p class="box-lead" style="margin:10px 0 0;">${ml.desc}</p>
+      </div>
+      <div class="card card-pad">
+        <div class="chart-head"><div class="card-title" style="margin:0;">Preço · fechamento diário</div><div class="periods" id="fiiPeriods"></div></div>
+        <div class="chart-wrap" id="fiiChartWrap"></div>
+        <div class="chart-legend"><span><i style="border-color:var(--accent)"></i>Preço</span><span><i style="border-color:var(--text-mute);border-top-style:dashed"></i>Preço justo</span></div>
+      </div>
+      <div class="prem-grid">
+        <div class="card card-pad">
+          <div class="box-head"><h3>Premissas</h3><span class="box-sub">o que você assume · ${model==='r1'?'saída por P/VP':'perpetuidade'}</span></div>
+          <p class="box-lead">DPU <b>mensal</b> (média dos 12m do Yahoo) ${fiiSrcPill(pr.dpuSource)} — editável; digitar torna manual. <b>P/VP de entrada</b> (atual) você informa; o VP/cota sai daí. <b>Ke e horizonte</b> vêm da Config global (compartilhados com as ações); g, P/VP de saída e margem do card FIIs da Config.</p>
+          <div class="assumptions" id="fiiPremBox"></div>
+          <div class="save-row"><button class="btn sm btn-primary" id="fiiSaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Salvar premissas</button></div>
+        </div>
+        <div class="card card-pad impl-box">
+          <div class="box-head"><h3>Implicações</h3><span class="box-sub">o que elas produzem</span></div>
+          <p class="box-lead">Os números que saem das premissas ao lado. Tudo recalcula ao vivo com os sliders.</p>
+          <div class="impl-row"><span class="lbl">DY corrente <small>12 × DPU_mês ÷ preço · soma dos proventos</small></span><span class="v num" id="fii-impl-dy">—</span></div>
+          <div class="impl-row"><span class="lbl">DY efetivo · reinvestido <small>(1 + DPU_mês÷preço)¹² − 1</small></span><span class="v num" id="fii-impl-dyeff">—</span></div>
+          <div class="impl-row"><span class="lbl">P/VP de entrada <small>informado · VP/cota = preço ÷ P/VP</small></span><span class="v num" id="fii-impl-pvp">—</span></div>
+          <div class="impl-sep">de onde vem o valor justo</div>
+          <div class="impl-row" id="fii-row-divpv"><span class="lbl"><span class="dot" style="background:var(--accent);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span><span id="fii-divpv-lbl">VP dos proventos · mensal</span></span><span class="v num" id="fii-impl-divpv">—</span></div>
+          <div class="impl-row" id="fii-row-exit"><span class="lbl"><span class="dot" style="background:var(--text-mute);width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;"></span>VP da saída no ano N</span><span class="v num" id="fii-impl-exit">—</span></div>
+          <div class="impl-fair"><span class="lbl">= Preço justo</span><span class="v num" id="fii-impl-fair">—</span></div>
+          <div class="impl-row"><span class="lbl">Upside <small>justo ÷ preço − 1</small></span><span class="v num" id="fii-impl-upside">—</span></div>
+          <div class="impl-row"><span class="lbl">Margem de segurança <small>(justo − preço) ÷ justo</small></span><span class="v num" id="fii-impl-msafe">—</span></div>
+          <div class="impl-row"><span class="lbl">TIR implícita <small>retorno anual no preço de hoje</small></span><span class="v num" id="fii-impl-tir">—</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="steps-head"><div><h2>A conta, passo a passo</h2><p>O FII paga <b>mensal</b>: o fluxo é descontado mês a mês ao Ke mensal equivalente. Tudo recalcula com os sliders.</p></div><div class="now">com os seus números atuais</div></div>
+        <div id="fiiStepBox"></div>
+      </div>
+      <div class="card card-pad"><div class="card-title">Proventos ${dd&&dd.divs&&dd.divs.length?'· últimos pagamentos (Yahoo)':''}</div><div id="fiiDvBox"></div></div>
+    </div>`;
+  buildFiiPrem(f);buildFiiSteps(f);buildFiiDivChart(f);fiiRenderPeriods();fiiRenderChart();
+  fiiHeroGauge(f.price,r.fair);fiiHeroTir(tir,pr.ke);refreshFiiImpl(f);
+  $("fiiSaveBtn").onclick=()=>saveFiiPrem(f);
+  $("fiiCartBtn").onclick=()=>addFiiCart(f);
+  $("fiiWBtn").onclick=()=>toggleFiiWatch(f.ticker);
+  $("fiiModelSwitch").querySelectorAll(".gt-btn").forEach(b=>b.onclick=()=>{if(b.dataset.model===model)return;FDRAFT.modelo=b.dataset.model;fiiChart.fair=fiiResult(f).fair;drawFiiDetail(f,loading);});
+}
+function refreshFiiImpl(f){
+  const r=fiiResult(f),pr=r.pr,isDy=pr.modelo==="dy";
+  const set=(id,txt,cls)=>{const e=$(id);if(!e)return;e.textContent=txt;if(cls!=null)e.className="v num "+cls;};
+  set("fii-impl-dy",fpct(r.dy));
+  set("fii-impl-dyeff",f.price>0?fpct(Math.pow(1+pr.dpuM/f.price,12)-1):"—");
+  set("fii-impl-pvp",r.pvp!=null?fdec(r.pvp,2):"—");
+  set("fii-impl-divpv",brl(r.divPV));
+  set("fii-impl-exit",isDy?"—":brl(r.exitN/Math.pow(1+pr.ke,pr.N)));
+  set("fii-impl-fair",r.fair!=null?brl(r.fair):"—");
+  set("fii-impl-upside",r.upside!=null?(r.upside>=0?'+':'')+fpct(r.upside):"—",r.upside>=0?"pos":"neg");
+  set("fii-impl-msafe",fpct(r.msafe));
+  const t=fiiIRR(f);set("fii-impl-tir",t!=null?dec(t*100,1)+"% a.a.":"—",t!=null?(t>=pr.ke?"pos":"neg"):"");
+  const re=$("fii-row-exit");if(re)re.style.display=isDy?"none":"";
+  const dl=$("fii-divpv-lbl");if(dl)dl.textContent=isDy?"Perpetuidade de Gordon (mensal)":"VP dos proventos · mensal";
+}
+// [key, label, type, min, max, step, isPct, scope]
+const FII_PREM_CTRLS=[
+  ["dpu","DPU mensal (R$/cota)","num",0,0,0.01,false,"all"],
+  ["ke","Retorno exigido (Ke)","rng",4,20,0.25,true,"all"],
+  ["g","Crescimento do DPU (g)","rng",-2,15,0.5,true,"all"],
+  ["mos","Margem de segurança","rng",0,50,1,true,"all"],
+  ["N","Anos até a venda","rng",1,30,1,false,"r1"],
+  ["pvpIn","P/VP de entrada","num",0,0,0.01,false,"r1"],
+  ["gvp","Cresc. do VP/cota","rng",-2,15,0.5,true,"r1"],
+  ["pvp","P/VP de saída","rng",0.4,2,0.05,false,"r1"],
+];
+function fmtFiiPrem(key,v,isPct){if(v==null||!isFinite(v))return"—";if(isPct)return dec(v*100,key==="mos"?0:1)+"%";if(key==="pvp")return dec(v,2)+"×";if(key==="N")return Math.round(v)+" anos";return dec(v,2);}
+function buildFiiPrem(f){
+  const pr=fiiPrem(f),model=pr.modelo,box=$("fiiPremBox");
+  const field=c=>{const[key,lbl,type,min,max,step,isPct,scope]=c;const hide=(scope==="r1"&&model!=="r1")?' style="display:none"':"";
+    const v=key==="dpu"?pr.dpuM:pr[key];
+    if(type==="rng"){const rv=(v==null?min:(isPct?v*100:v));
+      return `<div class="field" data-scope="${scope}"${hide}><label>${lbl}</label><span class="val num" id="fpv_${key}">${fmtFiiPrem(key,v,isPct)}</span><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step}" value="${rv}"></div>`;}
+    return `<div class="field wide" data-scope="${scope}"${hide}><label>${lbl}</label><input type="number" data-k="${key}" data-num="1" inputmode="decimal" value="${v!=null?dec(v,2).replace(",","."):''}" step="${step}" placeholder="—"></div>`;};
+  let html="";FII_PREM_CTRLS.forEach(c=>{if(c[0]==="N")html+=`<div class="asm-group" data-scope="r1"${model!=="r1"?' style="display:none"':''}>saída no ano N · vira preço pelo P/VP</div>`;html+=field(c);});
+  box.innerHTML=html;
+  box.querySelectorAll("input[type=range]").forEach(inp=>inp.oninput=()=>{const k=inp.dataset.k,c=FII_PREM_CTRLS.find(x=>x[0]===k),isPct=c[6];let val=+inp.value;if(isPct)val/=100;$("fpv_"+k).textContent=fmtFiiPrem(k,val,isPct);setFiiDraft(f,k,val);});
+  box.querySelectorAll("input[data-num]").forEach(inp=>inp.oninput=()=>{const k=inp.dataset.k,raw=inp.value.replace(",",".").trim();setFiiDraft(f,k,raw===""?null:+raw);});
+}
+function setFiiDraft(f,k,v){FDRAFT[k]=v;refreshFiiLive(f);}
+function refreshFiiLive(f){
+  const r=fiiResult(f),pr=r.pr,tir=fiiIRR(f);
+  const fv=$("fiiFairValue");if(fv)fv.textContent=r.fair!=null?brl(r.fair):"—";
+  const mt=$("fiiMosText");if(mt)mt.textContent=r.upside!=null?(r.upside>=0?'+':'')+fpct(r.upside)+' de upside':'—';
+  const fl=$("fiiFairLabel");if(fl)fl.textContent="Preço justo · "+FII_MODELS[pr.modelo].label;
+  fiiHeroGauge(f.price,r.fair);fiiHeroTir(tir,pr.ke);refreshFiiImpl(f);buildFiiSteps(f);
+  fiiChart.fair=r.fair;fiiScheduleChart();
+}
+function saveFiiPrem(f){
+  const merged={...(FII_PREM[f.ticker]||{}),...FDRAFT};
+  Object.keys(merged).forEach(k=>{if(k!=="modelo"&&(merged[k]==null||merged[k]===""))delete merged[k];});
+  if(Object.keys(merged).length)FII_PREM[f.ticker]=merged;else delete FII_PREM[f.ticker];
+  fiiSave(FII_LS.prem,FII_PREM);FDRAFT={};fiiToast("Premissas salvas");fiiChart.fair=fiiResult(f).fair;drawFiiDetail(f,false);
+}
+const fiiStep=(n,title,body,formula)=>`<div class="step"><div class="step-badge">${n}</div><div><div class="step-title">${title}</div><div class="step-body">${body}</div>${formula||''}</div></div>`;
+function buildFiiSteps(f){
+  const r=fiiResult(f),pr=r.pr,box=$("fiiStepBox");if(!box)return;
+  const keM=Math.pow(1+pr.ke,1/12)-1;
+  const s1=fiiStep(1,"Provento de partida",`O DPU <b>mensal</b> pago pelo fundo — o ponto de partida do fluxo.`,
+    `<div class="formula num"><span class="lead">DPU</span> = <span class="accent">${brl(pr.dpuM)}/mês</span> = ${brl(pr.dpu)}/ano → DY ${fpct(r.dy)}</div>`);
+  if(pr.modelo==="dy"){
+    const x=Math.pow((1+pr.g)/(1+pr.ke),1/12),ok=pr.ke>pr.g&&r.fair!=null;
+    const s2=fiiStep(2,"Perpetuidade de Gordon (mensal)",`Assume o provento mensal crescendo <b>${fpct(pr.g)}</b> a.a. <b>para sempre</b>, descontado ao Ke mensal <span class="mono">${fpct(keM,2)}</span>. Sem horizonte nem saída.`,
+      ok?`<div class="formula num"><span class="lead">Justo</span> = <span class="frac"><span class="top">${brl(pr.dpuM)}/mês × ${dec(x,4)}</span><span class="bot">1 − ${dec(x,4)}</span></span> = <span class="accent">${brl(r.fair)}</span></div>`
+        :`<div class="formula num"><span class="lead">Não converge:</span> exige Ke (${fpct(pr.ke)}) &gt; g (${fpct(pr.g)}).</div>`);
+    const s3=ok?fiiStep(3,"Preço-teto de compra",`Aplica sua margem de segurança sobre o justo.`,`<div class="formula num" style="font-size:15px;">justo ${brl(r.fair)} × (1 − ${fpct(pr.mos)}) = <span class="accent">${brl(r.teto)}</span></div>`):"";
+    box.innerHTML=s1+s2+s3;return;
+  }
+  const totalMonths=12*pr.N,mShow=Math.min(totalMonths,12),dpuM0=pr.dpu/12;let rows="";
+  for(let m=1;m<=mShow;m++){const dpuMes=dpuM0*Math.pow(1+pr.g,m/12),fator=1/Math.pow(1+pr.ke,m/12);
+    rows+=`<tr><td>mês ${m}</td><td>${brl(dpuMes)}</td><td>× ${dec(fator,4)}</td><td class="pv">${brl(dpuMes*fator)}</td></tr>`;}
+  if(totalMonths>mShow){const restVP=r.divPV-divPVmonthly(pr.dpu,pr.g,mShow/12,pr.ke);rows+=`<tr class="base"><td>meses ${mShow+1}–${totalMonths}</td><td>…</td><td>…</td><td class="pv">${brl(restVP)}</td></tr>`;}
+  const exitPV=r.exitN/Math.pow(1+pr.ke,pr.N);
+  const s2=fiiStep(2,"Projetar mensal e descontar ao Ke mensal",
+    `O FII paga <b>mensal</b>: <b>${totalMonths} parcelas</b> de ~<b>${brl(dpuM0)}</b>${pr.g!==0?` (crescendo <b>${fpct(pr.g)}</b> a.a.)`:''}, cada uma trazida a hoje por <span class="mono">1 ÷ (1+Ke_mês)^mês</span>, com Ke mensal <span class="mono">${fpct(keM,2)}</span> (= ${fpct(pr.ke)} a.a.). O <b>fator de desconto</b> encolhe a cada mês — o aluguel do mês 1 vale mais que o do mês 12.`,
+    `<table class="proj num"><thead><tr><th>Mês</th><th>Provento</th><th>fator VP</th><th>= VP a hoje</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="sum"><td colspan="3">VP dos proventos (${totalMonths} meses)</td><td class="pv">${brl(r.divPV)}</td></tr></tfoot></table>`);
+  const s3=fiiStep(3,`Valor de saída no ano ${pr.N}`,
+    r.exitMode==="pvp"?`Do <b>P/VP de entrada ${dec(pr.pvpIn,2)}×</b> sai o VP/cota = preço ÷ P/VP = <b>${brl(pr.vp)}</b>. Ele cresce <b>${fpct(pr.gvp)}</b>/ano e você vende a <b>P/VP de saída ${dec(pr.pvp,2)}×</b> no ano ${pr.N}.`
+      :`Sem P/VP de entrada informado, a saída sai pelo <b>DY exigido</b> (${fpct(pr.ke)}) sobre o provento do ano ${pr.N}.`,
+    `<div class="formula num"><span class="lead">Saída</span> = ${brl(r.exitN)} <span style="color:var(--text-mute)">→ a hoje</span> ÷ (1+${fpct(pr.ke)})^${pr.N} = <span class="accent">${brl(exitPV)}</span></div>`);
+  const s4=fiiStep(4,"Somar = preço justo",`O valor da cota é o VP dos proventos mais a saída trazida a hoje.`,`<div class="formula num" style="font-size:15px;">${brl(r.divPV)} + ${brl(exitPV)} = <span class="accent">${brl(r.fair)}</span></div>`);
+  const s5=fiiStep(5,"Preço-teto de compra",`Aplica sua margem de segurança sobre o justo — o preço máximo a pagar.`,`<div class="formula num" style="font-size:15px;">justo ${brl(r.fair)} × (1 − ${fpct(pr.mos)}) = <span class="accent">${brl(r.teto)}</span></div>`);
+  box.innerHTML=s1+s2+s3+s4+s5;
+}
+function buildFiiDivChart(f){
+  const box=$("fiiDvBox"),dd=FDIV[f.ticker];
+  if(!dd||!dd.divs||!dd.divs.length){box.innerHTML=`<div style="padding:22px;text-align:center;color:var(--text-mute)">Sem série de proventos ${dd?'(Yahoo não retornou)':'(carregando…)'}.<br><span style="font-size:12px">O DY em uso está marcado como ${fiiSrcPill(fiiPrem(f).dpuSource)}.</span></div>`;return;}
+  const last=dd.divs.slice(-18),max=Math.max(...last.map(d=>d.amount));
+  const bars=last.map(d=>`<div class="dvbar" style="height:${fclamp(d.amount/max*100,4,100)}%" title="${new Date(d.date).toLocaleDateString('pt-BR')}: ${brl(d.amount)}"></div>`).join("");
+  const mm=d=>d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
+  box.innerHTML=`<div class="dvchart">${bars}</div><div class="dvlabels"><span>${mm(new Date(last[0].date))}</span><span>${mm(new Date(last[last.length-1].date))}</span></div>
+    <div style="margin-top:8px;color:var(--text-soft);font-size:12.5px">Soma 12m: <b class="num">${brl(dd.dpu12m)}</b> · DY ${fpct(f.price>0?dd.dpu12m/f.price:null)} ${fiiSrcPill('yahoo')}</div>`;
+}
+
+/* ---------- carteira de FIIs ---------- */
+function addFiiCart(f){
+  const cur=FII_CART[f.ticker]||{qtd:0,pm:f.price};
+  const qtd=prompt(`Quantas cotas de ${f.ticker}?`,cur.qtd||"");if(qtd==null)return;
+  const pm=prompt(`Preço médio (R$) de ${f.ticker}?`,cur.pm||f.price);if(pm==null)return;
+  const q=+String(qtd).replace(",","."),p=+String(pm).replace(",",".");
+  if(!(q>0)||!(p>=0)){fiiToast("valores inválidos");return;}
+  FII_CART[f.ticker]={qtd:q,pm:p};fiiSave(FII_LS.cart,FII_CART);fiiToast(`${f.ticker} na carteira de FIIs`);
+}
+function renderFiiCart(){
+  $("fiiCartAssetToggle").innerHTML=assetToggleHtml("carteira","fiis");
+  const host=$("fiiCartBody");
+  if(!FIIS_LOADED){host.innerHTML=`<div style="padding:40px;text-align:center;color:var(--text-mute)">Carregando fundos…</div>`;ensureFiis().then(()=>{if(!$("view-fii-carteira").hidden)renderFiiCart();});return;}
+  const tks=Object.keys(FII_CART);
+  if(!tks.length){host.innerHTML=`<div style="padding:40px 20px;text-align:center;color:var(--text-mute)">Carteira de FIIs vazia.<br>Abra um fundo e use "＋ Carteira".</div>`;return;}
+  const rows=tks.map(tk=>{const f=FIIS.find(x=>x.ticker===tk);if(!f)return null;const pos=FII_CART[tk],r=fiiResult(f);
+    const val=pos.qtd*f.price,custo=pos.qtd*pos.pm;return {f,pos,r,val,custo,res:val-custo,renda:r.pr.dpu*pos.qtd};}).filter(Boolean);
+  const patr=rows.reduce((s,x)=>s+x.val,0),custoT=rows.reduce((s,x)=>s+x.custo,0),rendaT=rows.reduce((s,x)=>s+x.renda,0);
+  const bySeg={};rows.forEach(x=>{bySeg[x.f.segment]=(bySeg[x.f.segment]||0)+x.val;});
+  const segRows=Object.entries(bySeg).sort((a,b)=>b[1]-a[1]).map(([s,v])=>`<div class="segbar"><span>${s}</span><span class="track"><span class="fill" style="width:${patr>0?v/patr*100:0}%"></span></span><span class="num">${fpct(patr>0?v/patr:0)}</span></div>`).join("");
+  const hhi=rows.reduce((s,x)=>{const w=patr>0?x.val/patr:0;return s+w*w;},0),nef=hhi>0?1/hhi:0;
+  const trs=rows.sort((a,b)=>b.val-a.val).map(x=>{const w=patr>0?x.val/patr:0;
+    return `<tr data-fii="${x.f.ticker}"><td><div class="ftk">${x.f.ticker}</div><div class="fnm">${x.f.segment}</div></td><td class="num">${dec(x.pos.qtd,0)}</td><td class="num">${brl(x.pos.pm)}</td><td class="num">${brl(x.f.price)}</td><td class="num">${brl(x.val)}</td><td class="num">${fpct(w)}</td><td class="num ${x.res>=0?'fpos':'fneg'}">${x.res>=0?'+':''}${brl(x.res)}</td><td class="num">${fpct(x.r.dy)}</td><td class="num">${brl(x.renda/12)}</td><td><button class="fstar" data-fdel="${x.f.ticker}" title="remover">✕</button></td></tr>`;}).join("");
+  host.innerHTML=`
+    <div class="fstats">
+      <div class="fstat"><div class="k">Patrimônio</div><div class="v">${brl0(patr)}</div></div>
+      <div class="fstat"><div class="k">Resultado</div><div class="v ${patr-custoT>=0?'fpos':'fneg'}">${(patr-custoT>=0?'+':'')+brl0(patr-custoT)}</div></div>
+      <div class="fstat"><div class="k">Renda mensal est.</div><div class="v">${brl0(rendaT/12)} <small>${fpct(patr>0?rendaT/patr:null)} DY</small></div></div>
+      <div class="fstat"><div class="k">Concentração</div><div class="v">${dec(nef,1)} <small>fundos efetivos (de ${rows.length})</small></div></div>
+    </div>
+    <div class="ftbl"><table><thead><tr><th>Fundo</th><th>Cotas</th><th>PM</th><th>Preço</th><th>Valor</th><th>Peso</th><th>Resultado</th><th>DY</th><th>Renda/mês</th><th></th></tr></thead><tbody>${trs}</tbody></table></div>
+    <div class="fcard" style="margin-top:16px"><h3>Concentração por segmento</h3><div class="segbars">${segRows}</div></div>
+    <div class="fnote">Renda estimada usa <b>DPU × cotas</b> (mesma base do modelo). Onde o DPU é <b>estimado</b>, a renda também é — abra cada fundo para puxar o DPU real do Yahoo.</div>`;
+  host.querySelectorAll("[data-fdel]").forEach(b=>b.onclick=e=>{e.stopPropagation();delete FII_CART[b.dataset.fdel];fiiSave(FII_LS.cart,FII_CART);renderFiiCart();});
+  host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=()=>{location.hash="#/fii/"+tr.dataset.fii;});
+}
+// re-render das telas de FII quando a config global muda (Ke/fade compartilhados)
+function rerenderFiiViews(){if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-carteira").hidden)renderFiiCart();if(!$("view-fii-detail").hidden&&curFii){const f=FIIS.find(x=>x.ticker===curFii);if(f)drawFiiDetail(f,false);}}
+
 bootstrap();
 </script>
 </body>
