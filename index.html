@@ -3133,7 +3133,10 @@ let FII_PREM={};                                      // {ticker:{dpu(mensal),g,
 let FII_WATCH=new Set();
 let FII_CART={};                                      // {ticker:{qtd,pm}}
 let FII_HIST={};                                      // {ticker:[{date,prem,fair,price,modelo}]} — histórico de "Salvar premissas"
-const fiiApi=(url,method,body)=>fetch(url,{method,headers:body?{"Content-Type":"application/json"}:undefined,body:body?JSON.stringify(body):undefined}).then(r=>{if(!r.ok)throw new Error(method+" "+url+" "+r.status);return r;});
+let _fiiWrites=0,_fiiWriteAt=0;   // gravações em andamento / última gravação (p/ o refresh não ler estado velho por cima do otimista)
+const fiiApi=(url,method,body)=>{_fiiWrites++;_fiiWriteAt=Date.now();
+  return fetch(url,{method,headers:body?{"Content-Type":"application/json"}:undefined,body:body?JSON.stringify(body):undefined})
+    .then(r=>{if(!r.ok)throw new Error(method+" "+url+" "+r.status);return r;}).finally(()=>{_fiiWrites--;_fiiWriteAt=Date.now();});};
 // padrões específicos de FII (Config → card FIIs). Ke e horizonte vêm da config global (compartilhados).
 // padrões de FII (card "Premissas de FIIs") vivem na config global (tabela config: fii_g/fii_gvp/fii_pvp/fii_modelo)
 const fiiG=()=>({ke:globalCfg.ke,N:globalCfg.fade,g:globalCfg.fii_g??0.04,gvp:globalCfg.fii_gvp??0.04,pvp:globalCfg.fii_pvp??1.0,modelo:globalCfg.fii_modelo||"r1"});
@@ -3164,7 +3167,9 @@ async function ensureFiis(){
 // No máximo 1× a cada 8s; re-renderiza só se algo mudou.
 let _fiiStateAt=0;
 async function refreshFiiState(force){
-  if(!FIIS_LOADED)return;const now=Date.now();if(!force&&now-_fiiStateAt<8000)return;_fiiStateAt=now;
+  if(!FIIS_LOADED)return;const now=Date.now();
+  if(_fiiWrites>0||now-_fiiWriteAt<4000)return;      // gravação em curso/recente: o servidor pode ainda não refletir → não sobrescrever
+  if(!force&&now-_fiiStateAt<8000)return;_fiiStateAt=now;
   try{const r=await fetch("/api/fii-state");if(!r.ok)return;const st=await r.json();
     const before=JSON.stringify([FII_PREM,[...FII_WATCH].sort(),FII_CART,FII_HIST]);
     FII_PREM=st.prem||{};FII_WATCH=new Set(st.watch||[]);FII_CART=st.cart||{};FII_HIST=st.hist||{};
