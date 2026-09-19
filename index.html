@@ -3254,7 +3254,9 @@ function fiiTirStepHtml(f){
 /* ---------- screener / monitoradas ---------- */
 const FII_COLS=[
   ["ticker","Fundo",f=>f.ticker],["segment","Segmento",f=>f.segment],["price","Preço",f=>f.price],
-  ["dy","DY",f=>fiiPending(f)?null:fiiResult(f).dy],["pvp","P/VP",f=>fiiResult(f).pvp],["fair","Justo",f=>fiiPending(f)?null:fiiResult(f).fair],
+  ["dy","DY",f=>fiiPending(f)?null:fiiResult(f).dy,"DY corrente = 12 × DPU mensal ÷ preço (soma dos proventos)"],
+  ["dyeff","DY comp.",f=>fiiPending(f)?null:fiiDyComp(f),"DY composto = (1 + DPU mensal ÷ preço)^12 − 1: o que rende se cada provento mensal for reinvestido à mesma taxa"],
+  ["pvp","P/VP",f=>fiiResult(f).pvp,"preço ÷ VP/cota (Informe Mensal CVM)"],["fair","Justo",f=>fiiPending(f)?null:fiiResult(f).fair],
   ["upside","Upside",f=>fiiPending(f)?null:fiiResult(f).upside],["msafe","Margem seg.",f=>fiiPending(f)?null:fiiResult(f).msafe],["tir","TIR",f=>fiiPending(f)?null:fiiIRR(f)],
 ];
 function fiiSorted(list){
@@ -3276,7 +3278,7 @@ function renderFiiTable(host,list){
       <td><div class="ftk">${f.ticker}</div><div class="fnm">${f.name}</div></td>
       <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
       <td class="num">${brl(f.price)}</td>
-      <td class="num" style="color:var(--text-mute)" title="buscando proventos reais…">…</td>
+      <td class="num" style="color:var(--text-mute)" title="buscando proventos reais…">…</td><td class="num" style="color:var(--text-mute)">…</td>
       <td class="num">${r.pvp!=null?fdec(r.pvp,2):'—'}</td>
       <td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td>
       <td><button class="fstar ${on}" data-fstar="${f.ticker}" title="monitorar">${on?'★':'☆'}</button></td></tr>`;
@@ -3285,14 +3287,15 @@ function renderFiiTable(host,list){
       <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
       <td class="num">${brl(f.price)}</td>
       <td class="num ${est?'fest':''}" ${est?'title="DY estimado — abra o detalhe p/ o valor real do Yahoo"':''}>${fpct(r.dy)}</td>
+      <td class="num ${est?'fest':''}">${fpct(fiiDyComp(f))}</td>
       <td class="num">${r.pvp!=null?fdec(r.pvp,2):'—'}</td>
       <td class="num" style="color:var(--worth)">${brl(r.fair)}</td>
       <td class="num ${r.upside>=0?'fpos':'fneg'}">${r.upside!=null?(r.upside>=0?'+':'')+fpct(r.upside):'—'} <span class="fmos"><span class="tick"></span><i style="${fill}"></i></span></td>
       <td class="num">${fpct(r.msafe)}</td>
       <td class="num ${tir!=null?(tir>=ke?'fpos':'fneg'):''}">${tir!=null?fpct(tir):'—'}</td>
       <td><button class="fstar ${on}" data-fstar="${f.ticker}" title="monitorar">${on?'★':'☆'}</button></td></tr>`;}).join("");
-  const head=FII_COLS.map(c=>`<th data-k="${c[0]}" class="${fiiSortKey===c[0]?'arrow '+(fiiSortAsc?'asc':''):''}">${c[1]}</th>`).join("")+"<th></th>";
-  host.innerHTML=`<div class="ftbl"><table><thead><tr>${head}</tr></thead><tbody>${rows||`<tr><td colspan="10" style="text-align:center;color:var(--text-mute);padding:36px">${fiiScope==="monitoradas"?"Nenhum FII monitorado ainda — toque na ★ no screener.":"nenhum fundo"}</td></tr>`}</tbody></table></div>`;
+  const head=FII_COLS.map(c=>`<th data-k="${c[0]}" class="${fiiSortKey===c[0]?'arrow '+(fiiSortAsc?'asc':''):''}"${c[3]?` title="${c[3]}"`:''}>${c[1]}</th>`).join("")+"<th></th>";
+  host.innerHTML=`<div class="ftbl"><table><thead><tr>${head}</tr></thead><tbody>${rows||`<tr><td colspan="11" style="text-align:center;color:var(--text-mute);padding:36px">${fiiScope==="monitoradas"?"Nenhum FII monitorado ainda — toque na ★ no screener.":"nenhum fundo"}</td></tr>`}</tbody></table></div>`;
   host.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(fiiSortKey===k)fiiSortAsc=!fiiSortAsc;else{fiiSortKey=k;fiiSortAsc=false;}renderFiiView();});
   host.querySelectorAll("[data-fstar]").forEach(b=>b.onclick=e=>{e.stopPropagation();toggleFiiWatch(b.dataset.fstar);});
   host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=()=>{location.hash="#/fii/"+tr.dataset.fii;});
@@ -3405,6 +3408,8 @@ function fiiHeroTir(tir,ke){
   el.innerHTML=`<span class="tl">TIR implícita</span><span class="tv ${pos?'pos':'neg'}">${dec(tir*100,1)}% a.a.</span><span>Ke ${fpct(ke)} → ${pos?"prêmio":"déficit"} ${(pos?"+":"")}${dec(pp,1)} p.p.</span>`;
 }
 const fiiSrcPill=s=>`<span class="srcpill ${s}">${s}</span>`;
+// DY composto: reinvestindo o provento mensal à mesma taxa — (1 + DPU_mês ÷ preço)^12 − 1
+const fiiDyComp=f=>{const pr=fiiPrem(f);return f.price>0&&pr.dpuM>0?Math.pow(1+pr.dpuM/f.price,12)-1:null;};
 
 /* ---------- detalhe ---------- */
 async function openFii(tk){
