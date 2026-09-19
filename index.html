@@ -3160,6 +3160,18 @@ async function ensureFiis(){
     FIIS_LOADED=true;fiiLoadDpuProgressive();return FIIS;})();
   return FIIS_LOADING;
 }
+// Re-lê monitoradas/carteira/premissas do Supabase (mudanças feitas em outra aba/dispositivo aparecem sem reload).
+// No máximo 1× a cada 8s; re-renderiza só se algo mudou.
+let _fiiStateAt=0;
+async function refreshFiiState(force){
+  if(!FIIS_LOADED)return;const now=Date.now();if(!force&&now-_fiiStateAt<8000)return;_fiiStateAt=now;
+  try{const r=await fetch("/api/fii-state");if(!r.ok)return;const st=await r.json();
+    const before=JSON.stringify([FII_PREM,[...FII_WATCH].sort(),FII_CART,FII_HIST]);
+    FII_PREM=st.prem||{};FII_WATCH=new Set(st.watch||[]);FII_CART=st.cart||{};FII_HIST=st.hist||{};
+    if(JSON.stringify([FII_PREM,[...FII_WATCH].sort(),FII_CART,FII_HIST])!==before)rerenderFiiViews();
+  }catch(e){}
+}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&(!$("view-fiis").hidden||!$("view-fii-carteira").hidden||!$("view-fii-detail").hidden))refreshFiiState(false);});
 // DPU real (Yahoo) dos fundos que vieram "estimado": em lotes de 24 via /api/fii-dpu, monitoradas e carteira
 // primeiro; re-renderiza a tela de FII visível a cada lote (as linhas vão trocando estimado → real).
 let _fiiDpuRunning=false;
@@ -3343,6 +3355,7 @@ function renderFiiView(){
   $("fiiSub").textContent=mon?"Os fundos que você acompanha, ordenados por upside.":"Fundos imobiliários ordenados por upside — quanto o preço justo está acima do preço atual.";
   const host=$("fiiBody");
   if(!FIIS_LOADED){host.innerHTML=`<div style="padding:40px;text-align:center;color:var(--text-mute)">Carregando fundos…</div>`;ensureFiis().then(()=>{if(!$("view-fiis").hidden)renderFiiView();});return;}
+  if(mon)refreshFiiState(false);   // monitoradas: garante que o que foi marcado em outra aba/dispositivo apareça
   const list=fiiSorted(fiiFiltered());
   const loaded=FIIS.filter(f=>!fiiPending(f)), med=fiiMedian(loaded,f=>fiiResult(f).upside);
   host.innerHTML=`
@@ -3697,6 +3710,7 @@ function renderFiiCart(){
   $("fiiCartAssetToggle").innerHTML=assetToggleHtml("carteira","fiis");
   const host=$("fiiCartBody");
   if(!FIIS_LOADED){host.innerHTML=`<div style="padding:40px;text-align:center;color:var(--text-mute)">Carregando fundos…</div>`;ensureFiis().then(()=>{if(!$("view-fii-carteira").hidden)renderFiiCart();});return;}
+  refreshFiiState(false);
   const tks=Object.keys(FII_CART);
   if(!tks.length){host.innerHTML=`<div style="padding:40px 20px;text-align:center;color:var(--text-mute)">Carteira de FIIs vazia.<br>Abra um fundo e use "＋ Carteira".</div>`;return;}
   const rows=tks.map(tk=>{const f=FIIS.find(x=>x.ticker===tk);if(!f)return null;const pos=FII_CART[tk],r=fiiResult(f);
