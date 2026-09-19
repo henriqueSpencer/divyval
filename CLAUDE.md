@@ -52,7 +52,12 @@ CSS (hero/verdict/medidor `.hg-*`, `.mode-toggle`, `.field`/slider, `.impl-row`,
   → mesmos números (antes o screener usava estimativa e o detalhe o real → "mudava" ao abrir, ex. TRXF).
   Sem DPU real, estimativa por DY típico do segmento (`dpu_src:"estimado"`, pill). **P/VP de entrada** no
   detalhe é **automático** (preço ÷ VP/cota CVM, pill `CVM aaaa-mm`); digitar sobrescreve (pill `manual`),
-  apagar volta. Histórico do gráfico: `/api/history/{ticker}`.
+  apagar volta. Histórico do gráfico: `/api/history/{ticker}`. **PL** (patrimônio líquido, coluna "PL") vem
+  do mesmo informe mensal (`FII_VP[t].pl`). **Filtros por coluna** no screener/monitoradas de FII reusam o
+  popover `#colPop` das ações (`openFiiColPop`, estado `fiiFilterState`, definição em `FII_FCOL`: categoria
+  p/ segmento, "contém" p/ ticker/nome, mínimo ≥ p/ numéricas, **máximo ≤ p/ P/VP**, PL em R$ milhões);
+  os listeners do popover ramificam por `pop.dataset.scope` ("stock"/"fii"). Coluna **"DY comp."** =
+  (1+DPU_mês÷preço)^12−1. Ticker é `<a href="#/fii/…">` (abre em nova aba com Cmd+clique).
 - **Persistência de FII = Supabase, igual às ações** (migrado do localStorage em 18/set/2026, antes de ir
   a prod): tabelas **`fii_premissa`** (ticker PK; só overrides — null = padrão/auto), **`fii_premissa_hist`**
   (snapshots de "Salvar": `date, prem jsonb, fair, price, modelo`; 20 por fundo na leitura),

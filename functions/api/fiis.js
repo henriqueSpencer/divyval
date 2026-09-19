@@ -22,6 +22,7 @@ export async function onRequestGet(context) {
       seg_dy: segDy,
       vp_cota: vp ? vp.vp : null,
       vp_ref: vp ? vp.ref : null,
+      pl: vp && vp.pl ? vp.pl : null,   // patrimônio líquido (CVM, mesmo mês do VP)
     };
   }).filter((f) => f.price != null);   // sem cotação não entra no screener
   return json({ fiis, count: fiis.length });

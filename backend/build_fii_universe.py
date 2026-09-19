@@ -154,7 +154,7 @@ def main():
                 else: name = t; seg = "—"
         uni[t] = [name, seg, isin]
         if row and (p is None or 0.4 <= p / float(row["vp"]) <= 1.8):
-            vpmap[t] = {"vp": round(float(row["vp"]), 4), "ref": row["dref"][:7]}; n_vp += 1
+            vpmap[t] = {"vp": round(float(row["vp"]), 4), "ref": row["dref"][:7], "pl": round(float(row["pl"] or 0))}; n_vp += 1   # pl = patrimônio líquido (R$)
     js = ("// GERADO por backend/build_fii_universe.py — universo de FIIs (brapi ∩ CVM) + VP/cota (Informe Mensal CVM).\n"
           f"// Gerado em {datetime.date.today().isoformat()} (inf_mensal_fii_{y}.zip). Não editar à mão; rode o script.\n"
           "export const FII_UNIVERSE = " + json.dumps(uni, ensure_ascii=False, indent=0) + ";\n"

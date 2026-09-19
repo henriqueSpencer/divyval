@@ -717,6 +717,10 @@ button{font-family:inherit;}
 .ftbl th,.ftbl td{padding:10px 12px;text-align:right;white-space:nowrap;}
 .ftbl th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mute);font-weight:600;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;position:sticky;top:0;background:var(--surface);}
 .ftbl th:first-child,.ftbl td:first-child{text-align:left;}
+.ftbl th{position:relative;}
+.ftbl th:hover .th-filter-btn{opacity:1;}
+.ffilt-bar{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--text-soft);margin:0 0 10px;}
+.ffilt-bar button{font:inherit;font-size:12px;cursor:pointer;background:none;border:1px solid var(--border);border-radius:7px;padding:4px 9px;color:var(--accent);}
 .ftbl th.arrow::after{content:" ▾";color:var(--accent);}
 .ftbl th.arrow.asc::after{content:" ▴";}
 .ftbl tbody tr{border-bottom:1px solid var(--border-2);cursor:pointer;transition:background .12s;}
@@ -1626,7 +1630,7 @@ function openColPop(key,btn){
   }else{const num=c.t==="num";
     const ph=key==="liquidez"?"≥ R$ milhões":(num?"mínimo (≥)":"contém…");
     html=`<input class="pop-input" data-fk="${key}" type="${num?"number":"text"}" placeholder="${ph}" value="${filterState[key]||""}">`;}
-  pop.innerHTML=html;pop.dataset.key=key;pop.hidden=false;
+  pop.innerHTML=html;pop.dataset.key=key;pop.dataset.scope="stock";pop.hidden=false;
   const r=btn.getBoundingClientRect(),pw=pop.offsetWidth||200;
   pop.style.left=Math.max(8,Math.min(r.left,window.innerWidth-pw-8))+"px";
   pop.style.top=(r.bottom+6)+"px";
@@ -1634,9 +1638,12 @@ function openColPop(key,btn){
 }
 function closePop(){pop.hidden=true;}
 pop.addEventListener("click",e=>{const o=e.target.closest(".pop-opt");if(!o)return;const key=pop.dataset.key;
+  if(pop.dataset.scope==="fii"){if(o.dataset.v)fiiFilterState[key]=o.dataset.v;else delete fiiFilterState[key];renderFiiView();closePop();return;}
   if(o.dataset.v)filterState[key]=o.dataset.v;else delete filterState[key];
   renderScreener();updateFilterButtons();closePop();});
 pop.addEventListener("input",e=>{const inp=e.target.closest(".pop-input");if(!inp)return;const key=inp.dataset.fk;
+  if(pop.dataset.scope==="fii"){if(inp.value)fiiFilterState[key]=inp.value;else delete fiiFilterState[key];
+    renderFiiTable($("fiiTbl"),fiiSorted(fiiFiltered()));updateFiiFilterButtons();return;}   // sem re-render da barra (mantém o foco no input)
   if(inp.value)filterState[key]=inp.value;else delete filterState[key];renderScreener();updateFilterButtons();});
 pop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key==="Escape")closePop();});
 document.addEventListener("click",e=>{
@@ -3109,6 +3116,7 @@ updateGroupBtn();
 const fdec=(n,d=2)=>(n==null||!isFinite(n))?"—":dec(n,d);
 const fpct=(n,d=1)=>(n==null||!isFinite(n))?"—":dec(n*100,d)+"%";
 const fclamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fbig=n=>(n==null||!isFinite(n))?"—":n>=1e9?"R$ "+dec(n/1e9,1)+" bi":n>=1e6?"R$ "+dec(n/1e6,0)+" mi":brl0(n);
 const fnum=v=>String(+(+v).toFixed(4));                                   // p/ <input type=number>: 0.093, 1.11
 const brlP=n=>(n==null||!isFinite(n))?"—":"R$ "+n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:Math.abs(n)<1?4:2});   // cotas baratas: 4 casas
 function fiiToast(m){let t=$("fiiToast");if(!t){t=document.createElement("div");t.id="fiiToast";t.className="ftoast";document.body.appendChild(t);}
@@ -3134,6 +3142,11 @@ const FII_MODELS={
   dy:{label:"DY-alvo · perpetuidade",desc:"Perpetuidade de Gordon: o provento mensal cresce g e é descontado ao Ke, para sempre. Justo = DPU ÷ (Ke − g) — sem horizonte nem saída. Exige Ke > g."},
 };
 let FDRAFT={}, curFii=null, fiiScope="all", fiiSortKey="upside", fiiSortAsc=false, fiiQuery="";
+// filtros por coluna (mesmo popover das ações): t=cat (lista) | text (contém) | num (mínimo ≥) | max (máximo ≤); pct = valor em %
+var fiiFilterState={};
+const FII_FCOL={ticker:{t:"text"},segment:{t:"cat"},price:{t:"num",ph:"mínimo (≥ R$)"},dy:{t:"num",pct:true,ph:"mínimo (≥ %)"},dyeff:{t:"num",pct:true,ph:"mínimo (≥ %)"},
+  pvp:{t:"max",ph:"máximo (≤)"},pl:{t:"num",mi:true,ph:"≥ R$ milhões"},fair:{t:"num",ph:"mínimo (≥ R$)"},upside:{t:"num",pct:true,ph:"mínimo (≥ %)"},msafe:{t:"num",pct:true,ph:"mínimo (≥ %)"},tir:{t:"num",pct:true,ph:"mínimo (≥ %)"}};
+function updateFiiFilterButtons(){document.querySelectorAll(".th-filter-btn[data-scope=fii]").forEach(b=>b.classList.toggle("on",!!fiiFilterState[b.dataset.fk]));}
 // "pendente" = o DPU automático (Yahoo) ainda não chegou. Se o fundo tem DPU MANUAL salvo, o número é seu e
 // não depende do Yahoo → nunca fica pendente.
 const fiiPending=f=>!!f.dpu_pending&&!(FII_PREM[f.ticker]&&FII_PREM[f.ticker].dpu!=null);
@@ -3256,7 +3269,8 @@ const FII_COLS=[
   ["ticker","Fundo",f=>f.ticker],["segment","Segmento",f=>f.segment],["price","Preço",f=>f.price],
   ["dy","DY",f=>fiiPending(f)?null:fiiResult(f).dy,"DY corrente = 12 × DPU mensal ÷ preço (soma dos proventos)"],
   ["dyeff","DY comp.",f=>fiiPending(f)?null:fiiDyComp(f),"DY composto = (1 + DPU mensal ÷ preço)^12 − 1: o que rende se cada provento mensal for reinvestido à mesma taxa"],
-  ["pvp","P/VP",f=>fiiResult(f).pvp,"preço ÷ VP/cota (Informe Mensal CVM)"],["fair","Justo",f=>fiiPending(f)?null:fiiResult(f).fair],
+  ["pvp","P/VP",f=>fiiResult(f).pvp,"preço ÷ VP/cota (Informe Mensal CVM)"],
+  ["pl","PL",f=>f.pl,"Patrimônio líquido do fundo (Informe Mensal CVM, mesmo mês do VP/cota)"],["fair","Justo",f=>fiiPending(f)?null:fiiResult(f).fair],
   ["upside","Upside",f=>fiiPending(f)?null:fiiResult(f).upside],["msafe","Margem seg.",f=>fiiPending(f)?null:fiiResult(f).msafe],["tir","TIR",f=>fiiPending(f)?null:fiiIRR(f)],
 ];
 function fiiSorted(list){
@@ -3265,8 +3279,28 @@ function fiiSorted(list){
     if(typeof x==="string"){x=x||"";y=y||"";return fiiSortAsc?x.localeCompare(y):y.localeCompare(x);}
     x=(x==null||!isFinite(x))?-1e18:x;y=(y==null||!isFinite(y))?-1e18:y;return fiiSortAsc?x-y:y-x;});
 }
+function fiiPassFilters(f){const F=fiiFilterState;if(!Object.keys(F).length)return true;
+  if(F.ticker){const q=F.ticker.toUpperCase();if(!(f.ticker.includes(q)||(f.name||"").toUpperCase().includes(q)))return false;}
+  if(F.segment&&f.segment!==F.segment)return false;
+  const col=k=>{const c=FII_COLS.find(x=>x[0]===k);return c?c[2](f):null;};
+  for(const [k,c] of Object.entries(FII_FCOL)){if(k==="ticker"||k==="segment"||F[k]==null||F[k]==="")continue;
+    let v=col(k);if(v==null||!isFinite(v))return false;
+    if(c.pct)v*=100;if(c.mi)v/=1e6;const lim=parseFloat(String(F[k]).replace(",","."));if(!isFinite(lim))continue;
+    if(c.t==="max"?v>lim:v<lim)return false;}
+  return true;}
 function fiiFiltered(){const q=fiiQuery.trim().toUpperCase();
-  return FIIS.filter(f=>(fiiScope!=="monitoradas"||FII_WATCH.has(f.ticker))&&(!q||f.ticker.includes(q)||f.name.toUpperCase().includes(q)||f.segment.toUpperCase().includes(q)));}
+  return FIIS.filter(f=>(fiiScope!=="monitoradas"||FII_WATCH.has(f.ticker))&&fiiPassFilters(f)&&(!q||f.ticker.includes(q)||f.name.toUpperCase().includes(q)||f.segment.toUpperCase().includes(q)));}
+// popover de filtro do FII (reusa #colPop e o visual das ações; scope="fii" p/ os listeners saberem quem re-renderizar)
+function openFiiColPop(key,btn){
+  const c=FII_FCOL[key];if(!c)return;const pop=$("colPop");let html;
+  if(c.t==="cat"){const vals=[...new Set(FIIS.map(f=>f.segment).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    html=`<div class="pop-opt ${!fiiFilterState[key]?"sel":""}" data-v="">Todos</div>`+vals.map(v=>`<div class="pop-opt ${fiiFilterState[key]===v?"sel":""}" data-v="${v}"><span>${v}</span>${fiiFilterState[key]===v?"<span>✓</span>":""}</div>`).join("");}
+  else html=`<input class="pop-input" data-fk="${key}" type="${c.t==="text"?"text":"number"}" step="any" placeholder="${c.ph||(c.t==="text"?"contém…":"mínimo (≥)")}" value="${fiiFilterState[key]||""}">`;
+  pop.innerHTML=html;pop.dataset.key=key;pop.dataset.scope="fii";pop.hidden=false;
+  const r=btn.getBoundingClientRect(),pw=pop.offsetWidth||200;
+  pop.style.left=Math.max(8,Math.min(r.left,window.innerWidth-pw-8))+"px";pop.style.top=(r.bottom+6)+"px";
+  const inp=pop.querySelector(".pop-input");if(inp)inp.focus();
+}
 function fiiMedian(list,fn){const xs=list.map(fn).filter(x=>x!=null&&isFinite(x)).sort((a,b)=>a-b);return xs.length?xs[Math.floor(xs.length/2)]:null;}
 function renderFiiTable(host,list){
   const maxAbs=Math.max(0.01,...list.map(f=>{const u=fiiResult(f).upside;return u!=null&&isFinite(u)?Math.abs(u):0;}));
@@ -3279,7 +3313,7 @@ function renderFiiTable(host,list){
       <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
       <td class="num">${brl(f.price)}</td>
       <td class="num" style="color:var(--text-mute)" title="buscando proventos reais…">…</td><td class="num" style="color:var(--text-mute)">…</td>
-      <td class="num">${r.pvp!=null?fdec(r.pvp,2):'—'}</td>
+      <td class="num">${r.pvp!=null?fdec(r.pvp,2):'—'}</td><td class="num">${fbig(f.pl)}</td>
       <td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td>
       <td><button class="fstar ${on}" data-fstar="${f.ticker}" title="monitorar">${on?'★':'☆'}</button></td></tr>`;
     return `<tr data-fii="${f.ticker}">
@@ -3289,14 +3323,16 @@ function renderFiiTable(host,list){
       <td class="num ${est?'fest':''}" ${est?'title="DY estimado — abra o detalhe p/ o valor real do Yahoo"':''}>${fpct(r.dy)}</td>
       <td class="num ${est?'fest':''}">${fpct(fiiDyComp(f))}</td>
       <td class="num">${r.pvp!=null?fdec(r.pvp,2):'—'}</td>
+      <td class="num">${fbig(f.pl)}</td>
       <td class="num" style="color:var(--worth)">${brl(r.fair)}</td>
       <td class="num ${r.upside>=0?'fpos':'fneg'}">${r.upside!=null?(r.upside>=0?'+':'')+fpct(r.upside):'—'} <span class="fmos"><span class="tick"></span><i style="${fill}"></i></span></td>
       <td class="num">${fpct(r.msafe)}</td>
       <td class="num ${tir!=null?(tir>=ke?'fpos':'fneg'):''}">${tir!=null?fpct(tir):'—'}</td>
       <td><button class="fstar ${on}" data-fstar="${f.ticker}" title="monitorar">${on?'★':'☆'}</button></td></tr>`;}).join("");
-  const head=FII_COLS.map(c=>`<th data-k="${c[0]}" class="${fiiSortKey===c[0]?'arrow '+(fiiSortAsc?'asc':''):''}"${c[3]?` title="${c[3]}"`:''}>${c[1]}</th>`).join("")+"<th></th>";
-  host.innerHTML=`<div class="ftbl"><table><thead><tr>${head}</tr></thead><tbody>${rows||`<tr><td colspan="11" style="text-align:center;color:var(--text-mute);padding:36px">${fiiScope==="monitoradas"?"Nenhum FII monitorado ainda — toque na ★ no screener.":"nenhum fundo"}</td></tr>`}</tbody></table></div>`;
-  host.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(fiiSortKey===k)fiiSortAsc=!fiiSortAsc;else{fiiSortKey=k;fiiSortAsc=false;}renderFiiView();});
+  const head=FII_COLS.map(c=>`<th data-k="${c[0]}" class="${fiiSortKey===c[0]?'arrow '+(fiiSortAsc?'asc':''):''}"${c[3]?` title="${c[3]}"`:''}>${c[1]}${FII_FCOL[c[0]]?`<button class="th-filter-btn ${fiiFilterState[c[0]]?'on':''}" data-fk="${c[0]}" data-scope="fii" title="Filtrar">${FUNNEL}</button>`:''}</th>`).join("")+"<th></th>";
+  host.innerHTML=`<div class="ftbl"><table><thead><tr>${head}</tr></thead><tbody>${rows||`<tr><td colspan="12" style="text-align:center;color:var(--text-mute);padding:36px">${fiiScope==="monitoradas"?"Nenhum FII monitorado ainda — toque na ★ no screener.":"nenhum fundo"}</td></tr>`}</tbody></table></div>`;
+  host.querySelectorAll("th[data-k]").forEach(th=>th.onclick=e=>{const fb=e.target.closest(".th-filter-btn");if(fb){e.stopPropagation();openFiiColPop(fb.dataset.fk,fb);return;}
+    const k=th.dataset.k;if(fiiSortKey===k)fiiSortAsc=!fiiSortAsc;else{fiiSortKey=k;fiiSortAsc=false;}renderFiiView();});
   host.querySelectorAll("[data-fstar]").forEach(b=>b.onclick=e=>{e.stopPropagation();toggleFiiWatch(b.dataset.fstar);});
   host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=e=>{if(e.target.closest("a,button"))return;location.hash="#/fii/"+tr.dataset.fii;});
 }
@@ -3316,8 +3352,11 @@ function renderFiiView(){
       <div class="fstat"><div class="k">DY mediano</div><div class="v">${fpct(fiiMedian(loaded,f=>fiiResult(f).dy))}${loaded.length<FIIS.length?` <small>${FIIS.length-loaded.length} carregando…</small>`:''}</div></div>
       <div class="fstat"><div class="k">Monitorados</div><div class="v">${FII_WATCH.size}</div></div>
     </div>
-    <div id="fiiTbl"></div>`;
+    <div id="fiiFiltBar"></div><div id="fiiTbl"></div>`;
+  const nf=Object.keys(fiiFilterState).length;
+  $("fiiFiltBar").innerHTML=nf?`<div class="ffilt-bar"><span><b>${nf}</b> filtro${nf>1?'s':''} ativo${nf>1?'s':''} · ${list.length} de ${fiiScope==="monitoradas"?FIIS.filter(f=>FII_WATCH.has(f.ticker)).length:FIIS.length} fundos</span><button id="fiiFiltClear">limpar filtros</button></div>`:"";
   renderFiiTable($("fiiTbl"),list);
+  const fc=$("fiiFiltClear");if(fc)fc.onclick=()=>{fiiFilterState={};renderFiiView();};
 }
 function toggleFiiWatch(tk){
   const on=!FII_WATCH.has(tk);if(on)FII_WATCH.add(tk);else FII_WATCH.delete(tk);   // otimista; desfaz se a API falhar

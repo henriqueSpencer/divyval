@@ -17,6 +17,6 @@ export async function onRequestGet(context) {
   return json({
     ticker, name: meta ? meta[0] : ticker, segment, price, dpu12m, source, seg_dy: segDy,
     n12: div?.n12 ?? null, divs: div?.divs ?? [],
-    vp_cota: vp ? vp.vp : null, vp_ref: vp ? vp.ref : null,
+    vp_cota: vp ? vp.vp : null, vp_ref: vp ? vp.ref : null, pl: vp && vp.pl ? vp.pl : null,
   });
 }
