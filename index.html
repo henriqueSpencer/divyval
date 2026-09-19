@@ -3275,7 +3275,7 @@ function renderFiiTable(host,list){
     const fill=r.upside!=null?(r.upside>=0?`right:50%;width:${w}%;background:var(--good)`:`left:50%;width:${w}%;background:var(--bad)`):"";
     const est=r.pr.dpuSource!=="yahoo", pend=fiiPending(f);
     if(pend)return `<tr data-fii="${f.ticker}">
-      <td><div class="ftk">${f.ticker}</div><div class="fnm">${f.name}</div></td>
+      <td><div class="ftk"><a class="tk-link" href="#/fii/${f.ticker}">${f.ticker}</a></div><div class="fnm">${f.name}</div></td>
       <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
       <td class="num">${brl(f.price)}</td>
       <td class="num" style="color:var(--text-mute)" title="buscando proventos reais…">…</td><td class="num" style="color:var(--text-mute)">…</td>
@@ -3283,7 +3283,7 @@ function renderFiiTable(host,list){
       <td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td><td class="num" style="color:var(--text-mute)">…</td>
       <td><button class="fstar ${on}" data-fstar="${f.ticker}" title="monitorar">${on?'★':'☆'}</button></td></tr>`;
     return `<tr data-fii="${f.ticker}">
-      <td><div class="ftk">${f.ticker}</div><div class="fnm">${f.name}</div></td>
+      <td><div class="ftk"><a class="tk-link" href="#/fii/${f.ticker}">${f.ticker}</a></div><div class="fnm">${f.name}</div></td>
       <td style="text-align:left"><span class="fseg">${f.segment}</span></td>
       <td class="num">${brl(f.price)}</td>
       <td class="num ${est?'fest':''}" ${est?'title="DY estimado — abra o detalhe p/ o valor real do Yahoo"':''}>${fpct(r.dy)}</td>
@@ -3298,7 +3298,7 @@ function renderFiiTable(host,list){
   host.innerHTML=`<div class="ftbl"><table><thead><tr>${head}</tr></thead><tbody>${rows||`<tr><td colspan="11" style="text-align:center;color:var(--text-mute);padding:36px">${fiiScope==="monitoradas"?"Nenhum FII monitorado ainda — toque na ★ no screener.":"nenhum fundo"}</td></tr>`}</tbody></table></div>`;
   host.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(fiiSortKey===k)fiiSortAsc=!fiiSortAsc;else{fiiSortKey=k;fiiSortAsc=false;}renderFiiView();});
   host.querySelectorAll("[data-fstar]").forEach(b=>b.onclick=e=>{e.stopPropagation();toggleFiiWatch(b.dataset.fstar);});
-  host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=()=>{location.hash="#/fii/"+tr.dataset.fii;});
+  host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=e=>{if(e.target.closest("a,button"))return;location.hash="#/fii/"+tr.dataset.fii;});
 }
 function renderFiiView(){
   const mon=fiiScope==="monitoradas";
@@ -3667,7 +3667,7 @@ function renderFiiCart(){
   const segRows=Object.entries(bySeg).sort((a,b)=>b[1]-a[1]).map(([s,v])=>`<div class="segbar"><span>${s}</span><span class="track"><span class="fill" style="width:${patr>0?v/patr*100:0}%"></span></span><span class="num">${fpct(patr>0?v/patr:0)}</span></div>`).join("");
   const hhi=rows.reduce((s,x)=>{const w=patr>0?x.val/patr:0;return s+w*w;},0),nef=hhi>0?1/hhi:0;
   const trs=rows.sort((a,b)=>b.val-a.val).map(x=>{const w=patr>0?x.val/patr:0;
-    return `<tr data-fii="${x.f.ticker}"><td><div class="ftk">${x.f.ticker}</div><div class="fnm">${x.f.segment}</div></td><td class="num">${dec(x.pos.qtd,0)}</td><td class="num">${brl(x.pos.pm)}</td><td class="num">${brl(x.f.price)}</td><td class="num">${brl(x.val)}</td><td class="num">${fpct(w)}</td><td class="num ${x.res>=0?'fpos':'fneg'}">${x.res>=0?'+':''}${brl(x.res)}</td><td class="num">${fpct(x.r.dy)}</td><td class="num">${brl(x.renda/12)}</td><td><button class="fstar" data-fdel="${x.f.ticker}" title="remover">✕</button></td></tr>`;}).join("");
+    return `<tr data-fii="${x.f.ticker}"><td><div class="ftk"><a class="tk-link" href="#/fii/${x.f.ticker}">${x.f.ticker}</a></div><div class="fnm">${x.f.segment}</div></td><td class="num">${dec(x.pos.qtd,0)}</td><td class="num">${brl(x.pos.pm)}</td><td class="num">${brl(x.f.price)}</td><td class="num">${brl(x.val)}</td><td class="num">${fpct(w)}</td><td class="num ${x.res>=0?'fpos':'fneg'}">${x.res>=0?'+':''}${brl(x.res)}</td><td class="num">${fpct(x.r.dy)}</td><td class="num">${brl(x.renda/12)}</td><td><button class="fstar" data-fdel="${x.f.ticker}" title="remover">✕</button></td></tr>`;}).join("");
   host.innerHTML=`
     <div class="fstats">
       <div class="fstat"><div class="k">Patrimônio</div><div class="v">${brl0(patr)}</div></div>
@@ -3679,7 +3679,7 @@ function renderFiiCart(){
     <div class="fcard" style="margin-top:16px"><h3>Concentração por segmento</h3><div class="segbars">${segRows}</div></div>
     <div class="fnote">Renda estimada usa <b>DPU × cotas</b> (mesma base do modelo). Onde o DPU é <b>estimado</b>, a renda também é — abra cada fundo para puxar o DPU real do Yahoo.</div>`;
   host.querySelectorAll("[data-fdel]").forEach(b=>b.onclick=e=>{e.stopPropagation();const tk=b.dataset.fdel;delete FII_CART[tk];renderFiiCart();fiiApi("/api/fii-carteira/"+tk,"DELETE").catch(()=>fiiToast("Não consegui remover no servidor"));});
-  host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=()=>{location.hash="#/fii/"+tr.dataset.fii;});
+  host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=e=>{if(e.target.closest("a,button"))return;location.hash="#/fii/"+tr.dataset.fii;});
 }
 // re-render das telas de FII quando a config global muda (Ke/fade compartilhados)
 function rerenderFiiViews(){if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-carteira").hidden)renderFiiCart();if(!$("view-fii-detail").hidden&&curFii){const f=FIIS.find(x=>x.ticker===curFii);if(f)drawFiiDetail(f,false);}}
