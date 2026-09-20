@@ -639,6 +639,8 @@ button{font-family:inherit;}
 
   /* --- tabela → cards --- */
   .table-scroll{display:none;}
+  .ftbl{display:none;}                        /* FIIs: tabela some no celular, entram os cards */
+  .ffilt-bar{flex-wrap:wrap;}
   #scrCard{background:transparent;border:none;box-shadow:none;}
   .scr-cards{display:flex;flex-direction:column;gap:10px;}
   .scard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 15px;
@@ -1642,8 +1644,7 @@ pop.addEventListener("click",e=>{const o=e.target.closest(".pop-opt");if(!o)retu
   if(o.dataset.v)filterState[key]=o.dataset.v;else delete filterState[key];
   renderScreener();updateFilterButtons();closePop();});
 pop.addEventListener("input",e=>{const inp=e.target.closest(".pop-input");if(!inp)return;const key=inp.dataset.fk;
-  if(pop.dataset.scope==="fii"){if(inp.value)fiiFilterState[key]=inp.value;else delete fiiFilterState[key];
-    renderFiiTable($("fiiTbl"),fiiSorted(fiiFiltered()));updateFiiFilterButtons();return;}   // sem re-render da barra (mantém o foco no input)
+  if(pop.dataset.scope==="fii"){if(inp.value)fiiFilterState[key]=inp.value;else delete fiiFilterState[key];renderFiiList();return;}   // sem re-render da barra (mantém o foco no input)
   if(inp.value)filterState[key]=inp.value;else delete filterState[key];renderScreener();updateFilterButtons();});
 pop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key==="Escape")closePop();});
 document.addEventListener("click",e=>{
@@ -3094,14 +3095,19 @@ function renderFilterSheet(){
     return `<div class="fs-field"><label>${c.label}</label><input type="number" inputmode="decimal" data-fk="${c.k}" placeholder="${ph}" value="${filterState[c.k]||""}"></div>`;}).join("");
   $("filterSheetBody").innerHTML=`<div class="fs-grid">${cat}${num}</div>`;
 }
-function openFilterSheet(){renderFilterSheet();$("filterSheet").classList.add("open");}
+function openFilterSheet(){$("filterSheet").dataset.scope="stock";document.querySelector("#filterSheet .fs-head h3").textContent="Filtrar ações";renderFilterSheet();$("filterSheet").classList.add("open");}
 $("scrFiltBtn").addEventListener("click",openFilterSheet);
 $("fsClose").addEventListener("click",()=>$("filterSheet").classList.remove("open"));
 $("fsApply").addEventListener("click",()=>$("filterSheet").classList.remove("open"));
 $("filterSheet").addEventListener("click",e=>{if(e.target.id==="filterSheet")$("filterSheet").classList.remove("open");});
-$("fsClear").addEventListener("click",()=>{Object.keys(filterState).forEach(k=>{if(k!=="_q")delete filterState[k];});renderScreener();renderFilterSheet();});
-$("filterSheetBody").addEventListener("change",e=>{const el=e.target.closest("select[data-fk]");if(!el)return;const k=el.dataset.fk;if(el.value)filterState[k]=el.value;else delete filterState[k];renderScreener();});
-$("filterSheetBody").addEventListener("input",e=>{const el=e.target.closest("input[data-fk]");if(!el)return;const k=el.dataset.fk;if(el.value)filterState[k]=el.value;else delete filterState[k];renderScreener();});
+const fsIsFii=()=>$("filterSheet").dataset.scope==="fii";
+$("fsClear").addEventListener("click",()=>{if(fsIsFii()){fiiFilterState={};renderFiiView();renderFiiFilterSheet();return;}Object.keys(filterState).forEach(k=>{if(k!=="_q")delete filterState[k];});renderScreener();renderFilterSheet();});
+$("filterSheetBody").addEventListener("change",e=>{const el=e.target.closest("select[data-fk]");if(!el)return;const k=el.dataset.fk;
+  if(fsIsFii()){if(el.value)fiiFilterState[k]=el.value;else delete fiiFilterState[k];renderFiiView();return;}
+  if(el.value)filterState[k]=el.value;else delete filterState[k];renderScreener();});
+$("filterSheetBody").addEventListener("input",e=>{const el=e.target.closest("input[data-fk]");if(!el)return;const k=el.dataset.fk;
+  if(fsIsFii()){if(el.value)fiiFilterState[k]=el.value;else delete fiiFilterState[k];renderFiiList();return;}   // sem re-render da barra (mantém foco)
+  if(el.value)filterState[k]=el.value;else delete filterState[k];renderScreener();});
 
 renderHeader();
 applyCols();
@@ -3353,6 +3359,50 @@ function renderFiiTable(host,list){
   host.querySelectorAll("[data-fstar]").forEach(b=>b.onclick=e=>{e.stopPropagation();toggleFiiWatch(b.dataset.fstar);});
   host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=e=>{if(e.target.closest("a,button"))return;location.hash="#/fii/"+tr.dataset.fii;});
 }
+// card do FII no celular (mesmas classes .scard das ações)
+function fiiCardHtml(f,maxAbs){
+  const r=fiiResult(f),tir=fiiIRR(f),pend=fiiPending(f),on=FII_WATCH.has(f.ticker);
+  const up=r.upside,hasUp=!pend&&up!=null&&isFinite(up);
+  const w=hasUp?Math.min(50,Math.abs(up)/maxAbs*50):0;
+  const fill=hasUp?(up>=0?`right:50%;width:${w}%;background:var(--good)`:`left:50%;width:${w}%;background:var(--bad)`):"";
+  const v=(x,fmt)=>pend?"…":fmt(x);
+  return `<div class="scard" data-fii="${f.ticker}">
+    <div class="scard-head"><span class="scard-tk"><a class="tk-link" href="#/fii/${f.ticker}">${f.ticker}</a>${on?' <span style="color:var(--worth)">★</span>':''}</span><span class="fseg">${f.segment}</span></div>
+    <div class="scard-name">${f.name||"—"}</div>
+    <div class="scard-metrics">
+      <div class="scm"><span class="scm-k">Preço</span><span class="scm-v num">${brl(f.price)}</span></div>
+      <div class="scm"><span class="scm-k">Preço justo</span><span class="scm-v num accent">${v(r.fair,brl)}</span></div>
+      <div class="scm"><span class="scm-k">DY · DY comp.</span><span class="scm-v num">${v(r.dy,fpct)}${pend?"":" · "+fpct(fiiDyComp(f))}</span></div>
+      <div class="scm"><span class="scm-k">P/VP · PL</span><span class="scm-v num">${r.pvp!=null?fdec(r.pvp,2):"—"} · ${fbig(f.pl)}</span></div>
+      <div class="scm"><span class="scm-k">Margem seg.</span><span class="scm-v num ${!pend&&r.msafe!=null?(r.msafe>=0?"pos":"neg"):""}">${v(r.msafe,fpct)}</span></div>
+      <div class="scm"><span class="scm-k">TIR implícita</span><span class="scm-v num ${!pend&&tir!=null?(tir>=r.pr.ke?"pos":"neg"):""}">${pend?"…":(tir!=null?fpct(tir):"—")}</span></div>
+    </div>
+    <div class="scard-mos"><span class="scm-k">Upside</span><span class="mos ${hasUp&&up>=0?'pos':'neg'}">${hasUp?(up>=0?"+":"")+fpct(up):(pend?"…":"—")}</span><span class="mos-bar"><i style="${fill}"></i></span></div>
+  </div>`;
+}
+const FII_MSORT=[["upside","Upside"],["msafe","Margem de segurança"],["tir","TIR implícita"],["dy","DY"],["dyeff","DY composto"],["pvp","P/VP"],["pl","Patrimônio líquido"],["price","Preço"],["fair","Preço justo"],["ticker","Ticker (A–Z)"],["segment","Segmento (A–Z)"]];
+// lista (tabela no desktop, cards no celular) — chamada também pelos filtros p/ não re-renderizar a barra
+function renderFiiList(){
+  const list=fiiSorted(fiiFiltered());
+  const tbl=$("fiiTbl"),cards=$("fiiCards");if(!tbl||!cards)return;
+  if(isMobile()){tbl.innerHTML="";const maxAbs=Math.max(0.01,...list.map(f=>{const u=fiiPending(f)?null:fiiResult(f).upside;return u!=null&&isFinite(u)?Math.abs(u):0;}));
+    cards.innerHTML=list.length?list.map(f=>fiiCardHtml(f,maxAbs)).join(""):`<div style="padding:36px;text-align:center;color:var(--text-mute)">${fiiScope==="monitoradas"?"Nenhum FII monitorado ainda.":"nenhum fundo"}</div>`;
+    cards.querySelectorAll(".scard").forEach(c=>c.onclick=e=>{if(e.target.closest("a"))return;location.hash="#/fii/"+c.dataset.fii;});}
+  else{cards.innerHTML="";renderFiiTable(tbl,list);}
+  updateFiiFilterButtons();
+  const nf=Object.keys(fiiFilterState).length,fb=$("fiiFiltBar");
+  if(fb)fb.innerHTML=nf?`<div class="ffilt-bar"><span><b>${nf}</b> filtro${nf>1?'s':''} ativo${nf>1?'s':''} · ${list.length} de ${fiiScope==="monitoradas"?FIIS.filter(f=>FII_WATCH.has(f.ticker)).length:FIIS.length} fundos</span><button id="fiiFiltClear">limpar filtros</button></div>`:"";
+  const fc=$("fiiFiltClear");if(fc)fc.onclick=()=>{fiiFilterState={};renderFiiView();};
+  const badge=$("fiiFiltCount");if(badge){badge.hidden=!nf;badge.textContent=nf;}const fbt=$("fiiFiltBtn");if(fbt)fbt.classList.toggle("on",!!nf);
+}
+function renderFiiFilterSheet(){
+  const seg=[...new Set(FIIS.map(f=>f.segment).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const cat=`<div class="fs-field"><label>Segmento</label><select data-fk="segment"><option value="">Todos</option>${seg.map(v=>`<option value="${v}"${fiiFilterState.segment===v?" selected":""}>${v}</option>`).join("")}</select></div>`;
+  const num=FII_COLS.filter(c=>FII_FCOL[c[0]]&&["num","max"].includes(FII_FCOL[c[0]].t)).map(c=>`<div class="fs-field"><label>${c[1]}</label><input type="number" inputmode="decimal" step="any" data-fk="${c[0]}" placeholder="${FII_FCOL[c[0]].ph||'mínimo'}" value="${fiiFilterState[c[0]]||""}"></div>`).join("");
+  $("filterSheetBody").innerHTML=`<div class="fs-grid">${cat}${num}</div>`;
+}
+function openFiiFilterSheet(){$("filterSheet").dataset.scope="fii";document.querySelector("#filterSheet .fs-head h3").textContent="Filtrar FIIs";renderFiiFilterSheet();$("filterSheet").classList.add("open");}
+mqMobile.addEventListener("change",()=>{if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-carteira").hidden)renderFiiCart();});
 function renderFiiView(){
   const mon=fiiScope==="monitoradas";
   $("fiiAssetToggle").innerHTML=assetToggleHtml(mon?"monitoradas":"screener","fiis");
@@ -3361,8 +3411,7 @@ function renderFiiView(){
   const host=$("fiiBody");
   if(!FIIS_LOADED){host.innerHTML=`<div style="padding:40px;text-align:center;color:var(--text-mute)">Carregando fundos…</div>`;ensureFiis().then(()=>{if(!$("view-fiis").hidden)renderFiiView();});return;}
   if(mon)refreshFiiState(false);   // monitoradas: garante que o que foi marcado em outra aba/dispositivo apareça
-  const list=fiiSorted(fiiFiltered());
-  const loaded=FIIS.filter(f=>!fiiPending(f)), med=fiiMedian(loaded,f=>fiiResult(f).upside);
+  const loaded=FIIS.filter(f=>!fiiPending(f)), med=fiiMedian(loaded,f=>fiiResult(f).upside), list=fiiSorted(fiiFiltered());
   host.innerHTML=`
     <div class="fstats">
       <div class="fstat"><div class="k">Fundos</div><div class="v">${mon?list.length:FIIS.length}</div></div>
@@ -3370,11 +3419,19 @@ function renderFiiView(){
       <div class="fstat"><div class="k">DY mediano</div><div class="v">${fpct(fiiMedian(loaded,f=>fiiResult(f).dy))}${loaded.length<FIIS.length?` <small>${FIIS.length-loaded.length} carregando…</small>`:''}</div></div>
       <div class="fstat"><div class="k">Monitorados</div><div class="v">${FII_WATCH.size}</div></div>
     </div>
-    <div id="fiiFiltBar"></div><div id="fiiTbl"></div>`;
-  const nf=Object.keys(fiiFilterState).length;
-  $("fiiFiltBar").innerHTML=nf?`<div class="ffilt-bar"><span><b>${nf}</b> filtro${nf>1?'s':''} ativo${nf>1?'s':''} · ${list.length} de ${fiiScope==="monitoradas"?FIIS.filter(f=>FII_WATCH.has(f.ticker)).length:FIIS.length} fundos</span><button id="fiiFiltClear">limpar filtros</button></div>`:"";
-  renderFiiTable($("fiiTbl"),list);
-  const fc=$("fiiFiltClear");if(fc)fc.onclick=()=>{fiiFilterState={};renderFiiView();};
+    <div class="scr-mtools">
+      <input class="scr-search" id="fiiSearch" type="search" inputmode="search" placeholder="Buscar ticker, nome ou segmento…" autocomplete="off" value="${fiiQuery.replace(/"/g,'&quot;')}">
+      <div class="scr-mrow">
+        <div class="scr-sort"><select id="fiiSortSel" aria-label="Ordenar por">${FII_MSORT.map(([k,l])=>`<option value="${k}"${fiiSortKey===k?" selected":""}>${l}</option>`).join("")}</select><button class="btn sm scr-dir" id="fiiSortDir" title="Inverter ordem">${fiiSortAsc?"↑":"↓"}</button></div>
+        <button class="btn sm scr-filtbtn" id="fiiFiltBtn">${FUNNEL}Filtros<span class="fcount" id="fiiFiltCount" hidden></span></button>
+      </div>
+    </div>
+    <div id="fiiFiltBar"></div><div class="scr-cards" id="fiiCards"></div><div id="fiiTbl"></div>`;
+  renderFiiList();
+  $("fiiSearch").oninput=e=>{fiiQuery=e.target.value;renderFiiList();};
+  $("fiiSortSel").onchange=e=>{fiiSortKey=e.target.value;fiiSortAsc=["ticker","segment"].includes(fiiSortKey);renderFiiView();};
+  $("fiiSortDir").onclick=()=>{fiiSortAsc=!fiiSortAsc;renderFiiView();};
+  $("fiiFiltBtn").onclick=openFiiFilterSheet;
 }
 function toggleFiiWatch(tk){
   const on=!FII_WATCH.has(tk);if(on)FII_WATCH.add(tk);else FII_WATCH.delete(tk);   // otimista; desfaz se a API falhar
@@ -3734,10 +3791,20 @@ function renderFiiCart(){
       <div class="fstat"><div class="k">Concentração</div><div class="v">${dec(nef,1)} <small>fundos efetivos (de ${rows.length})</small></div></div>
     </div>
     <div class="ftbl"><table><thead><tr><th>Fundo</th><th>Cotas</th><th>PM</th><th>Preço</th><th>Valor</th><th>Peso</th><th>Resultado</th><th>DY</th><th>Renda/mês</th><th></th></tr></thead><tbody>${trs}</tbody></table></div>
+    <div class="scr-cards">${rows.map(x=>{const w=patr>0?x.val/patr:0;return `<div class="scard" data-fii="${x.f.ticker}">
+      <div class="scard-head"><span class="scard-tk"><a class="tk-link" href="#/fii/${x.f.ticker}">${x.f.ticker}</a></span><span class="fseg">${x.f.segment}</span></div>
+      <div class="scard-name">${dec(x.pos.qtd,0)} cotas · PM ${brl(x.pos.pm)} · peso ${fpct(w)}</div>
+      <div class="scard-metrics">
+        <div class="scm"><span class="scm-k">Valor</span><span class="scm-v num">${brl(x.val)}</span></div>
+        <div class="scm"><span class="scm-k">Resultado</span><span class="scm-v num ${x.res>=0?'pos':'neg'}">${x.res>=0?'+':''}${brl(x.res)}</span></div>
+        <div class="scm"><span class="scm-k">DY</span><span class="scm-v num">${fpct(x.r.dy)}</span></div>
+        <div class="scm"><span class="scm-k">Renda/mês</span><span class="scm-v num">${brl(x.renda/12)}</span></div>
+      </div>
+      <div class="scard-mos"><span class="scm-k">Preço</span><span class="mos">${brl(x.f.price)}</span><button class="btn sm" data-fdel="${x.f.ticker}" style="margin-left:auto">remover</button></div></div>`;}).join("")}</div>
     <div class="fcard" style="margin-top:16px"><h3>Concentração por segmento</h3><div class="segbars">${segRows}</div></div>
     <div class="fnote">Renda estimada usa <b>DPU × cotas</b> (mesma base do modelo). Onde o DPU é <b>estimado</b>, a renda também é — abra cada fundo para puxar o DPU real do Yahoo.</div>`;
   host.querySelectorAll("[data-fdel]").forEach(b=>b.onclick=e=>{e.stopPropagation();const tk=b.dataset.fdel;delete FII_CART[tk];renderFiiCart();fiiApi("/api/fii-carteira/"+tk,"DELETE").catch(()=>fiiToast("Não consegui remover no servidor"));});
-  host.querySelectorAll("tr[data-fii]").forEach(tr=>tr.onclick=e=>{if(e.target.closest("a,button"))return;location.hash="#/fii/"+tr.dataset.fii;});
+  host.querySelectorAll("tr[data-fii],.scard[data-fii]").forEach(el=>el.onclick=e=>{if(e.target.closest("a,button"))return;location.hash="#/fii/"+el.dataset.fii;});
 }
 // re-render das telas de FII quando a config global muda (Ke/fade compartilhados)
 function rerenderFiiViews(){if(!$("view-fiis").hidden)renderFiiView();if(!$("view-fii-carteira").hidden)renderFiiCart();if(!$("view-fii-detail").hidden&&curFii){const f=FIIS.find(x=>x.ticker===curFii);if(f)drawFiiDetail(f,false);}}

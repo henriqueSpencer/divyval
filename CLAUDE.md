@@ -361,6 +361,13 @@ variables no `<style>`, temas claro/escuro:
   DDM/OE/R1 e todas as explicações ficam intactos — mudou só a "roupa" (fonte/cor).
 
 ## Mobile (camada responsiva, ago/2026)
+**FIIs (set/2026) espelham a camada das ações:** no celular a tabela `.ftbl` some e `renderFiiList()` desenha
+**cards** (`fiiCardHtml`, mesmas classes `.scard/.scm-*`), com barra `.scr-mtools` própria (`#fiiSearch`,
+`#fiiSortSel` a partir de `FII_MSORT`, `#fiiSortDir`, `#fiiFiltBtn`) e o **mesmo bottom-sheet** `#filterSheet`
+(`openFiiFilterSheet`/`renderFiiFilterSheet`; os listeners do sheet ramificam por `dataset.scope`
+"stock"/"fii"). Carteira de FII também vira cards. `mqMobile` re-renderiza as views de FII ao cruzar 720px.
+O detalhe do FII já é responsivo por reusar as classes/CSS do detalhe das ações.
+
 Layout mobile todo em CSS (media queries), sem JS de layout. **Dois breakpoints** mexem no shell:
 `@media (max-width:860px)` (tablet: sidebar vira topbar sticky + grids do detalhe/config viram 1 coluna)
 e `@media (max-width:720px)` (celular). No celular:
