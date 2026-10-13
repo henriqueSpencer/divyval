@@ -1,0 +1,10 @@
+# Worker de keep-alive do Supabase (free tier pausa o projeto após 7 dias sem atividade no banco).
+# Deploy: cd keepalive && npx wrangler deploy
+# Secret: npx wrangler secret put APP_PASSWORD   (mesma senha do app)
+name = "divyval-keepalive"
+main = "index.js"
+compatibility_date = "2024-09-01"
+workers_dev = false      # sem URL pública: o cron não precisa de rota (e a conta não tem subdomínio workers.dev)
+
+[triggers]
+crons = ["0 9 * * *"]   # todo dia 09:00 UTC (06:00 BRT) — janela da pausa é de 7 dias

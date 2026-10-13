@@ -1,0 +1,10 @@
+# Arquivos que NÃO devem ir pro Cloudflare Pages (o deploy envia o disco, não o git).
+# O _middleware.js também bloqueia esses caminhos — isto aqui evita o upload em primeiro lugar.
+.dev.vars
+.gitignore
+wrangler.toml
+backend/
+keepalive/
+*.py
+*.db
+*.bak

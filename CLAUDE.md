@@ -173,6 +173,41 @@ Secrets do projeto: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (**service key `sb_se
 `APP_PASSWORD` (senha única do app). `_middleware.js` protege tudo (inclusive o HTML) e mantém
 `Cache-Control: no-cache` no HTML.
 
+## ⚠️ Segurança: o deploy do Pages envia o DISCO, não o git (out/2026)
+`wrangler pages deploy .` sobe **todos os arquivos da pasta**, ignorando o `.gitignore`. Resultado
+descoberto em out/2026: **`GET /.dev.vars` devolvia o arquivo real**, com a `SUPABASE_SERVICE_KEY`
+(a chave que **ignora RLS** = acesso total ao banco) — além de `wrangler.toml`, `.gitignore` e
+`backend/*.py`. Estava atrás da auth do app, mas é escalação grave: senha-do-app → credencial
+permanente e total do banco (e trocar a senha do app **não** invalida a service key).
+**Fix (duas camadas, não remover nenhuma):**
+1. **`_middleware.js` bloqueia antes de tudo** (`BLOCKED`/`isBlocked`, 404 mesmo autenticado):
+   dotfiles na raiz, `wrangler.toml`, `backend/`, `keepalive/`, `cvm_base/`, e extensões
+   `.py/.toml/.db/.bak/.sql/.env/.dev.vars/.log/.lock`, `package*.json`.
+2. **`.assetsignore`** na raiz, p/ nem subir esses arquivos.
+Ao criar pasta nova na raiz com segredo/fonte, **acrescente nos dois**. Conferir após deploy:
+`curl -u :SENHA https://divyval.pages.dev/.dev.vars` deve dar **404**.
+> **Backup**: o free tier do Supabase **não tem backup automático**. Dump manual (fora do repo, que
+> é público!) em `~/Documents/Investimentos/backups/supabase-AAAA-MM-DD/` — um `curl` por tabela no
+> PostgREST com a service key. Dados do usuário: `premissa_atual`, `premissa_hist`, `watchlist`,
+> `carteira`, `config`, `fii_*` (as `stocks` são re-semeáveis offline).
+
+## Keep-alive do Supabase (free tier pausa em 7 dias, out/2026)
+O free tier **pausa o projeto após 7 dias sem atividade no banco** (e-mail de aviso do Supabase em
+13/out/2026). O app só toca o banco quando o usuário abre → qualquer semana sem uso dispara.
+Antídoto: **Worker `divyval-keepalive`** (`keepalive/`, fora do Pages) com **Cron Trigger diário**
+(`0 9 * * *`) que chama `/api/config` em prod com `Authorization: Basic` → a Pages Function faz um
+SELECT na `config` → conta como atividade. De brinde é health check da cadeia (se o app quebrar, o
+cron falha e aparece no log). Secret: `APP_PASSWORD` (`cd keepalive && npx wrangler secret put APP_PASSWORD`).
+`workers_dev = false` (o cron não precisa de rota); o handler `fetch` existe só p/ gatilho manual e
+exige `?k=<APP_PASSWORD>` (sem a chave → 404). Testar local: `cd keepalive && npx wrangler dev
+--test-scheduled` e `curl localhost:8799/__scheduled` (precisa de `keepalive/.dev.vars` com a senha
+de **produção** — a da raiz é vazia).
+> **PENDENTE (ação manual do usuário, 1×):** a Cloudflare recusa registrar cron sem a conta ter um
+> subdomínio `workers.dev`. O script do worker e o secret **já estão no ar**, mas o cron **não
+> registrou** (`code: 10063`). Abrir o painel Cloudflare → menu **Workers & Pages** (isso cria o
+> subdomínio automaticamente) e então rodar `cd keepalive && npx wrangler deploy` p/ registrar o cron.
+> Conferir: `npx wrangler deployments list` e, no painel do worker, a aba Triggers/Cron.
+
 ## Autenticação (sessão em cookie, set/2026)
 Antes era **HTTP Basic Auth** puro: o browser guardava a senha só na memória da aba e descartava
 quando queria (fechar o app no celular, reiniciar o Safari, PWA na tela inicial) → 401 +

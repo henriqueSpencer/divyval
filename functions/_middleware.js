@@ -10,6 +10,15 @@ import { COOKIE, readCookie, verifyToken, needsRenew, issueToken, cookieHeader, 
 // O Pages faz 308 de /login.html → /login (clean URLs): as duas grafias precisam ser públicas.
 const PUBLIC = new Set(["/login", "/login.html", "/api/login", "/favicon.svg", "/favicon-32.png", "/apple-touch-icon.png"]);
 
+// ⚠️ NUNCA SERVIR: o `wrangler pages deploy .` envia arquivos do DISCO (não do git), então
+// `.dev.vars` (que tem a SUPABASE_SERVICE_KEY, a chave que ignora RLS), `wrangler.toml` e o
+// backend legado acabavam acessíveis por URL — escalação de senha-do-app → banco inteiro.
+// Verificado em out/2026: GET /.dev.vars devolvia o arquivo real. Bloqueado aqui (defesa de
+// profundidade, independente do que o upload do Pages decida incluir).
+const BLOCKED = [/^\/\.[^/]/, /^\/wrangler\.toml$/i, /^\/(backend|keepalive|cvm_base)\//i,
+                 /\.(py|toml|db|bak|sql|env|dev\.vars|log|lock)$/i, /^\/package(-lock)?\.json$/i];
+const isBlocked = (p) => BLOCKED.some((re) => re.test(p));
+
 function basicOk(request, pw) {
   const hdr = request.headers.get("authorization") || "";
   if (!hdr.startsWith("Basic ")) return false;
@@ -27,6 +36,9 @@ export async function onRequest(context) {
   const pw = env.APP_PASSWORD;
   const url = new URL(request.url);
   let renewCookie = null;
+
+  // bloqueio antes de qualquer coisa: nem autenticado deve conseguir baixar segredos/fontes
+  if (isBlocked(url.pathname)) return new Response("Not found", { status: 404 });
 
   const isLogin = url.pathname === "/login" || url.pathname === "/login.html";
   if (pw && isLogin && await verifyToken(pw, readCookie(request, COOKIE))) {
