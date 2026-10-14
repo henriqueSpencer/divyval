@@ -2346,7 +2346,7 @@ function histResult(h){   // valor justo do snapshot conforme o modelo ativo da 
     const pe=h.fut_pe!=null?h.fut_pe:defPE(g);
     const r=computeR1({lpa:ep.lpa,g,futPE:pe,req:ep.ke,years:ep.fade,mos:0,payout:po});
     const gl=viaRoe?`ROE ${pctv(ep.roeI*100)} → g ${pctv(g*100)}`:`g ${pctv(g*100)}`;
-    return {fair:r.sticker,label:`Ke ${pctv(ep.ke*100)} · ${gl} · payout ${pctv(po*100)} · P/L ${dec(pe,0)} · MS ${pctv(ms*100)}`};}
+    return {fair:r.sticker,label:`Ke ${pctv(ep.ke*100)} · ${gl} · payout ${pctv(po*100)} · P/L ${dec(pe,0)}`};}
   const r=computeDDM(ep),growth=ep.mode==="g"?`g ${pctv(ep.gI*100)}→${pctv(ep.gTerm*100)}`:`ROE ${pctv(ep.roeI*100)}→${pctv(ep.roeT*100)}`;
   return {fair:r.fair,label:`Ke ${pctv(ep.ke*100)} · ${growth} · payout ${pctv(ep.payoutI*100)}→${pctv(ep.payoutT*100)} · fade ${Math.round(ep.fade)}a`};
 }

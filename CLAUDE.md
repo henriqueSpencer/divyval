@@ -255,6 +255,16 @@ Todo o cálculo é no **frontend** (`index.html`), despachado por `fairResult(s)
 - `Sem valuation` — ações com prejuízo crônico: sem preço justo/margem (`fair` null). Cuidado:
   `brl` trata null/NaN como `—`; há guarda na célula de justo dos filhos no screener.
 
+> **GOTCHA (out/2026) — o catch do "Salvar premissas" mente.** O `try` dos três saves
+> (`saveBtn`/`oeSaveBtn`/`r1SaveBtn`) engloba o POST **e** `commitModel()` **e** `loadPremissas()`,
+> e `loadPremissas` chama `renderHistory()` **fora** do seu try interno. Logo, **qualquer** exceção
+> de render depois do POST vira *"Não consegui salvar — verifique sua conexão"* mesmo com o dado
+> já gravado. Foi o que aconteceu ao remover a margem: `ms` ficou órfão no rótulo do ramo `M_R1` do
+> `histResult` → `ReferenceError` → só em ações no modelo **Regra nº1** (o usuário bateu no SANB4;
+> os saves tinham ido ao banco, duplicados pelas retentativas). Ao mexer em `histResult`/`renderHistory`,
+> teste os **3 modelos** (há harness de regressão: abre PETR4/SANB11/TAEE11 forçando DDM/R1/OE e
+> exige `hist-item` no `#histList` sem lançar) — o smoke de `renderR1` sozinho NÃO pega isso.
+
 **Ke (= retorno exigido) e horizonte (= anos de fade) são compartilhados** entre os modelos: usam o
 padrão global (Configurações) via checkbox "padrão". Premissas por ação em `premissa_atual` /
 `premissa_hist`; o R1 acrescentou a coluna **`fut_pe`** (P/L futuro) — e `mos`, hoje **sem uso**;
